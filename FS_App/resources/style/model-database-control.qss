@@ -1,0 +1,57 @@
+QTreeWidget {
+    color: black;
+    background: rgb(250,250,225);
+    alternate-background-color: rgb(250,250,200);
+    outline-color: transparent;
+}
+
+QTreeWidget::item {
+    border-bottom: 1px solid rgb(200,200,200);
+}
+
+QTreeWidget::item:selected {
+    color: black;
+    background: rgb(200,225,250);
+}
+
+QTreeWidget::branch {
+    border-bottom: 1px solid rgb(200,200,200);
+}
+
+QTreeWidget::branch:has-children:closed {
+    image: url(./resources/images/expand.svg);
+}
+
+QTreeWidget::branch:has-children:open {
+    image: url(./resources/images/collapse.svg);
+}
+
+QLineEdit {
+    color: black;
+    border-style: none;
+    background: transparent;
+}
+
+QComboBox {
+    color: black;
+    border-style: none;
+    background: transparent;
+    selection-color: black;
+    selection-background-color: rgb(200,225,250);
+}
+
+QComboBox::down-arrow {
+    image: url(./resources/images/drop-down.svg);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid rgb(200,200,200);
+    background-color: rgb(250,250,225);
+}
+
+QMenu {
+    color: black;
+    border: 1px solid rgb(200,200,200);
+    background-color: rgb(250,250,225);
+    selection-background-color: rgb(200,225,250);
+}

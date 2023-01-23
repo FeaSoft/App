@@ -20,3 +20,9 @@
 
 # python source files
 !*.py
+
+# scalable vector graphics files
+!*.svg
+
+# qt style sheet files
+!*.qss
