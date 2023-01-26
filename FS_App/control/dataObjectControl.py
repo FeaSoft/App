@@ -73,7 +73,9 @@ class DataObjectControl(QTreeWidgetItem):
             setattr(self._dataObject, propertyName, propertyValue)
         except NotImplementedError as e: raise e # raise the NotImplementedError normally
         except Exception as e:
-            QMessageBox.critical(None, 'Error', f'{e.__class__.__name__}: {e}.', QMessageBox.StandardButton.Ok)
+            QMessageBox.critical(
+                self.treeWidget(), 'Error', f'{e.__class__.__name__}: {e}.', QMessageBox.StandardButton.Ok
+            )
             self._onPropertyChanged(propertyName)
 
     def _onItemSourceChanged(self, propertyName: str, oldName: str | None, newName: str | None) -> None:

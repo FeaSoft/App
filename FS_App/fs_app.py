@@ -1,14 +1,25 @@
+import sys
 from dataModel import ModelDatabase
-from control import ModelDatabaseControl
 from PySide6.QtWidgets import QApplication
+
+from application.mainWindow.mainWindowShell import MainWindowShell
 
 mdb = ModelDatabase()
 
 app = QApplication()
 app.setStyle('Fusion')
 
-control = ModelDatabaseControl(None, mdb)
-control.show()
+mainWindow = MainWindowShell()
+mainWindow.show()
+
+mainWindow._modelTree.setModelDatabase(mdb)
+
+
+sys.tracebacklimit = 0
+sys.stdout = mainWindow._terminal.stdout
+sys.stderr = mainWindow._terminal.stderr
+sys.stdin = mainWindow._terminal.stdin
+
 
 mdb.materials.new()
 mdb.materials.new()

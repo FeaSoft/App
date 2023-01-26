@@ -1,12 +1,13 @@
 QTreeWidget {
     color: black;
+    border: 1px solid rgb(185,185,185);
     background: rgb(250,250,225);
     alternate-background-color: rgb(250,250,200);
     outline-color: transparent;
 }
 
 QTreeWidget::item {
-    border-bottom: 1px solid rgb(200,200,200);
+    border-bottom: 1px solid rgb(185,185,185);
 }
 
 QTreeWidget::item:selected {
@@ -15,7 +16,7 @@ QTreeWidget::item:selected {
 }
 
 QTreeWidget::branch {
-    border-bottom: 1px solid rgb(200,200,200);
+    border-bottom: 1px solid rgb(185,185,185);
 }
 
 QTreeWidget::branch:has-children:closed {
@@ -45,13 +46,13 @@ QComboBox::down-arrow {
 }
 
 QComboBox QAbstractItemView {
-    border: 1px solid rgb(200,200,200);
+    border: 1px solid rgb(185,185,185);
     background-color: rgb(250,250,225);
 }
 
 QMenu {
     color: black;
-    border: 1px solid rgb(200,200,200);
+    border: 1px solid rgb(185,185,185);
     background-color: rgb(250,250,225);
     selection-background-color: rgb(200,225,250);
 }

@@ -82,6 +82,8 @@ class ModelDatabaseControl(QTreeWidget):
 
     def setModelDatabase(self, modelDatabase: ModelDatabase) -> None:
         '''Builds the model database tree widget based on the specified model database.'''
+        self.detach()
+        self.clear()
         self._modelDatabase = modelDatabase
 
         # create children
