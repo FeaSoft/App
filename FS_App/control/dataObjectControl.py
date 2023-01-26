@@ -31,10 +31,10 @@ class DataObjectControl(QTreeWidgetItem):
         self._itemSources: list[DataObjectContainer] = []
         self._itemSourceCallbackKeys: list[int] = []
         self._dataObject: DataObject = dataObject
-        self._callbackKey: int = self._dataObject.registerCallback(self._onPropertyChanged)
+        self._callbackKey: int = self._dataObject.registerCallback(self.onPropertyChanged)
         self.newField('name', ('Name',), 'LineEdit')
 
-    def _onPropertyChanged(self, propertyName: str) -> None:
+    def onPropertyChanged(self, propertyName: str) -> None:
         '''
         This method is executed once a property of the data object is changed.
         This method makes sure the user sees the actual currently stored information.
@@ -49,7 +49,7 @@ class DataObjectControl(QTreeWidgetItem):
             case QComboBox(): editWidget.setCurrentText(str(propertyValue))
             case _: raise NotImplementedError('case not implemented')
 
-    def _onUserEdit(self, propertyName: str) -> None:
+    def onUserEdit(self, propertyName: str) -> None:
         '''
         This method is executed once the user has finished using an edit widget.
         This method makes sure the stored information is updated based on the edit.
@@ -76,9 +76,9 @@ class DataObjectControl(QTreeWidgetItem):
             QMessageBox.critical(
                 self.treeWidget(), 'Error', f'{e.__class__.__name__}: {e}.', QMessageBox.StandardButton.Ok
             )
-            self._onPropertyChanged(propertyName)
+            self.onPropertyChanged(propertyName)
 
-    def _onItemSourceChanged(self, propertyName: str, oldName: str | None, newName: str | None) -> None:
+    def onItemSourceChanged(self, propertyName: str, oldName: str | None, newName: str | None) -> None:
         '''
         This method is executed once an item is added to or removed from a data object container.
         This method makes sure the combo box items match with the associated data object container.
@@ -112,7 +112,7 @@ class DataObjectControl(QTreeWidgetItem):
         if not isValid(treeWidget): return
 
         # create edit widget callback function
-        editWidgetCallback: Callable[[], None] = lambda: self._onUserEdit(propertyName)
+        editWidgetCallback: Callable[[], None] = lambda: self.onUserEdit(propertyName)
 
         # create edit widget
         match kind:
@@ -129,7 +129,7 @@ class DataObjectControl(QTreeWidgetItem):
                     case DataObjectContainer():
                         editWidget.addItems(itemSource.names())
                         itemSourceCallback: Callable[[str | None, str | None], None] = lambda oldName, newName: \
-                            self._onItemSourceChanged(propertyName, oldName, newName)
+                            self.onItemSourceChanged(propertyName, oldName, newName)
                         itemSourceCallbackKey: int = itemSource.registerCallback(itemSourceCallback)
                         self._itemSources.append(itemSource)
                         self._itemSourceCallbackKeys.append(itemSourceCallbackKey)

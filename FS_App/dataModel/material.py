@@ -15,7 +15,7 @@ class Material(DataObject):
     def young(self, value: float) -> None:
         '''Young's modulus (setter).'''
         self._young = value
-        self._notifyPropertyChanged('young')
+        self.notifyPropertyChanged('young')
 
     @property
     def poisson(self) -> float:
@@ -26,7 +26,7 @@ class Material(DataObject):
     def poisson(self, value: float) -> None:
         '''Poisson's ratio (setter).'''
         self._poisson = value
-        self._notifyPropertyChanged('poisson')
+        self.notifyPropertyChanged('poisson')
 
     @property
     def density(self) -> float:
@@ -37,7 +37,7 @@ class Material(DataObject):
     def density(self, value: float) -> None:
         '''Mass density (setter).'''
         self._density = value
-        self._notifyPropertyChanged('density')
+        self.notifyPropertyChanged('density')
 
     # attribute slots
     __slots__ = ('_young', '_poisson', '_density')

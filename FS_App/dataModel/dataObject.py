@@ -16,7 +16,7 @@ class DataObject(ABC):
     def name(self, value: str) -> None:
         '''Data object name (setter).'''
         self._nameSetter(self, value)
-        self._notifyPropertyChanged('name')
+        self.notifyPropertyChanged('name')
 
     # attribute slots
     __slots__ = ('_nameGetter', '_nameSetter', '_callbacks')
@@ -33,7 +33,7 @@ class DataObject(ABC):
         self._nameSetter: Callable[[DataObject, str], None] = nameSetter
         self._callbacks: dict[int, Callable[[str], None]] = {}
 
-    def _notifyPropertyChanged(self, propertyName: str) -> None:
+    def notifyPropertyChanged(self, propertyName: str) -> None:
         '''This method is called when a property has changed its value.'''
         for callback in self._callbacks.values(): callback(propertyName)
 

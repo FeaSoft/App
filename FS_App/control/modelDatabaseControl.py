@@ -31,13 +31,13 @@ class ModelDatabaseControl(QTreeWidget):
         self.setAlternatingRowColors(True)
         self.setStyleSheet(styleSheet)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._launchContextMenu) # type: ignore
+        self.customContextMenuRequested.connect(self.launchContextMenu) # type: ignore
 
         # connect to model database
         if modelDatabase: self.setModelDatabase(modelDatabase)
         else: self.detach()
 
-    def _launchContextMenu(self) -> None:
+    def launchContextMenu(self) -> None:
         '''Launches the context menu.'''
         currentItem: QTreeWidgetItem = self.currentItem()
         match currentItem:
@@ -62,7 +62,7 @@ class ModelDatabaseControl(QTreeWidget):
         menu.exec(QCursor.pos())
         menu.disconnect(connection) # type: ignore
 
-    def _materialControlConstructor(self, parent: QTreeWidgetItem, name: str) -> DataObjectControl:
+    def materialControlConstructor(self, parent: QTreeWidgetItem, name: str) -> DataObjectControl:
         '''Returns a new material control.'''
         if not self._modelDatabase: raise RuntimeError('a model database is required')
         control = DataObjectControl(parent, self._modelDatabase.materials[name])
@@ -71,7 +71,7 @@ class ModelDatabaseControl(QTreeWidget):
         control.newField('density', ('General Properties', 'Mass Density'), 'LineEdit')
         return control
 
-    def _sectionControlConstructor(self, parent: QTreeWidgetItem, name: str) -> DataObjectControl:
+    def sectionControlConstructor(self, parent: QTreeWidgetItem, name: str) -> DataObjectControl:
         '''Returns a new section control.'''
         if not self._modelDatabase: raise RuntimeError('a model database is required')
         control = DataObjectControl(parent, self._modelDatabase.sections[name])
@@ -88,8 +88,8 @@ class ModelDatabaseControl(QTreeWidget):
 
         # create children
         parent: QTreeWidgetItem = QTreeWidgetItem(self.invisibleRootItem(), (self._modelDatabase.name,))
-        DataObjectContainerControl(parent, self._modelDatabase.materials, self._materialControlConstructor)
-        DataObjectContainerControl(parent, self._modelDatabase.sections, self._sectionControlConstructor)
+        DataObjectContainerControl(parent, self._modelDatabase.materials, self.materialControlConstructor)
+        DataObjectContainerControl(parent, self._modelDatabase.sections, self.sectionControlConstructor)
         parent.setExpanded(True)
 
     def detach(self) -> None:

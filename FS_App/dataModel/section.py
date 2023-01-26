@@ -15,7 +15,7 @@ class Section(DataObject):
     def materialName(self, value: str) -> None:
         '''Name of the associated material (setter).'''
         self._materialName = value
-        self._notifyPropertyChanged('materialName')
+        self.notifyPropertyChanged('materialName')
 
     @property
     def stressState(self) -> str:
@@ -26,7 +26,7 @@ class Section(DataObject):
     def stressState(self, value: str) -> None:
         '''Stress state (setter).'''
         self._stressState = value
-        self._notifyPropertyChanged('stressState')
+        self.notifyPropertyChanged('stressState')
 
     @property
     def planeThickness(self) -> float:
@@ -37,7 +37,7 @@ class Section(DataObject):
     def planeThickness(self, value: float) -> None:
         '''Plane thickness (setter).'''
         self._planeThickness = value
-        self._notifyPropertyChanged('planeThickness')
+        self.notifyPropertyChanged('planeThickness')
 
     # attribute slots
     __slots__ = ('_materialName', '_stressState', '_planeThickness')

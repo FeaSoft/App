@@ -39,15 +39,15 @@ class DataObjectContainer:
         index: int = self._names.index(name)
         del self._names[index]
         del self._dataObjects[index]
-        self._notifyContainerChanged(oldName=name)
+        self.notifyContainerChanged(oldName=name)
 
-    def _generateUniqueName(self) -> str:
+    def generateUniqueName(self) -> str:
         '''Generates a unique data object name.'''
         i: int = len(self._names) + 1
         while self._prefix + str(i) in self._names: i += 1
         return self._prefix + str(i)
 
-    def _validateNewName(self, dataObject: DataObject, newName: str) -> None:
+    def validateNewName(self, dataObject: DataObject, newName: str) -> None:
         '''Raises a ValueError if the new data object name is not valid.'''
         # check for empty string
         if newName == '':
@@ -67,19 +67,19 @@ class DataObjectContainer:
         if newName in self._names and self[newName] != dataObject:
             raise ValueError('name is already in use')
 
-    def _findName(self, dataObject: DataObject) -> str:
+    def findName(self, dataObject: DataObject) -> str:
         '''Returns the name of the specified data object.'''
         return self._names[self._dataObjects.index(dataObject)]
 
-    def _changeName(self, dataObject: DataObject, newName: str) -> None:
+    def changeName(self, dataObject: DataObject, newName: str) -> None:
         '''Changes the name of the specified data object.'''
-        self._validateNewName(dataObject, newName)
+        self.validateNewName(dataObject, newName)
         index: int = self._dataObjects.index(dataObject)
         oldName: str = self._names[index]
         self._names[index] = newName
-        self._notifyContainerChanged(oldName, newName)
+        self.notifyContainerChanged(oldName, newName)
 
-    def _notifyContainerChanged(self, oldName: str | None = None, newName: str | None = None) -> None:
+    def notifyContainerChanged(self, oldName: str | None = None, newName: str | None = None) -> None:
         '''This method is called when an item is added to or removed from the container.'''
         for callback in self._callbacks.values(): callback(oldName, newName)
 
@@ -103,8 +103,8 @@ class DataObjectContainer:
 
     def new(self) -> None:
         '''Creates a new default instance of a data object and adds it to the container.'''
-        newName: str = self._generateUniqueName()
-        newDataObject: DataObject = self._dataObjectType(self._findName, self._changeName)
+        newName: str = self.generateUniqueName()
+        newDataObject: DataObject = self._dataObjectType(self.findName, self.changeName)
         self._names.append(newName)
         self._dataObjects.append(newDataObject)
-        self._notifyContainerChanged(newName=newName)
+        self.notifyContainerChanged(newName=newName)

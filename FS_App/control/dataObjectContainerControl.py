@@ -28,17 +28,17 @@ class DataObjectContainerControl(QTreeWidgetItem):
         '''Data object container control constructor.'''
         super().__init__(parent, (f'{container.name} [{len(container)}]',))
         self._container: DataObjectContainer = container
-        self._callbackKey: int = self._container.registerCallback(self._onContainerChanged)
+        self._callbackKey: int = self._container.registerCallback(self.onContainerChanged)
         self._childConstructor: Callable[[QTreeWidgetItem, str], DataObjectControl] = childConstructor
 
-    def _findChild(self, text: str) -> QTreeWidgetItem:
+    def findChild(self, text: str) -> QTreeWidgetItem:
         '''Find the first child item with the specified text.'''
         for i in range(self.childCount()):
             if self.child(i).text(0) == text:
                 return self.child(i)
         raise ValueError('child item not found')
 
-    def _onContainerChanged(self, oldName: str | None, newName: str | None) -> None:
+    def onContainerChanged(self, oldName: str | None, newName: str | None) -> None:
         '''
         This method is executed once an item is added to or removed from a data object container.
         This method makes sure the child items match with the associated data object container.
@@ -47,13 +47,13 @@ class DataObjectContainerControl(QTreeWidgetItem):
 
         # a name was changed (do not upset current order of items)
         if oldName and newName:
-            self._findChild(oldName).setText(0, newName)
+            self.findChild(oldName).setText(0, newName)
             return
 
         # an item was added or removed
         if newName: self._childConstructor(self, newName)
         if oldName:
-            child: DataObjectControl = cast(DataObjectControl, self._findChild(oldName))
+            child: DataObjectControl = cast(DataObjectControl, self.findChild(oldName))
             child.detach()
             self.removeChild(child)
             del child

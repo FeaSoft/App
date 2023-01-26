@@ -88,8 +88,8 @@ class Terminal(QWidget):
         self._history: list[str] = ['']
         self._historyIndex: int = 0
         # streams
-        self._stdout: Terminal._OutputRedirect = Terminal._OutputRedirect(self._print, 'black')
-        self._stderr: Terminal._OutputRedirect = Terminal._OutputRedirect(self._print, 'red')
+        self._stdout: Terminal._OutputRedirect = Terminal._OutputRedirect(self.print, 'black')
+        self._stderr: Terminal._OutputRedirect = Terminal._OutputRedirect(self.print, 'red')
         self._stdin: Terminal._InputRedirect = Terminal._InputRedirect()
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
@@ -100,16 +100,16 @@ class Terminal(QWidget):
                 case Qt.Key.Key_Return:
                     source = self._inputBox.text()
                     self._inputBox.clear()
-                    self._interpret(source)
+                    self.interpret(source)
                 case Qt.Key.Key_Up:
-                    self._inputBox.setText(self._previousInput(True))
+                    self._inputBox.setText(self.getPreviousInput(True))
                 case Qt.Key.Key_Down:
-                    self._inputBox.setText(self._previousInput(False))
+                    self._inputBox.setText(self.getPreviousInput(False))
                 case _:
                     pass
         return False # allow further event processing
 
-    def _previousInput(self, moveBackward: bool) -> str:
+    def getPreviousInput(self, moveBackward: bool) -> str:
         '''Navigate user input history.'''
         # update history index
         if moveBackward: self._historyIndex -= 1
@@ -120,7 +120,7 @@ class Terminal(QWidget):
         # return the next or previous user input in the list
         return self._history[self._historyIndex]
 
-    def _print(self, text: str, color: str = 'black') -> None:
+    def print(self, text: str, color: str = 'black') -> None:
         '''Prints the received text to the output box.'''
         # deselect any text (required)
         textCursor: QTextCursor = self._outputBox.textCursor()
@@ -132,11 +132,11 @@ class Terminal(QWidget):
         self._outputBox.append(text)
         self._outputBox.ensureCursorVisible()
 
-    def _interpret(self, source: str, print: bool = True) -> None:
+    def interpret(self, source: str, print: bool = True) -> None:
         '''Interprets and prints the received Python source string.'''
         if print:
             self._history[-1] = source
             self._history.append('')
             self._historyIndex = len(self._history) - 1
-            self._print('>>> ' + source, 'blue')
+            self.print('>>> ' + source, 'blue')
         self._interpreter.push(source)
