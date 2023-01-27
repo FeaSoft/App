@@ -1,5 +1,6 @@
-from application import Terminal
+from application.terminal import Terminal
 from control import ModelDatabaseControl
+from visualization import Viewport
 from PySide6.QtGui import Qt, QAction, QIcon
 from PySide6.QtWidgets import (
     QWidget, QMainWindow, QMenuBar, QMenu, QToolBar, QVBoxLayout, QSplitter, QSizePolicy, QFrame
@@ -10,22 +11,8 @@ class MainWindowShell(QMainWindow):
     The main window shell (basic UI).
     '''
 
-    # attribute slots
-    __slots__ = (
-        '_icons', '_menuBar', '_menuBarFile', '_menuBarFileNew', '_toolBarFile', '_toolBarFileNew', '_toolBarView',
-        '_toolBarViewFront', '_toolBarViewBack', '_toolBarViewTop', '_toolBarViewBottom', '_toolBarViewLeft',
-        '_toolBarViewRight', '_toolBarViewIsometric', '_centralWidget', '_centralWidgetLayout', '_verticalSplitter',
-        '_horizontalSplitter', '_modelTree', '_terminal',
-
-
-
-
-
-
-
-
-        '_viewportFrame'
-    )
+    # attribute slots (not allowed, QT crashes)
+    # __slots__ = ...
 
     def __init__(self) -> None:
         '''Main window shell constructor.'''
@@ -149,57 +136,20 @@ class MainWindowShell(QMainWindow):
         # terminal
         self._terminal: Terminal = Terminal(self._verticalSplitter)
         self._verticalSplitter.addWidget(self._terminal)
-        
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        #---------------------------------------------------------------------------------------------------------------
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         # viewport frame
         self._viewportFrame: QFrame = QFrame(self._horizontalSplitter)
-        self._viewportFrame.setStyleSheet('QFrame { border: 1px solid red; }')
-        sizePolicy1 = self._viewportFrame.sizePolicy()
+        self._viewportFrame.setStyleSheet('border: 1px solid rgb(185,185,185);')
+        sizePolicy1: QSizePolicy = self._viewportFrame.sizePolicy()
         sizePolicy1.setHorizontalStretch(1)
         self._viewportFrame.setSizePolicy(sizePolicy1)
         self._horizontalSplitter.addWidget(self._viewportFrame)
 
+        # viewport frame layout
+        self._viewportFrameLayout: QVBoxLayout = QVBoxLayout(self._viewportFrame)
+        self._viewportFrameLayout.setContentsMargins(0, 0, 0, 0)
+        self._viewportFrame.setLayout(self._viewportFrameLayout)
 
-
-
-   
-
-        # # viewport frame layout
-        # self._viewportFrameLayout = QVBoxLayout(self._viewportFrame)
-        # self._viewportFrameLayout.setContentsMargins(0, 0, 0, 0)
-        # self._viewportFrame.setLayout(self._viewportFrameLayout)
+        # viewport
+        self._viewport: Viewport = Viewport(self._viewportFrame)
+        self._viewportFrameLayout.addWidget(self._viewport)

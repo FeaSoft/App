@@ -10,9 +10,9 @@ class Terminal(QWidget):
     An interactive Python terminal.
     '''
 
-    class _OutputRedirect:
+    class OutputRedirect:
         '''
-        A private class for redirecting standard output streams.
+        Class for redirecting standard output streams.
         '''
 
         # attribute slots
@@ -28,9 +28,9 @@ class Terminal(QWidget):
             text = text.strip()
             if text != '': self._onWrite(text, self._textColor)
 
-    class _InputRedirect:
+    class InputRedirect:
         '''
-        A private class for redirecting standard input streams.
+        Class for redirecting standard input streams.
         '''
 
         # attribute slots
@@ -41,17 +41,17 @@ class Terminal(QWidget):
             raise RuntimeError('standard input is not allowed')
 
     @property
-    def stdout(self) -> _OutputRedirect:
+    def stdout(self) -> OutputRedirect:
         '''Exposes the stdout stream redirector.'''
         return self._stdout
 
     @property
-    def stderr(self) -> _OutputRedirect:
+    def stderr(self) -> OutputRedirect:
         '''Exposes the stderr stream redirector.'''
         return self._stderr
 
     @property
-    def stdin(self) -> _InputRedirect:
+    def stdin(self) -> InputRedirect:
         '''Exposes the stdin stream redirector.'''
         return self._stdin
 
@@ -88,9 +88,9 @@ class Terminal(QWidget):
         self._history: list[str] = ['']
         self._historyIndex: int = 0
         # streams
-        self._stdout: Terminal._OutputRedirect = Terminal._OutputRedirect(self.print, 'black')
-        self._stderr: Terminal._OutputRedirect = Terminal._OutputRedirect(self.print, 'red')
-        self._stdin: Terminal._InputRedirect = Terminal._InputRedirect()
+        self._stdout: Terminal.OutputRedirect = Terminal.OutputRedirect(self.print, 'black')
+        self._stderr: Terminal.OutputRedirect = Terminal.OutputRedirect(self.print, 'red')
+        self._stdin: Terminal.InputRedirect = Terminal.InputRedirect()
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         '''The event filter.'''
