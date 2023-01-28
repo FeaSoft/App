@@ -1,7 +1,9 @@
 import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
 import visualization.preferences as vp
 from typing import cast
-from visualization.decorations import Triad
+from dataModel import Mesh
+from visualization.decoration import Triad
+from visualization.rendering import RenderObject, MeshRenderObject
 from visualization.interaction import InteractionStyles, InteractionStyle, RotateInteractionStyle
 from PySide6.QtWidgets import QWidget
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor # type: ignore
@@ -13,7 +15,7 @@ class Viewport(QVTKRenderWindowInteractor):
     '''
 
     # attribute slots
-    __slots__ = ('_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad')
+    __slots__ = ('_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad', '_meshRenderObject')
 
     def __init__(self, parent: QWidget | None = None) -> None:
         '''Viewport constructor.'''
@@ -34,6 +36,8 @@ class Viewport(QVTKRenderWindowInteractor):
         }
         # triad
         self._triad: Triad = Triad()
+        # render objects
+        self._meshRenderObject: MeshRenderObject | None = None
 
     def initialize(self, interactionStyle: InteractionStyles) -> None:
         '''Initializes the viewport.'''
@@ -41,7 +45,28 @@ class Viewport(QVTKRenderWindowInteractor):
         self._triad.initialize(self._interactor)
         self.setInteractionStyle(interactionStyle)
 
+    def render(self) -> None:
+        '''Renders the current scene.'''
+        self._renderWindow.Render()
+
+    def add(self, renderObject: RenderObject, render: bool = True) -> None:
+        '''Adds the renderable visualization object to the scene.'''
+        for actor in renderObject.actors: self._renderer.AddActor(actor)
+        if render: self.render()
+
+    def remove(self, renderObject: RenderObject, render: bool = True) -> None:
+        '''Removes the renderable visualization object from the scene.'''
+        for actor in renderObject.actors: self._renderer.RemoveActor(actor)
+        if render: self.render()
+
     def setInteractionStyle(self, interactionStyle: InteractionStyles) -> None:
         '''Sets the viewport interaction style.'''
         self._interactor.SetInteractorStyle(self._interactionStyles[interactionStyle].base)
         self._interactor.RemoveObservers('CharEvent')
+
+    def setMesh(self, mesh: Mesh | None, render: bool = True) -> None:
+        '''Renders the specified mesh.'''
+        if self._meshRenderObject: self.remove(self._meshRenderObject, render=False)
+        self._meshRenderObject = MeshRenderObject(mesh) if mesh else None
+        if self._meshRenderObject: self.add(self._meshRenderObject, render=False)
+        if render: self.render()

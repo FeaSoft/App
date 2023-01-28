@@ -30,6 +30,7 @@ class DataObjectContainerControl(QTreeWidgetItem):
         self._container: DataObjectContainer = container
         self._callbackKey: int = self._container.registerCallback(self.onContainerChanged)
         self._childConstructor: Callable[[QTreeWidgetItem, str], DataObjectControl] = childConstructor
+        for name in self._container.names(): self.onContainerChanged(None, name)
 
     def findChild(self, text: str) -> QTreeWidgetItem:
         '''Find the first child item with the specified text.'''
@@ -65,5 +66,6 @@ class DataObjectContainerControl(QTreeWidgetItem):
         Not calling this method may prevent object deletion.
         '''
         self._container.deregisterCallback(self._callbackKey)
-        for i in range(self.childCount()):
+        for i in range(self.childCount() - 1, -1, -1):
             cast(DataObjectControl, self.child(i)).detach()
+            self.removeChild(self.child(i))

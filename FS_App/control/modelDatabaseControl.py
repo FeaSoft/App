@@ -13,9 +13,9 @@ class ModelDatabaseControl(QTreeWidget):
     '''
 
     # attribute slots
-    __slots__ = ('_modelDatabase',)
+    __slots__ = ('_rootItem', '_modelDatabase')
 
-    def __init__(self, parent: QWidget, modelDatabase: ModelDatabase | None = None) -> None:
+    def __init__(self, parent: QWidget) -> None:
         '''Model database control constructor.'''
         super().__init__(parent)
         self._modelDatabase: ModelDatabase | None = None
@@ -33,9 +33,8 @@ class ModelDatabaseControl(QTreeWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.launchContextMenu) # type: ignore
 
-        # connect to model database
-        if modelDatabase: self.setModelDatabase(modelDatabase)
-        else: self.detach()
+        # root item
+        self._rootItem: QTreeWidgetItem = QTreeWidgetItem(self.invisibleRootItem(), ('Model Database (Empty)',))
 
     def launchContextMenu(self) -> None:
         '''Launches the context menu.'''
@@ -62,6 +61,20 @@ class ModelDatabaseControl(QTreeWidget):
         menu.exec(QCursor.pos())
         menu.disconnect(connection) # type: ignore
 
+    def nodeSetControlConstructor(self, parent: QTreeWidgetItem, name: str) -> DataObjectControl:
+        '''Returns a new node set control.'''
+        if not self._modelDatabase: raise RuntimeError('a model database is required')
+        control = DataObjectControl(parent, self._modelDatabase.nodeSets[name])
+        control.newField('count', ('Node Count',), 'LineEdit', readOnly=True)
+        return control
+
+    def elementSetControlConstructor(self, parent: QTreeWidgetItem, name: str) -> DataObjectControl:
+        '''Returns a new element set control.'''
+        if not self._modelDatabase: raise RuntimeError('a model database is required')
+        control = DataObjectControl(parent, self._modelDatabase.elementSets[name])
+        control.newField('count', ('Element Count',), 'LineEdit', readOnly=True)
+        return control
+
     def materialControlConstructor(self, parent: QTreeWidgetItem, name: str) -> DataObjectControl:
         '''Returns a new material control.'''
         if not self._modelDatabase: raise RuntimeError('a model database is required')
@@ -80,17 +93,27 @@ class ModelDatabaseControl(QTreeWidget):
         control.newField('planeThickness', ('Plane Thickness',), 'LineEdit')
         return control
 
-    def setModelDatabase(self, modelDatabase: ModelDatabase) -> None:
+    def setModelDatabase(self, modelDatabase: ModelDatabase | None) -> None:
         '''Builds the model database tree widget based on the specified model database.'''
+        # detach from previous model database
         self.detach()
-        self.clear()
+        # build new tree
         self._modelDatabase = modelDatabase
-
-        # create children
-        parent: QTreeWidgetItem = QTreeWidgetItem(self.invisibleRootItem(), (self._modelDatabase.name,))
-        DataObjectContainerControl(parent, self._modelDatabase.materials, self.materialControlConstructor)
-        DataObjectContainerControl(parent, self._modelDatabase.sections, self.sectionControlConstructor)
-        parent.setExpanded(True)
+        if self._modelDatabase:
+            DataObjectContainerControl(
+                self._rootItem, self._modelDatabase.nodeSets, self.nodeSetControlConstructor
+            )
+            DataObjectContainerControl(
+                self._rootItem, self._modelDatabase.elementSets, self.elementSetControlConstructor
+            )
+            DataObjectContainerControl(
+                self._rootItem, self._modelDatabase.materials, self.materialControlConstructor
+            )
+            DataObjectContainerControl(
+                self._rootItem, self._modelDatabase.sections, self.sectionControlConstructor
+            )
+            self._rootItem.setText(0, self._modelDatabase.name)
+            self._rootItem.setExpanded(True)
 
     def detach(self) -> None:
         '''
@@ -99,10 +122,7 @@ class ModelDatabaseControl(QTreeWidget):
         Not calling this method may prevent object deletion.
         '''
         self._modelDatabase = None
-        parent: QTreeWidgetItem | None = self.invisibleRootItem().child(0)
-
-        if parent:
-            for i in range(parent.childCount()):
-                cast(DataObjectContainerControl, parent.child(i)).detach()
-            self.clear()
-        QTreeWidgetItem(self.invisibleRootItem(), ('Model Database (Empty)',))
+        for i in range(self._rootItem.childCount() - 1, -1, -1):
+            cast(DataObjectContainerControl, self._rootItem.child(i)).detach()
+            self._rootItem.removeChild(self._rootItem.child(i))
+        self._rootItem.setText(0, 'Model Database (Empty)')

@@ -101,10 +101,11 @@ class DataObjectContainer:
         '''Returns a tuple with the data object names.'''
         return tuple(self._names)
 
-    def new(self) -> None:
+    def new(self) -> DataObject:
         '''Creates a new default instance of a data object and adds it to the container.'''
         newName: str = self.generateUniqueName()
         newDataObject: DataObject = self._dataObjectType(self.findName, self.changeName)
         self._names.append(newName)
         self._dataObjects.append(newDataObject)
         self.notifyContainerChanged(newName=newName)
+        return newDataObject

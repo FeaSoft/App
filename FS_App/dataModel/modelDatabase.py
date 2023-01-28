@@ -1,3 +1,6 @@
+from dataModel.mesh import Mesh
+from dataModel.nodeSet import NodeSet
+from dataModel.elementSet import ElementSet
 from dataModel.material import Material
 from dataModel.section import Section
 from dataModel.dataObjectContainer import DataObjectContainer
@@ -18,6 +21,21 @@ class ModelDatabase:
         return ('2D Plane Stress', '2D Plane Strain', '3D General')
 
     @property
+    def mesh(self) -> Mesh:
+        '''Model database finite element mesh.'''
+        return self._mesh
+
+    @property
+    def nodeSets(self) -> DataObjectContainer:
+        '''Model database node sets.'''
+        return self._nodeSets
+
+    @property
+    def elementSets(self) -> DataObjectContainer:
+        '''Model database element sets.'''
+        return self._elementSets
+
+    @property
     def materials(self) -> DataObjectContainer:
         '''Model database materials.'''
         return self._materials
@@ -28,9 +46,12 @@ class ModelDatabase:
         return self._sections
 
     # attribute slots
-    __slots__ = ('_materials', '_sections')
+    __slots__ = ('_mesh', '_nodeSets', '_elementSets', '_materials', '_sections')
 
-    def __init__(self) -> None:
+    def __init__(self, mesh: Mesh) -> None:
         '''Model database constructor.'''
+        self._mesh: Mesh = mesh
+        self._nodeSets: DataObjectContainer = DataObjectContainer(NodeSet, 'Node Sets', 'Node-Set-')
+        self._elementSets: DataObjectContainer = DataObjectContainer(ElementSet, 'Element Sets', 'Element-Set-')
         self._materials: DataObjectContainer = DataObjectContainer(Material, 'Materials', 'Material-')
         self._sections: DataObjectContainer = DataObjectContainer(Section, 'Sections', 'Section-')

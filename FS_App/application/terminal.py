@@ -16,17 +16,26 @@ class Terminal(QWidget):
         '''
 
         # attribute slots
-        __slots__ = ('_onWrite', '_textColor')
+        __slots__ = ('_onWrite', '_textColor', '_buffer')
 
         def __init__(self, onWrite: Callable[[str, str], None], textColor: str) -> None:
             '''Output redirect constructor.'''
             self._onWrite: Callable[[str, str], None] = onWrite
             self._textColor: str = textColor
+            self._buffer: list[str] = []
 
         def write(self, text: str) -> None:
             '''On write.'''
-            text = text.strip()
-            if text != '': self._onWrite(text, self._textColor)
+            printFlag: bool = False
+            if len(text) >= 1 and text[-1]  == '\n':   printFlag = True
+            if len(text) >= 1 and text[-1]  == '\r':   printFlag = True
+            if len(text) >= 2 and text[-2:] == '\r\n': printFlag = True
+            if printFlag:
+                text = (''.join(self._buffer) + text).rstrip()
+                self._onWrite(text, self._textColor)
+                self._buffer.clear()
+            else:
+                self._buffer.append(text)
 
     class InputRedirect:
         '''

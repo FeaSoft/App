@@ -1,7 +1,7 @@
 from typing import Any, Literal, cast
 from collections.abc import Callable, Sequence
 from dataModel import DataObject, DataObjectContainer
-from PySide6.QtWidgets import QWidget, QMessageBox, QLineEdit, QComboBox, QTreeWidget, QTreeWidgetItem
+from PySide6.QtWidgets import QWidget, QLineEdit, QComboBox, QTreeWidget, QTreeWidgetItem
 from PySide6.QtCore import QMetaObject
 from shiboken6 import isValid
 
@@ -57,6 +57,10 @@ class DataObjectControl(QTreeWidgetItem):
         editWidget: QWidget = self._editWidgets[propertyName]
         if not isValid(editWidget): return
 
+        # do nothing if edit widget is read only
+        if isinstance(editWidget, QLineEdit) and editWidget.isReadOnly():
+            return
+
         # get the new user-specified property value (as a string)
         match editWidget:
             case QLineEdit(): propertyValue = editWidget.text()
@@ -64,19 +68,16 @@ class DataObjectControl(QTreeWidgetItem):
             case _: raise NotImplementedError('case not implemented')
 
         # the try block is used for validation since the user can specify illegal values
-        # the catch block will show the raised exception to the user and reset the previous (legal) value
+        # the except block will raise the exception normally and reset the previous (legal) value
         try:
             match getattr(self._dataObject, propertyName):
                 case float(): propertyValue = float(propertyValue)
                 case str(): propertyValue = str(propertyValue)
                 case _: raise NotImplementedError('case not implemented')
             setattr(self._dataObject, propertyName, propertyValue)
-        except NotImplementedError as e: raise e # raise the NotImplementedError normally
-        except Exception as e:
-            QMessageBox.critical(
-                self.treeWidget(), 'Error', f'{e.__class__.__name__}: {e}.', QMessageBox.StandardButton.Ok
-            )
+        except Exception as exception:
             self.onPropertyChanged(propertyName)
+            raise exception
 
     def onItemSourceChanged(self, propertyName: str, oldName: str | None, newName: str | None) -> None:
         '''
@@ -103,7 +104,8 @@ class DataObjectControl(QTreeWidgetItem):
         propertyName: str,
         displayNames: Sequence[str],
         kind: Literal['LineEdit', 'ComboBox'],
-        itemSource: DataObjectContainer | Sequence[str] | None = None
+        itemSource: DataObjectContainer | Sequence[str] | None = None,
+        readOnly: bool = False
     ) -> None:
         '''Creates a new editable field in the interface.'''
         if propertyName in self._editWidgets: raise ValueError('property already associated with an existing field')
@@ -118,6 +120,7 @@ class DataObjectControl(QTreeWidgetItem):
         match kind:
             case 'LineEdit':
                 editWidget = QLineEdit(treeWidget)
+                editWidget.setReadOnly(readOnly)
                 editWidget.setText(str(propertyValue))
                 self._editWidgetConnections[propertyName] = (              # type: ignore
                     editWidget.editingFinished.connect(editWidgetCallback) # type: ignore

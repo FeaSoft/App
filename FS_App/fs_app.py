@@ -1,38 +1,22 @@
-import sys
-from dataModel import ModelDatabase
-from PySide6.QtWidgets import QApplication
 
-from application import MainWindow
-
-
-
-mdb = ModelDatabase()
-
-app = QApplication()
-app.setStyle('Fusion')
-
-mainWindow = MainWindow()
-mainWindow.show()
+# next steps:
+# 2D and 3D based on opened MDB
+# tool bar
+# tree widget - viewport link
 
 
 
-mainWindow._modelTree.setModelDatabase(mdb)
 
 
-sys.tracebacklimit = 0
-sys.stdout = mainWindow.terminal.stdout
-sys.stderr = mainWindow.terminal.stderr
-sys.stdin = mainWindow.terminal.stdin
+if __name__ == '__main__':
 
+    import sys
+    import application as app
 
-mdb.materials.new()
-mdb.materials.new()
-mdb.materials.new()
+    # sys.tracebacklimit = 0
+    sys.stdout = app.current.mainWindow.terminal.stdout
+    sys.stderr = app.current.mainWindow.terminal.stderr
+    sys.stdin  = app.current.mainWindow.terminal.stdin
 
-mdb.sections.new()
-mdb.sections.new()
-mdb.sections.new()
-
-app.exec()
-
-print('ok')
+    # start the application event loop
+    sys.exit(app.current.start())
