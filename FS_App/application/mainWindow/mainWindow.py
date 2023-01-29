@@ -73,6 +73,7 @@ class MainWindow(MainWindowShell):
 
     def onModelTreeSelection(self) -> None:
         '''On model tree current item changed.'''
+        self._viewport.setSelectionRenderObject(None, (0.0, 0.0, 0.0), render=False)
         dataObject: DataObject | None = self._modelTree.currentDataObject()
         match dataObject:
             case NodeSet():
@@ -80,7 +81,7 @@ class MainWindow(MainWindowShell):
             case ElementSet():
                 self._viewport.setSelectionRenderObject(dataObject, vp.getElementSetColor(), render=False)
             case _:
-                self._viewport.setSelectionRenderObject(None, (0.0, 0.0, 0.0), render=False)
+                pass
         self._viewport.render()
 
 #-----------------------------------------------------------------------------------------------------------------------
