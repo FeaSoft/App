@@ -1,8 +1,4 @@
 
-# next steps:
-# tool bar
-# tree widget - viewport link
-
 
 
 
