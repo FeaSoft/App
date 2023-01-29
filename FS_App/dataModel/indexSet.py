@@ -1,9 +1,9 @@
 from collections.abc import Callable, Iterable
 from dataModel.dataObject import DataObject
 
-class ElementSet(DataObject):
+class IndexSet(DataObject):
     '''
-    Definition of an element index set.
+    Definition of an index set.
     '''
 
     @property
@@ -19,7 +19,7 @@ class ElementSet(DataObject):
         nameGetter: Callable[[DataObject], str],
         nameSetter: Callable[[DataObject, str], None]
     ) -> None:
-        '''Element set constructor.'''
+        '''Index set constructor.'''
         super().__init__(nameGetter, nameSetter)
         self._indices: set[int] = set()
 
@@ -27,3 +27,17 @@ class ElementSet(DataObject):
         '''Adds the specified indices (or index) to the set.'''
         if isinstance(indices, int): self._indices.add(indices)
         else: self._indices.update(indices)
+
+    def indices(self) -> tuple[int, ...]:
+        '''Returns the indices of the set.'''
+        return tuple(self._indices)
+
+class NodeSet(IndexSet):
+    '''
+    Definition of a node index set.
+    '''
+
+class ElementSet(IndexSet):
+    '''
+    Definition of an element index set.
+    '''

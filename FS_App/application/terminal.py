@@ -111,14 +111,14 @@ class Terminal(QWidget):
                     self._inputBox.clear()
                     self.interpret(source)
                 case Qt.Key.Key_Up:
-                    self._inputBox.setText(self.getPreviousInput(True))
+                    self._inputBox.setText(self.previousInput(True))
                 case Qt.Key.Key_Down:
-                    self._inputBox.setText(self.getPreviousInput(False))
+                    self._inputBox.setText(self.previousInput(False))
                 case _:
                     pass
         return False # allow further event processing
 
-    def getPreviousInput(self, moveBackward: bool) -> str:
+    def previousInput(self, moveBackward: bool) -> str:
         '''Navigate user input history.'''
         # update history index
         if moveBackward: self._historyIndex -= 1

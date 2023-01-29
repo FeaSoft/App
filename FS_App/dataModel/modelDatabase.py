@@ -1,6 +1,5 @@
 from dataModel.mesh import Mesh
-from dataModel.nodeSet import NodeSet
-from dataModel.elementSet import ElementSet
+from dataModel.indexSet import NodeSet, ElementSet
 from dataModel.material import Material
 from dataModel.section import Section
 from dataModel.dataObjectContainer import DataObjectContainer

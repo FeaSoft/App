@@ -14,6 +14,11 @@ class Viewport(QVTKRenderWindowInteractor):
     Visualization viewport based on VTK.
     '''
 
+    @property
+    def meshRenderObject(self) -> MeshRenderObject | None:
+        '''The mesh renderable object.'''
+        return self._meshRenderObject
+
     # attribute slots
     __slots__ = ('_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad', '_meshRenderObject')
 
@@ -51,12 +56,12 @@ class Viewport(QVTKRenderWindowInteractor):
 
     def add(self, renderObject: RenderObject, render: bool = True) -> None:
         '''Adds the renderable visualization object to the scene.'''
-        for actor in renderObject.actors: self._renderer.AddActor(actor)
+        for actor in renderObject.actors(): self._renderer.AddActor(actor)
         if render: self.render()
 
     def remove(self, renderObject: RenderObject, render: bool = True) -> None:
         '''Removes the renderable visualization object from the scene.'''
-        for actor in renderObject.actors: self._renderer.RemoveActor(actor)
+        for actor in renderObject.actors(): self._renderer.RemoveActor(actor)
         if render: self.render()
 
     def setInteractionStyle(self, interactionStyle: InteractionStyles) -> None:
@@ -104,7 +109,7 @@ class Viewport(QVTKRenderWindowInteractor):
         self._renderer.ResetCamera()
         if render: self.render()
 
-    def setMesh(self, mesh: Mesh | None, render: bool = True) -> None:
+    def setMeshRenderObject(self, mesh: Mesh | None, render: bool = True) -> None:
         '''Renders the specified mesh.'''
         if self._meshRenderObject: self.remove(self._meshRenderObject, render=False)
         self._meshRenderObject = MeshRenderObject(mesh) if mesh else None

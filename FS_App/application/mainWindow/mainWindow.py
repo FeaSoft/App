@@ -1,5 +1,6 @@
+import visualization.preferences as vp
 from os import path
-from dataModel import ModelDatabase, ModelingSpaces
+from dataModel import ModelingSpaces, DataObject, NodeSet, ElementSet, ModelDatabase
 from inputOutput import AbaqusReader
 from visualization import Viewport, Views, InteractionStyles
 from application.terminal import Terminal
@@ -30,6 +31,7 @@ class MainWindow(MainWindowShell):
         # model database
         self._modelDatabase: ModelDatabase | None = None
         # setup connections
+        self._modelTree.currentItemChanged.connect(self.onModelTreeSelection)     # type: ignore
         self._menuBarFileNew.triggered.connect(self.onMenuBarFileNew)             # type: ignore
         self._toolBarFileNew.triggered.connect(self.onToolBarFileNew)             # type: ignore
         self._toolBarViewFront.triggered.connect(self.onToolBarViewFront)         # type: ignore
@@ -60,10 +62,30 @@ class MainWindow(MainWindowShell):
             case _: raise ValueError(f"invalid file extension: '{extension}'")
         # update model tree and viewport
         self._modelTree.setModelDatabase(self._modelDatabase)
-        self._viewport.setMesh(self._modelDatabase.mesh, render=False)
+        self._viewport.setMeshRenderObject(self._modelDatabase.mesh, render=False)
         # set correct camera view
         if self._modelDatabase.mesh.modelingSpace == ModelingSpaces.TwoDimensional: self._viewport.setView(Views.Front)
         else: self._viewport.setView(Views.Isometric)
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Tree -> Viewport
+#-----------------------------------------------------------------------------------------------------------------------
+
+    def onModelTreeSelection(self) -> None:
+        '''On model tree current item changed.'''
+        if not self._viewport.meshRenderObject: return   # if no mesh is drawn, do nothing
+        self._viewport.meshRenderObject.clearSelection() # clear previous selection
+
+        # get currently selected data object and handle selection based on its type
+        dataObject: DataObject | None = self._modelTree.currentDataObject()
+        match dataObject:
+            case NodeSet():
+                self._viewport.meshRenderObject.selectPoints(dataObject.indices(), vp.getNodeSetColor())
+            case ElementSet():
+                self._viewport.meshRenderObject.selectCells(dataObject.indices(), vp.getElementSetColor())
+            case _:
+                pass
+        self._viewport.render()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Menu Bar

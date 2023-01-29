@@ -1,5 +1,5 @@
 from typing import cast
-from dataModel import ModelDatabase
+from dataModel import ModelDatabase, DataObject
 from control.dataObjectControl import DataObjectControl
 from control.dataObjectContainerControl import DataObjectContainerControl
 from PySide6.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem, QMenu
@@ -126,3 +126,12 @@ class ModelDatabaseControl(QTreeWidget):
             cast(DataObjectContainerControl, self._rootItem.child(i)).detach()
             self._rootItem.removeChild(self._rootItem.child(i))
         self._rootItem.setText(0, 'Model Database (Empty)')
+
+    def currentDataObject(self) -> DataObject | None:
+        '''Gets the currently selected data object.'''
+        item: QTreeWidgetItem = self.currentItem()
+        while item != self._rootItem:
+            if isinstance(item, DataObjectControl):
+                return item.dataObject
+            item = item.parent()
+        return None

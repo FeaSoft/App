@@ -6,12 +6,6 @@ class RenderObject(ABC):
     Abstract base class for a renderable object.
     '''
 
-    @property
-    @abstractmethod
-    def actors(self) -> tuple[vtkActor, ...]:
-        '''The renderable VTK actors.'''
-        ...
-
     # attribute slots
     __slots__ = ()
 
@@ -19,3 +13,8 @@ class RenderObject(ABC):
     def __init__(self) -> None:
         '''Render object constructor.'''
         super().__init__()
+
+    @abstractmethod
+    def actors(self) -> tuple[vtkActor, ...]:
+        '''The renderable VTK actors.'''
+        ...
