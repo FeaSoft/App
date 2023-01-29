@@ -81,7 +81,8 @@ class AbaqusReader:
 
                     # if read node set or element set command, create the model database now
                     if command in ('node-set', 'element-set') and not modelDatabase:
-                        modelDatabase = ModelDatabase(Mesh(nodeData, elementData))
+                        if not modelingSpace: raise RuntimeError('unsupported modeling space')
+                        modelDatabase = ModelDatabase(Mesh(modelingSpace, nodeData, elementData))
 
                     # if read node set command, create a new node set
                     if command == 'node-set' and modelDatabase:
@@ -142,7 +143,9 @@ class AbaqusReader:
                         case _: pass
 
         # done reading
-        if not modelDatabase: modelDatabase = ModelDatabase(Mesh(nodeData, elementData))
+        if not modelDatabase:
+            if not modelingSpace: raise RuntimeError('unsupported modeling space')
+            modelDatabase = ModelDatabase(Mesh(modelingSpace, nodeData, elementData))
         return modelDatabase
 
     # attribute slots

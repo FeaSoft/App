@@ -4,7 +4,7 @@ from typing import cast
 from dataModel import Mesh
 from visualization.decoration import Triad
 from visualization.rendering import RenderObject, MeshRenderObject
-from visualization.interaction import InteractionStyles, InteractionStyle, RotateInteractionStyle
+from visualization.interaction import Views, InteractionStyles, InteractionStyle, RotateInteractionStyle
 from PySide6.QtWidgets import QWidget
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor # type: ignore
 from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkRenderWindowInteractor
@@ -63,6 +63,46 @@ class Viewport(QVTKRenderWindowInteractor):
         '''Sets the viewport interaction style.'''
         self._interactor.SetInteractorStyle(self._interactionStyles[interactionStyle].base)
         self._interactor.RemoveObservers('CharEvent')
+
+    def setView(self, view: Views, render: bool = True) -> None:
+        '''Sets the camera view.'''
+        focalPoint: tuple[float, float, float]
+        position:   tuple[float, float, float]
+        viewUp:     tuple[float, float, float]
+        match view:
+            case Views.Front:
+                focalPoint = (+0.0, +0.0, +0.0)
+                position   = (+0.0, +0.0, +1.0)
+                viewUp     = (+0.0, +1.0, +0.0)
+            case Views.Back:
+                focalPoint = (+0.0, +0.0, +0.0)
+                position   = (+0.0, +0.0, -1.0)
+                viewUp     = (+0.0, +1.0, +0.0)
+            case Views.Top:
+                focalPoint = (+0.0, +0.0, +0.0)
+                position   = (+0.0, +1.0, +0.0)
+                viewUp     = (+0.0, +0.0, -1.0)
+            case Views.Bottom:
+                focalPoint = (+0.0, +0.0, +0.0)
+                position   = (+0.0, -1.0, +0.0)
+                viewUp     = (+0.0, +0.0, +1.0)
+            case Views.Left:
+                focalPoint = (+0.0, +0.0, +0.0)
+                position   = (-1.0, +0.0, +0.0)
+                viewUp     = (+0.0, +1.0, +0.0)
+            case Views.Right:
+                focalPoint = (+0.0, +0.0, +0.0)
+                position   = (+1.0, +0.0, +0.0)
+                viewUp     = (+0.0, +1.0, +0.0)
+            case Views.Isometric:
+                focalPoint = (+0.0, +0.0, +0.0)
+                position   = (+1.0, +1.0, +1.0)
+                viewUp     = (+0.0, +1.0, +0.0)
+        self._renderer.GetActiveCamera().SetFocalPoint(focalPoint)
+        self._renderer.GetActiveCamera().SetPosition(position)
+        self._renderer.GetActiveCamera().SetViewUp(viewUp)
+        self._renderer.ResetCamera()
+        if render: self.render()
 
     def setMesh(self, mesh: Mesh | None, render: bool = True) -> None:
         '''Renders the specified mesh.'''

@@ -1,6 +1,5 @@
 
 # next steps:
-# 2D and 3D based on opened MDB
 # tool bar
 # tree widget - viewport link
 

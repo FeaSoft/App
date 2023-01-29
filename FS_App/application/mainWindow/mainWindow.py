@@ -1,7 +1,7 @@
 from os import path
-from dataModel import ModelDatabase 
+from dataModel import ModelDatabase, ModelingSpaces
 from inputOutput import AbaqusReader
-from visualization import Viewport, InteractionStyles
+from visualization import Viewport, Views, InteractionStyles
 from application.terminal import Terminal
 from application.mainWindow.mainWindowShell import MainWindowShell
 from PySide6.QtWidgets import QFileDialog
@@ -52,7 +52,10 @@ class MainWindow(MainWindowShell):
             case _: raise ValueError(f"invalid file extension: '{extension}'")
         # update model tree and viewport
         self._modelTree.setModelDatabase(self._modelDatabase)
-        self._viewport.setMesh(self._modelDatabase.mesh)
+        self._viewport.setMesh(self._modelDatabase.mesh, render=False)
+        # set correct camera view
+        if self._modelDatabase.mesh.modelingSpace == ModelingSpaces.TwoDimensional: self._viewport.setView(Views.Front)
+        else: self._viewport.setView(Views.Isometric)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Menu Bar
