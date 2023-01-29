@@ -18,3 +18,8 @@ class RenderObject(ABC):
     def actors(self) -> tuple[vtkActor, ...]:
         '''The renderable VTK actors.'''
         ...
+
+    @abstractmethod
+    def setColor(self, color: tuple[float, float, float]) -> None:
+        '''Sets the renderable object color.'''
+        ...

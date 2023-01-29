@@ -2,7 +2,6 @@ import visualization.preferences as vp
 from collections.abc import Sequence
 from dataModel import Mesh
 from visualization.rendering.renderObject import RenderObject
-from visualization.rendering.indexSetRenderObject import IndexSetRenderObject
 from vtkmodules.vtkCommonCore import vtkPoints, vtkLookupTable, vtkBitArray
 from vtkmodules.vtkCommonDataModel import vtkUnstructuredGrid
 from vtkmodules.vtkRenderingCore import vtkDataSetMapper, vtkActor
@@ -31,10 +30,13 @@ class MeshRenderObject(RenderObject):
         # done
         return dataSet
 
+    @property
+    def dataSet(self) -> vtkUnstructuredGrid:
+        '''The underlying VTK data set.'''
+        return self._dataSet
+
     # attribute slots
-    __slots__ = (
-        '_dataSet', '_dataSetMapper', '_actor', '_lookupTable', '_cellSelectionFlags', '_selectionRenderObject'
-    )
+    __slots__ = ('_dataSet', '_dataSetMapper', '_actor', '_lookupTable', '_cellSelectionFlags')
 
     def __init__(self, mesh: Mesh) -> None:
         '''Mesh render object constructor.'''
@@ -63,27 +65,22 @@ class MeshRenderObject(RenderObject):
         # actor
         self._actor: vtkActor = vtkActor()
         self._actor.SetMapper(self._dataSetMapper)
-        self._actor.GetProperty().SetColor(*vp.getMeshCellColor())
         self._actor.GetProperty().SetEdgeColor(*vp.getMeshLineColor())
         self._actor.GetProperty().SetEdgeVisibility(1 if vp.getMeshLineVisibility() else 0)
-        # selection render object
-        self._selectionRenderObject: IndexSetRenderObject = IndexSetRenderObject(self._dataSet)
 
     def actors(self) -> tuple[vtkActor, ...]:
         '''The renderable VTK actors.'''
-        return (self._actor,) + self._selectionRenderObject.actors()
+        return (self._actor,)
+
+    def setColor(self, color: tuple[float, float, float]) -> None:
+        '''Sets the renderable object color.'''
+        self._actor.GetProperty().SetColor(*color)
 
     def clearSelection(self) -> None:
         '''Clears the current selection.'''
-        # clear cell selection flags
-        for i in range(self._cellSelectionFlags.GetNumberOfValues()): self._cellSelectionFlags.SetValue(i, 0)
+        for i in range(self._cellSelectionFlags.GetNumberOfValues()):
+            self._cellSelectionFlags.SetValue(i, 0)
         self._cellSelectionFlags.Modified()
-        # clear selection render object
-        self._selectionRenderObject.update((), 'Points', (0.0, 0.0, 0.0))
-
-    def selectPoints(self, indices: Sequence[int], color: tuple[float, float, float]) -> None:
-        '''Selects/colors the specified points.'''
-        self._selectionRenderObject.update(indices, 'Points', color)
 
     def selectCells(self, indices: Sequence[int], color: tuple[float, float, float]) -> None:
         '''Selects/colors the specified cells.'''
@@ -91,7 +88,6 @@ class MeshRenderObject(RenderObject):
         self._lookupTable.SetTableValue(1, *color, 1.0)
         self._lookupTable.Modified()
         # update cell selection flags
-        for index in indices: self._cellSelectionFlags.SetValue(index, 1)
+        for index in indices:
+            self._cellSelectionFlags.SetValue(index, 1)
         self._cellSelectionFlags.Modified()
-        # update selection render object
-        self._selectionRenderObject.update(indices, 'Cells', color)

@@ -73,18 +73,14 @@ class MainWindow(MainWindowShell):
 
     def onModelTreeSelection(self) -> None:
         '''On model tree current item changed.'''
-        if not self._viewport.meshRenderObject: return   # if no mesh is drawn, do nothing
-        self._viewport.meshRenderObject.clearSelection() # clear previous selection
-
-        # get currently selected data object and handle selection based on its type
         dataObject: DataObject | None = self._modelTree.currentDataObject()
         match dataObject:
             case NodeSet():
-                self._viewport.meshRenderObject.selectPoints(dataObject.indices(), vp.getNodeSetColor())
+                self._viewport.setSelectionRenderObject(dataObject, vp.getNodeSetColor(), render=False)
             case ElementSet():
-                self._viewport.meshRenderObject.selectCells(dataObject.indices(), vp.getElementSetColor())
+                self._viewport.setSelectionRenderObject(dataObject, vp.getElementSetColor(), render=False)
             case _:
-                pass
+                self._viewport.setSelectionRenderObject(None, (0.0, 0.0, 0.0), render=False)
         self._viewport.render()
 
 #-----------------------------------------------------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
 import visualization.preferences as vp
 from typing import cast
-from dataModel import Mesh
+from dataModel import Mesh, NodeSet, ElementSet
 from visualization.decoration import Triad
-from visualization.rendering import RenderObject, MeshRenderObject
+from visualization.rendering import RenderObject, MeshRenderObject, PointsRenderObject, CellsRenderObject
 from visualization.interaction import Views, InteractionStyles, InteractionStyle, RotateInteractionStyle
 from PySide6.QtWidgets import QWidget
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor # type: ignore
@@ -20,7 +20,10 @@ class Viewport(QVTKRenderWindowInteractor):
         return self._meshRenderObject
 
     # attribute slots
-    __slots__ = ('_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad', '_meshRenderObject')
+    __slots__ = (
+        '_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad', '_meshRenderObject',
+        '_selectionRenderObject'
+    )
 
     def __init__(self, parent: QWidget | None = None) -> None:
         '''Viewport constructor.'''
@@ -43,6 +46,7 @@ class Viewport(QVTKRenderWindowInteractor):
         self._triad: Triad = Triad()
         # render objects
         self._meshRenderObject: MeshRenderObject | None = None
+        self._selectionRenderObject: RenderObject | None = None
 
     def initialize(self, interactionStyle: InteractionStyles) -> None:
         '''Initializes the viewport.'''
@@ -114,4 +118,28 @@ class Viewport(QVTKRenderWindowInteractor):
         if self._meshRenderObject: self.remove(self._meshRenderObject, render=False)
         self._meshRenderObject = MeshRenderObject(mesh) if mesh else None
         if self._meshRenderObject: self.add(self._meshRenderObject, render=False)
+        if render: self.render()
+
+    def setSelectionRenderObject(
+        self,
+        dataObject: NodeSet | ElementSet | None,
+        color: tuple[float, float, float],
+        render: bool = True
+    ) -> None:
+        '''Renders the specified selection.'''
+        if self._selectionRenderObject: self.remove(self._selectionRenderObject, render=False)
+        if not self._meshRenderObject: return
+        match dataObject:
+            case NodeSet():
+                self._selectionRenderObject = PointsRenderObject(self._meshRenderObject, dataObject.indices())
+                self._selectionRenderObject.setColor(color)
+            case ElementSet():
+                self._meshRenderObject.clearSelection()
+                self._meshRenderObject.selectCells(dataObject.indices(), color)
+                self._selectionRenderObject = CellsRenderObject(self._meshRenderObject, dataObject.indices())
+                self._selectionRenderObject.setColor(color)
+            case _:
+                self._meshRenderObject.clearSelection()
+                self._selectionRenderObject = None
+        if self._selectionRenderObject: self.add(self._selectionRenderObject, render=False)
         if render: self.render()

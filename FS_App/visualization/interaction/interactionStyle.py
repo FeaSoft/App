@@ -1,18 +1,42 @@
 import math
 import visualization.preferences as vp
 from abc import ABC, abstractmethod
+from typing import cast
+from vtkmodules.vtkCommonExecutionModel import vtkAlgorithmOutput, vtkAlgorithm
 from vtkmodules.vtkCommonCore import vtkObject, vtkCommand, vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkCellArray, vtkPolyData
+from vtkmodules.vtkFiltersCore import vtkGlyph3D
 from vtkmodules.vtkFiltersSources import vtkLineSource
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 from vtkmodules.vtkRenderingCore import (
-    vtkRenderWindow, vtkRenderer, vtkRenderWindowInteractor, vtkActor2D, vtkPolyDataMapper2D, vtkCoordinate
+    vtkRenderWindow, vtkRenderer, vtkRenderWindowInteractor, vtkActor2D, vtkActor, vtkPolyDataMapper2D, vtkCoordinate,
+    vtkMapper
 )
 
 class InteractionStyle(ABC):
     '''
     Abstract base class for interaction styles.
     '''
+
+    @staticmethod
+    def recomputeGlyphSize(renderer: vtkRenderer) -> None:
+        '''Recomputes the glyph size so it is independent of camera zoom.'''
+        for i in range(renderer.GetActors().GetNumberOfItems()):
+            actor: vtkActor = cast(vtkActor, renderer.GetActors().GetItemAsObject(i))
+            mapper: vtkMapper = actor.GetMapper()
+            output: vtkAlgorithmOutput | None = mapper.GetInputConnection(0, 0)
+            producer: vtkAlgorithm | None = output.GetProducer() if output else None
+            if isinstance(producer, vtkGlyph3D):
+                actorPosition: tuple[float, float, float] = actor.GetPosition()
+                cameraPosition: tuple[float, float, float] = renderer.GetActiveCamera().GetPosition()
+                dx: float = cameraPosition[0] - actorPosition[0]
+                dy: float = cameraPosition[1] - actorPosition[1]
+                dz: float = cameraPosition[2] - actorPosition[2]
+                distance: float = math.sqrt(dx*dx + dy*dy + dz*dz)
+                scale: float = distance*vp.getGlyphScaleFactor()
+                producer.SetScaleFactor(scale)
+                producer.Modified()
+                renderer.GetRenderWindow().Render()
 
     @staticmethod
     def newLineHint(pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
@@ -169,14 +193,17 @@ class InteractionStyle(ABC):
         '''On mouse wheel forward.'''
         if self._isLeftButtonDown or self._isMiddleButtonDown or self._isRightButtonDown: return
         self._base.OnMouseWheelForward()
+        self.recomputeGlyphSize(self._renderer)
 
     def onMouseWheelBackward(self, sender: vtkObject, event: str) -> None:
         '''On mouse wheel backward.'''
         if self._isLeftButtonDown or self._isMiddleButtonDown or self._isRightButtonDown: return
         self._base.OnMouseWheelBackward()
+        self.recomputeGlyphSize(self._renderer)
 
     def onMouseMove(self, sender: vtkObject, event: str) -> None:
         '''On mouse move.'''
+        if self._isRightButtonDown: self.recomputeGlyphSize(self._renderer)
         if self._isMiddleButtonDown or self._isRightButtonDown:
             if self._hint2D: self._renderer.RemoveActor2D(self._hint2D)
             self._pointB = self._interactor.GetEventPosition() if self._isMiddleButtonDown else (
