@@ -30,16 +30,23 @@ class MainWindow(MainWindowShell):
         # model database
         self._modelDatabase: ModelDatabase | None = None
         # setup connections
-        self._modelTree.currentItemChanged.connect(self.onModelTreeSelection)     # type: ignore
-        self._menuBarFileNew.triggered.connect(self.onMenuBarFileNew)             # type: ignore
-        self._toolBarFileNew.triggered.connect(self.onToolBarFileNew)             # type: ignore
-        self._toolBarViewFront.triggered.connect(self.onToolBarViewFront)         # type: ignore
-        self._toolBarViewBack.triggered.connect(self.onToolBarViewBack)           # type: ignore
-        self._toolBarViewTop.triggered.connect(self.onToolBarViewTop)             # type: ignore
-        self._toolBarViewBottom.triggered.connect(self.onToolBarViewBottom)       # type: ignore
-        self._toolBarViewLeft.triggered.connect(self.onToolBarViewLeft)           # type: ignore
-        self._toolBarViewRight.triggered.connect(self.onToolBarViewRight)         # type: ignore
-        self._toolBarViewIsometric.triggered.connect(self.onToolBarViewIsometric) # type: ignore
+        self._modelTree.currentItemChanged.connect(self.onModelTreeSelection)                         # type: ignore
+        self._menuBarFileNew.triggered.connect(self.onMenuBarFileNew)                                 # type: ignore
+        self._toolBarFileNew.triggered.connect(self.onToolBarFileNew)                                 # type: ignore
+        self._toolBarViewFront.triggered.connect(self.onToolBarViewFront)                             # type: ignore
+        self._toolBarViewBack.triggered.connect(self.onToolBarViewBack)                               # type: ignore
+        self._toolBarViewTop.triggered.connect(self.onToolBarViewTop)                                 # type: ignore
+        self._toolBarViewBottom.triggered.connect(self.onToolBarViewBottom)                           # type: ignore
+        self._toolBarViewLeft.triggered.connect(self.onToolBarViewLeft)                               # type: ignore
+        self._toolBarViewRight.triggered.connect(self.onToolBarViewRight)                             # type: ignore
+        self._toolBarViewIsometric.triggered.connect(self.onToolBarViewIsometric)                     # type: ignore
+        self._toolBarInteractionRotate.triggered.connect(self.onToolBarInteractionRotate)             # type: ignore
+        self._toolBarInteractionPan.triggered.connect(self.onToolBarInteractionPan)                   # type: ignore
+        self._toolBarInteractionZoom.triggered.connect(self.onToolBarInteractionZoom)                 # type: ignore
+        self._toolBarInteractionPickSingle.triggered.connect(self.onToolBarInteractionPickSingle)     # type: ignore
+        self._toolBarInteractionPickMultiple.triggered.connect(self.onToolBarInteractionPickMultiple) # type: ignore
+        self._toolBarInteractionProbe.triggered.connect(self.onToolBarInteractionProbe)               # type: ignore
+        self._toolBarInteractionRuler.triggered.connect(self.onToolBarInteractionRuler)               # type: ignore
 
     def show(self) -> None:
         '''
@@ -138,3 +145,76 @@ class MainWindow(MainWindowShell):
     def onToolBarViewIsometric(self) -> None:
         '''On Tool Bar > View > Isometric.'''
         self._viewport.setView(Views.Isometric)
+
+    def uncheckToolBarInteraction(self) -> None:
+        '''Unchecks all buttons in the interaction tool bar.'''
+        self._toolBarInteractionRotate.setChecked(False)
+        self._toolBarInteractionPan.setChecked(False)
+        self._toolBarInteractionZoom.setChecked(False)
+        self._toolBarInteractionPickSingle.setChecked(False)
+        self._toolBarInteractionPickMultiple.setChecked(False)
+        self._toolBarInteractionProbe.setChecked(False)
+        self._toolBarInteractionRuler.setChecked(False)
+
+    def onToolBarInteractionRotate(self) -> None:
+        '''On Tool Bar > Interaction > Rotate.'''
+        if not self._toolBarInteractionRotate.isChecked():
+            self._toolBarInteractionRotate.setChecked(True)
+            return
+        self.uncheckToolBarInteraction()
+        self._toolBarInteractionRotate.setChecked(True)
+        print('rotate')
+
+    def onToolBarInteractionPan(self) -> None:
+        '''On Tool Bar > Interaction > Pan.'''
+        if not self._toolBarInteractionPan.isChecked():
+            self._toolBarInteractionPan.setChecked(True)
+            return
+        self.uncheckToolBarInteraction()
+        self._toolBarInteractionPan.setChecked(True)
+        print('pan')
+
+    def onToolBarInteractionZoom(self) -> None:
+        '''On Tool Bar > Interaction > Zoom.'''
+        if not self._toolBarInteractionZoom.isChecked():
+            self._toolBarInteractionZoom.setChecked(True)
+            return
+        self.uncheckToolBarInteraction()
+        self._toolBarInteractionZoom.setChecked(True)
+        print('zoom')
+
+    def onToolBarInteractionPickSingle(self) -> None:
+        '''On Tool Bar > Interaction > Pick Single.'''
+        if not self._toolBarInteractionPickSingle.isChecked():
+            self._toolBarInteractionPickSingle.setChecked(True)
+            return
+        self.uncheckToolBarInteraction()
+        self._toolBarInteractionPickSingle.setChecked(True)
+        print('pick-single')
+
+    def onToolBarInteractionPickMultiple(self) -> None:
+        '''On Tool Bar > Interaction > Pick Multiple.'''
+        if not self._toolBarInteractionPickMultiple.isChecked():
+            self._toolBarInteractionPickMultiple.setChecked(True)
+            return
+        self.uncheckToolBarInteraction()
+        self._toolBarInteractionPickMultiple.setChecked(True)
+        print('pick-multiple')
+
+    def onToolBarInteractionProbe(self) -> None:
+        '''On Tool Bar > Interaction > Probe.'''
+        if not self._toolBarInteractionProbe.isChecked():
+            self._toolBarInteractionProbe.setChecked(True)
+            return
+        self.uncheckToolBarInteraction()
+        self._toolBarInteractionProbe.setChecked(True)
+        print('probe')
+
+    def onToolBarInteractionRuler(self) -> None:
+        '''On Tool Bar > Interaction > Ruler.'''
+        if not self._toolBarInteractionRuler.isChecked():
+            self._toolBarInteractionRuler.setChecked(True)
+            return
+        self.uncheckToolBarInteraction()
+        self._toolBarInteractionRuler.setChecked(True)
+        print('ruler')

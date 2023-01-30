@@ -22,7 +22,9 @@ class MainWindowShell(QMainWindow):
         self._icons: dict[str, QIcon] = {
             x: QIcon(f'./resources/images/{x}.svg') for x in (
                 'file-new', 'view-front', 'view-back', 'view-top', 'view-bottom', 'view-left', 'view-right',
-                'view-isometric'
+                'view-isometric', 'interaction-style-rotate', 'interaction-style-pan', 'interaction-style-zoom',
+                'interaction-style-pick-single', 'interaction-style-pick-multiple', 'interaction-style-probe',
+                'interaction-style-ruler'
             )
         }
 
@@ -102,6 +104,63 @@ class MainWindowShell(QMainWindow):
         self._toolBarViewIsometric.setToolTip('View Isometric')
         self._toolBarViewIsometric.setIcon(self._icons['view-isometric'])
         self._toolBarView.addAction(self._toolBarViewIsometric)
+
+        # tool bar (interaction)
+        self._toolBarInteraction: QToolBar = QToolBar(self)
+        self._toolBarInteraction.setFloatable(False)
+        self.addToolBar(self._toolBarInteraction)
+
+        # tool bar (interaction) > rotate
+        self._toolBarInteractionRotate: QAction = QAction(self._toolBarInteraction)
+        self._toolBarInteractionRotate.setToolTip('Rotate (Hold Shift to Spin)')
+        self._toolBarInteractionRotate.setIcon(self._icons['interaction-style-rotate'])
+        self._toolBarInteractionRotate.setCheckable(True)
+        self._toolBarInteractionRotate.setChecked(True)
+        self._toolBarInteraction.addAction(self._toolBarInteractionRotate)
+
+        # tool bar (interaction) > pan
+        self._toolBarInteractionPan: QAction = QAction(self._toolBarInteraction)
+        self._toolBarInteractionPan.setToolTip('Pan')
+        self._toolBarInteractionPan.setIcon(self._icons['interaction-style-pan'])
+        self._toolBarInteractionPan.setCheckable(True)
+        self._toolBarInteraction.addAction(self._toolBarInteractionPan)
+
+        # tool bar (interaction) > zoom
+        self._toolBarInteractionZoom: QAction = QAction(self._toolBarInteraction)
+        self._toolBarInteractionZoom.setToolTip('Zoom')
+        self._toolBarInteractionZoom.setIcon(self._icons['interaction-style-zoom'])
+        self._toolBarInteractionZoom.setCheckable(True)
+        self._toolBarInteraction.addAction(self._toolBarInteractionZoom)
+
+        # tool bar (interaction) > pick single
+        self._toolBarInteractionPickSingle: QAction = QAction(self._toolBarInteraction)
+        self._toolBarInteractionPickSingle.setToolTip('Pick Single (Hold Shift to Unpick)')
+        self._toolBarInteractionPickSingle.setIcon(self._icons['interaction-style-pick-single'])
+        self._toolBarInteractionPickSingle.setCheckable(True)
+        # self._toolBarInteractionPickSingle.setEnabled(False)
+        self._toolBarInteraction.addAction(self._toolBarInteractionPickSingle)
+
+        # tool bar (interaction) > pick multiple
+        self._toolBarInteractionPickMultiple: QAction = QAction(self._toolBarInteraction)
+        self._toolBarInteractionPickMultiple.setToolTip('Pick Multiple (Hold Shift to Unpick)')
+        self._toolBarInteractionPickMultiple.setIcon(self._icons['interaction-style-pick-multiple'])
+        self._toolBarInteractionPickMultiple.setCheckable(True)
+        # self._toolBarInteractionPickMultiple.setEnabled(False)
+        self._toolBarInteraction.addAction(self._toolBarInteractionPickMultiple)
+
+        # tool bar (interaction) > probe
+        self._toolBarInteractionProbe: QAction = QAction(self._toolBarInteraction)
+        self._toolBarInteractionProbe.setToolTip('Probe Node/Element')
+        self._toolBarInteractionProbe.setIcon(self._icons['interaction-style-probe'])
+        self._toolBarInteractionProbe.setCheckable(True)
+        self._toolBarInteraction.addAction(self._toolBarInteractionProbe)
+
+        # tool bar (interaction) > ruler
+        self._toolBarInteractionRuler: QAction = QAction(self._toolBarInteraction)
+        self._toolBarInteractionRuler.setToolTip('Measure Distance')
+        self._toolBarInteractionRuler.setIcon(self._icons['interaction-style-ruler'])
+        self._toolBarInteractionRuler.setCheckable(True)
+        self._toolBarInteraction.addAction(self._toolBarInteractionRuler)
 
         # central widget
         self._centralWidget: QWidget = QWidget(self)
