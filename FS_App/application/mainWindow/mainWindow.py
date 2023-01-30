@@ -178,7 +178,7 @@ class MainWindow(MainWindowShell):
             return
         self.uncheckToolBarInteraction()
         self._toolBarInteractionRotate.setChecked(True)
-        print('rotate')
+        self._viewport.setInteractionStyle(InteractionStyles.Rotate)
 
     def onToolBarInteractionPan(self) -> None:
         '''On Tool Bar > Interaction > Pan.'''
