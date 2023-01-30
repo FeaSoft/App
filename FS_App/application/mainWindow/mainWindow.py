@@ -73,12 +73,17 @@ class MainWindow(MainWindowShell):
 
     def onModelTreeSelection(self) -> None:
         '''On model tree current item changed.'''
+        self._viewport.info.clear()
         self._viewport.setSelectionRenderObject(None, (0.0, 0.0, 0.0), render=False)
         dataObject: DataObject | None = self._modelTree.currentDataObject()
         match dataObject:
             case NodeSet():
+                self._viewport.info.setText(1, 'Edit Node Set: ' + dataObject.name)
+                self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Nodes')
                 self._viewport.setSelectionRenderObject(dataObject, vp.getNodeSetColor(), render=False)
             case ElementSet():
+                self._viewport.info.setText(1, 'Edit Element Set: ' + dataObject.name)
+                self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Elements')
                 self._viewport.setSelectionRenderObject(dataObject, vp.getElementSetColor(), render=False)
             case _:
                 pass

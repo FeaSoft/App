@@ -40,7 +40,7 @@ class Triad:
         # orientation marker widget
         self._orientationMarkerWidget: vtkOrientationMarkerWidget = vtkOrientationMarkerWidget()
         self._orientationMarkerWidget.SetOrientationMarker(self._axesActor) # type: ignore
-        self._orientationMarkerWidget.SetViewport(0.0, 0.0, 0.2, 0.2)
+        self._orientationMarkerWidget.SetViewport(0.75, 0.0, 1.0, 0.25)
 
     def initialize(self, interactor: vtkRenderWindowInteractor) -> None:
         '''Sets the render window interactor and initializes the orientation marker widget.'''

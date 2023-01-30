@@ -2,7 +2,7 @@ import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
 import visualization.preferences as vp
 from typing import cast
 from dataModel import Mesh, NodeSet, ElementSet
-from visualization.decoration import Triad
+from visualization.decoration import Triad, Info
 from visualization.rendering import RenderObject, MeshRenderObject, PointsRenderObject, CellsRenderObject
 from visualization.interaction import Views, InteractionStyles, InteractionStyle, RotateInteractionStyle
 from PySide6.QtWidgets import QWidget
@@ -15,13 +15,13 @@ class Viewport(QVTKRenderWindowInteractor):
     '''
 
     @property
-    def meshRenderObject(self) -> MeshRenderObject | None:
-        '''The mesh renderable object.'''
-        return self._meshRenderObject
+    def info(self) -> Info:
+        '''The viewport information object.'''
+        return self._info
 
     # attribute slots
     __slots__ = (
-        '_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad', '_meshRenderObject',
+        '_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad', '_info', '_meshRenderObject',
         '_selectionRenderObject'
     )
 
@@ -42,8 +42,9 @@ class Viewport(QVTKRenderWindowInteractor):
         self._interactionStyles: dict[InteractionStyles, InteractionStyle] = {
             InteractionStyles.Rotate: RotateInteractionStyle()
         }
-        # triad
+        # triad & info
         self._triad: Triad = Triad()
+        self._info: Info = Info()
         # render objects
         self._meshRenderObject: MeshRenderObject | None = None
         self._selectionRenderObject: RenderObject | None = None
@@ -52,6 +53,7 @@ class Viewport(QVTKRenderWindowInteractor):
         '''Initializes the viewport.'''
         self._interactor.Initialize()
         self._triad.initialize(self._interactor)
+        self._info.initialize(self._renderer)
         self.setInteractionStyle(interactionStyle)
 
     def render(self) -> None:
