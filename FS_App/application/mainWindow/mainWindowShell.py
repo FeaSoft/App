@@ -137,7 +137,7 @@ class MainWindowShell(QMainWindow):
         self._toolBarInteractionPickSingle.setToolTip('Pick Single (Hold Shift to Unpick)')
         self._toolBarInteractionPickSingle.setIcon(self._icons['interaction-style-pick-single'])
         self._toolBarInteractionPickSingle.setCheckable(True)
-        # self._toolBarInteractionPickSingle.setEnabled(False)
+        self._toolBarInteractionPickSingle.setEnabled(False)
         self._toolBarInteraction.addAction(self._toolBarInteractionPickSingle)
 
         # tool bar (interaction) > pick multiple
@@ -145,7 +145,7 @@ class MainWindowShell(QMainWindow):
         self._toolBarInteractionPickMultiple.setToolTip('Pick Multiple (Hold Shift to Unpick)')
         self._toolBarInteractionPickMultiple.setIcon(self._icons['interaction-style-pick-multiple'])
         self._toolBarInteractionPickMultiple.setCheckable(True)
-        # self._toolBarInteractionPickMultiple.setEnabled(False)
+        self._toolBarInteractionPickMultiple.setEnabled(False)
         self._toolBarInteraction.addAction(self._toolBarInteractionPickMultiple)
 
         # tool bar (interaction) > probe
