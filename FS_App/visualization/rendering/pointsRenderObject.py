@@ -1,4 +1,3 @@
-import visualization.preferences as vp
 from collections.abc import Sequence
 from visualization.rendering.renderObject import RenderObject
 from visualization.rendering.meshRenderObject import MeshRenderObject
@@ -25,8 +24,8 @@ class PointsRenderObject(RenderObject):
             self._centers.SetPoint(i, meshRenderObject.dataSet.GetPoint(index))
         # sphere source
         self._source: vtkSphereSource = vtkSphereSource()
-        self._source.SetPhiResolution(vp.getCurveResolution())
-        self._source.SetThetaResolution(vp.getCurveResolution())
+        self._source.SetPhiResolution(16)
+        self._source.SetThetaResolution(16)
         self._source.Update() # type: ignore
         # poly data
         self._polyData: vtkPolyData = vtkPolyData()
@@ -43,6 +42,7 @@ class PointsRenderObject(RenderObject):
         # actor
         self._actor: vtkActor = vtkActor()
         self._actor.SetMapper(self._mapper)
+        self._actor.GetProperty().LightingOff()
 
     def actors(self) -> tuple[vtkActor, ...]:
         '''The renderable VTK actors.'''

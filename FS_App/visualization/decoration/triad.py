@@ -1,4 +1,3 @@
-import visualization.preferences as vp
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCaptionActor2D
 from vtkmodules.vtkInteractionWidgets import vtkOrientationMarkerWidget
 from vtkmodules.vtkRenderingCore import vtkRenderWindowInteractor
@@ -11,12 +10,12 @@ class Triad:
     @staticmethod
     def setupCaptionActor2D(captionActor2D: vtkCaptionActor2D) -> None:
         '''Utility function to setup a vtkCaptionActor2D.'''
-        captionActor2D.GetTextActor().SetTextScaleModeToNone()                        # type: ignore
-        captionActor2D.GetCaptionTextProperty().SetFontSize(vp.getViewportFontSize()) # type: ignore
-        captionActor2D.GetCaptionTextProperty().SetFontFamilyToCourier()              # type: ignore
-        captionActor2D.GetCaptionTextProperty().ItalicOff()                           # type: ignore
-        captionActor2D.GetCaptionTextProperty().ShadowOn()                            # type: ignore
-        captionActor2D.GetCaptionTextProperty().BoldOff()                             # type: ignore
+        captionActor2D.GetTextActor().SetTextScaleModeToNone()           # type: ignore
+        captionActor2D.GetCaptionTextProperty().SetFontSize(20)          # type: ignore
+        captionActor2D.GetCaptionTextProperty().SetFontFamilyToCourier() # type: ignore
+        captionActor2D.GetCaptionTextProperty().ItalicOff()              # type: ignore
+        captionActor2D.GetCaptionTextProperty().ShadowOn()               # type: ignore
+        captionActor2D.GetCaptionTextProperty().BoldOff()                # type: ignore
 
     # attribute slots
     __slots__ = ('_axesActor', '_orientationMarkerWidget')
@@ -30,8 +29,8 @@ class Triad:
         self.setupCaptionActor2D(self._axesActor.GetZAxisCaptionActor2D())
         self._axesActor.SetTipTypeToCone()
         self._axesActor.SetShaftTypeToCylinder()
-        self._axesActor.SetConeResolution(vp.getCurveResolution())
-        self._axesActor.SetCylinderResolution(vp.getCurveResolution())
+        self._axesActor.SetConeResolution(64)
+        self._axesActor.SetCylinderResolution(64)
         self._axesActor.SetConeRadius(0.5)
         self._axesActor.SetCylinderRadius(0.08)
         self._axesActor.SetNormalizedTipLength(0.3, 0.3, 0.3)

@@ -1,4 +1,3 @@
-import visualization.preferences as vp
 from os import path
 from dataModel import ModelingSpaces, DataObject, NodeSet, ElementSet, ModelDatabase
 from inputOutput import AbaqusReader
@@ -74,20 +73,21 @@ class MainWindow(MainWindowShell):
     def onModelTreeSelection(self) -> None:
         '''On model tree current item changed.'''
         self._viewport.info.clear()
-        self._viewport.setSelectionRenderObject(None, (0.0, 0.0, 0.0), render=False)
+        self._viewport.setSelectionRenderObject(None, render=False)
         dataObject: DataObject | None = self._modelTree.currentDataObject()
         match dataObject:
             case NodeSet():
-                self._viewport.info.setText(1, 'Edit Node Set: ' + dataObject.name)
+                color: tuple[float, float, float] = (1.0, 0.0, 0.0)
+                self._viewport.info.setText(1, 'Edit Node Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Nodes')
-                self._viewport.setSelectionRenderObject(dataObject, vp.getNodeSetColor(), render=False)
             case ElementSet():
-                self._viewport.info.setText(1, 'Edit Element Set: ' + dataObject.name)
+                color: tuple[float, float, float] = (1.0, 0.0, 0.0)
+                self._viewport.info.setText(1, 'Edit Element Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Elements')
-                self._viewport.setSelectionRenderObject(dataObject, vp.getElementSetColor(), render=False)
             case _:
-                pass
-        self._viewport.render()
+                self._viewport.render()
+                return
+        self._viewport.setSelectionRenderObject(dataObject, color)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Menu Bar

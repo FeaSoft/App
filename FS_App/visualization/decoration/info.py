@@ -1,4 +1,3 @@
-import visualization.preferences as vp
 from vtkmodules.vtkRenderingCore import vtkTextActor, vtkRenderer
 
 class Info:
@@ -16,7 +15,7 @@ class Info:
         # actor
         self._actor: vtkTextActor = vtkTextActor()
         self._actor.SetTextScaleModeToNone()
-        self._actor.GetTextProperty().SetFontSize(vp.getViewportFontSize())
+        self._actor.GetTextProperty().SetFontSize(20)
         self._actor.GetTextProperty().SetFontFamilyToCourier()
         self._actor.GetTextProperty().ItalicOff()
         self._actor.GetTextProperty().ShadowOn()

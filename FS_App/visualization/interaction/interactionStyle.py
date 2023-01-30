@@ -1,5 +1,4 @@
 import math
-import visualization.preferences as vp
 from abc import ABC, abstractmethod
 from typing import cast
 from vtkmodules.vtkCommonExecutionModel import vtkAlgorithmOutput, vtkAlgorithm
@@ -19,7 +18,7 @@ class InteractionStyle(ABC):
     '''
 
     @staticmethod
-    def recomputeGlyphSize(renderer: vtkRenderer) -> None:
+    def recomputeGlyphSize(renderer: vtkRenderer, render: bool = True) -> None:
         '''Recomputes the glyph size so it is independent of camera zoom.'''
         for i in range(renderer.GetActors().GetNumberOfItems()):
             actor: vtkActor = cast(vtkActor, renderer.GetActors().GetItemAsObject(i))
@@ -33,10 +32,10 @@ class InteractionStyle(ABC):
                 dy: float = cameraPosition[1] - actorPosition[1]
                 dz: float = cameraPosition[2] - actorPosition[2]
                 distance: float = math.sqrt(dx*dx + dy*dy + dz*dz)
-                scale: float = distance*vp.getGlyphScaleFactor()
+                scale: float = distance*0.003
                 producer.SetScaleFactor(scale)
                 producer.Modified()
-                renderer.GetRenderWindow().Render()
+        if render: renderer.GetRenderWindow().Render()
 
     @staticmethod
     def newLineHint(pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
@@ -53,7 +52,6 @@ class InteractionStyle(ABC):
         # actor
         actor2D: vtkActor2D = vtkActor2D()
         actor2D.SetMapper(polyDataMapper2D)
-        actor2D.GetProperty().SetColor(vp.getViewportForeground())
         return actor2D
 
     @staticmethod
@@ -70,7 +68,7 @@ class InteractionStyle(ABC):
             segmentAngle = 2.0*math.pi - segmentAngle
             startAngle = angleB if startAngle == angleA else angleA
         # resolution
-        numberOfSegments: int = vp.getCurveResolution()
+        numberOfSegments: int = 64
         numberOfPoints: int = numberOfSegments + 1
         # stretch/shrink factors
         factorX: float = renderWindowSize[1]/renderWindowSize[0] if renderWindowSize[0] > renderWindowSize[1] else 1.0
@@ -104,7 +102,6 @@ class InteractionStyle(ABC):
         actor2D.SetMapper(polyDataMapper2D)
         actor2D.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
         actor2D.SetPosition(0.5, 0.5)
-        actor2D.GetProperty().SetColor(vp.getViewportForeground())
         return actor2D
 
     @property

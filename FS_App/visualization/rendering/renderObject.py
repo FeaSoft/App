@@ -3,7 +3,7 @@ from vtkmodules.vtkRenderingCore import vtkActor
 
 class RenderObject(ABC):
     '''
-    Abstract base class for a renderable object.
+    Abstract base class for a renderable visualization object.
     '''
 
     # attribute slots
@@ -17,9 +17,4 @@ class RenderObject(ABC):
     @abstractmethod
     def actors(self) -> tuple[vtkActor, ...]:
         '''The renderable VTK actors.'''
-        ...
-
-    @abstractmethod
-    def setColor(self, color: tuple[float, float, float]) -> None:
-        '''Sets the renderable object color.'''
         ...

@@ -1,5 +1,4 @@
 import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
-import visualization.preferences as vp
 from typing import cast
 from dataModel import Mesh, NodeSet, ElementSet
 from visualization.decoration import Triad, Info
@@ -31,8 +30,8 @@ class Viewport(QVTKRenderWindowInteractor):
         # renderer
         self._renderer: vtkRenderer = vtkRenderer()
         self._renderer.GradientBackgroundOn()
-        self._renderer.SetBackground(vp.getViewportBackground1())
-        self._renderer.SetBackground2(vp.getViewportBackground2())
+        self._renderer.SetBackground(0.6, 0.7, 0.8)
+        self._renderer.SetBackground2(0.1, 0.2, 0.3)
         # render window
         self._renderWindow: vtkRenderWindow = cast(vtkRenderWindow, self.GetRenderWindow())
         self._renderWindow.AddRenderer(self._renderer)
@@ -63,6 +62,8 @@ class Viewport(QVTKRenderWindowInteractor):
     def add(self, renderObject: RenderObject, render: bool = True) -> None:
         '''Adds the renderable visualization object to the scene.'''
         for actor in renderObject.actors(): self._renderer.AddActor(actor)
+        if isinstance(renderObject, PointsRenderObject):
+            InteractionStyle.recomputeGlyphSize(self._renderer, render=False)
         if render: self.render()
 
     def remove(self, renderObject: RenderObject, render: bool = True) -> None:
@@ -125,7 +126,7 @@ class Viewport(QVTKRenderWindowInteractor):
     def setSelectionRenderObject(
         self,
         dataObject: NodeSet | ElementSet | None,
-        color: tuple[float, float, float],
+        color: tuple[float, float, float] | None = None,
         render: bool = True
     ) -> None:
         '''Renders the specified selection.'''
@@ -134,14 +135,11 @@ class Viewport(QVTKRenderWindowInteractor):
         match dataObject:
             case NodeSet():
                 self._selectionRenderObject = PointsRenderObject(self._meshRenderObject, dataObject.indices())
-                self._selectionRenderObject.setColor(color)
             case ElementSet():
-                self._meshRenderObject.clearSelection()
-                self._meshRenderObject.selectCells(dataObject.indices(), color)
                 self._selectionRenderObject = CellsRenderObject(self._meshRenderObject, dataObject.indices())
-                self._selectionRenderObject.setColor(color)
             case _:
-                self._meshRenderObject.clearSelection()
                 self._selectionRenderObject = None
-        if self._selectionRenderObject: self.add(self._selectionRenderObject, render=False)
+        if self._selectionRenderObject:
+            if color: self._selectionRenderObject.setColor(color)
+            self.add(self._selectionRenderObject, render=False)
         if render: self.render()

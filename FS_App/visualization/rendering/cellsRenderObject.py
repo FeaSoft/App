@@ -1,4 +1,3 @@
-import visualization.preferences as vp
 from collections.abc import Sequence
 from visualization.rendering.renderObject import RenderObject
 from visualization.rendering.meshRenderObject import MeshRenderObject
@@ -44,7 +43,8 @@ class CellsRenderObject(RenderObject):
         self._actor: vtkActor = vtkActor()
         self._actor.SetMapper(self._mapper)
         self._actor.GetProperty().EdgeVisibilityOn()
-        self._actor.GetProperty().SetEdgeColor(vp.getMeshLineColor())
+        self._actor.GetProperty().SetLineWidth(1.5)
+        self._actor.GetProperty().LightingOff()
 
     def actors(self) -> tuple[vtkActor, ...]:
         '''The renderable VTK actors.'''
