@@ -187,7 +187,7 @@ class MainWindow(MainWindowShell):
             return
         self.uncheckToolBarInteraction()
         self._toolBarInteractionPan.setChecked(True)
-        print('pan')
+        self._viewport.setInteractionStyle(InteractionStyles.Pan)
 
     def onToolBarInteractionZoom(self) -> None:
         '''On Tool Bar > Interaction > Zoom.'''
@@ -196,7 +196,7 @@ class MainWindow(MainWindowShell):
             return
         self.uncheckToolBarInteraction()
         self._toolBarInteractionZoom.setChecked(True)
-        print('zoom')
+        self._viewport.setInteractionStyle(InteractionStyles.Zoom)
 
     def onToolBarInteractionPickSingle(self) -> None:
         '''On Tool Bar > Interaction > Pick Single.'''

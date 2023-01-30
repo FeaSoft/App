@@ -3,7 +3,9 @@ from typing import cast
 from dataModel import Mesh, NodeSet, ElementSet
 from visualization.decoration import Triad, Info
 from visualization.rendering import RenderObject, MeshRenderObject, PointsRenderObject, CellsRenderObject
-from visualization.interaction import Views, InteractionStyles, InteractionStyle, RotateInteractionStyle
+from visualization.interaction import (
+    Views, InteractionStyles, InteractionStyle, RotateInteractionStyle, PanInteractionStyle, ZoomInteractionStyle
+)
 from PySide6.QtWidgets import QWidget
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor # type: ignore
 from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkRenderWindowInteractor
@@ -39,7 +41,9 @@ class Viewport(QVTKRenderWindowInteractor):
         self._interactor: vtkRenderWindowInteractor = self._renderWindow.GetInteractor()
         # interaction styles
         self._interactionStyles: dict[InteractionStyles, InteractionStyle] = {
-            InteractionStyles.Rotate: RotateInteractionStyle()
+            InteractionStyles.Rotate : RotateInteractionStyle(),
+            InteractionStyles.Pan    : PanInteractionStyle(),
+            InteractionStyles.Zoom   : ZoomInteractionStyle()
         }
         # triad & info
         self._triad: Triad = Triad()
