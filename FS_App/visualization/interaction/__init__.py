@@ -7,3 +7,4 @@ from visualization.interaction.panInteractionStyle          import PanInteractio
 from visualization.interaction.zoomInteractionStyle         import ZoomInteractionStyle         as ZoomInteractionStyle
 from visualization.interaction.pickSingleInteractionStyle   import PickSingleInteractionStyle   as PickSingleInteractionStyle
 from visualization.interaction.pickMultipleInteractionStyle import PickMultipleInteractionStyle as PickMultipleInteractionStyle
+from visualization.interaction.probeInteractionStyle        import ProbeInteractionStyle        as ProbeInteractionStyle

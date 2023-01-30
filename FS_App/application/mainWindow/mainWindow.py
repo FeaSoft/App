@@ -241,7 +241,7 @@ class MainWindow(MainWindowShell):
             return
         self.uncheckToolBarInteraction()
         self._toolBarInteractionProbe.setChecked(True)
-        print('probe')
+        self._viewport.setInteractionStyle(InteractionStyles.Probe)
 
     def onToolBarInteractionRuler(self) -> None:
         '''On Tool Bar > Interaction > Ruler.'''

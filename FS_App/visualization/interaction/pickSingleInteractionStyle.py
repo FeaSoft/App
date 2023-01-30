@@ -1,5 +1,6 @@
 from visualization.interaction.interactionStyle import InteractionStyle
 from vtkmodules.vtkCommonCore import vtkObject
+from vtkmodules.vtkRenderingCore import vtkActor
 
 class PickSingleInteractionStyle(InteractionStyle):
     '''
@@ -36,10 +37,12 @@ class PickSingleInteractionStyle(InteractionStyle):
             position: tuple[int, int] = self._interactor.GetEventPosition()
             self._pickedIndex, selection = self.pickSingle(position, self._pickTarget, self._renderer)
             if selection:
-                self._renderer.AddActor(selection)
+                if self._pickTarget == 'Points': actor: vtkActor = self.newPointsHint(selection, (self._pickedIndex,))
+                else: actor: vtkActor = self.newCellsHint(selection, (self._pickedIndex,))
+                self._renderer.AddActor(actor)
                 self.recomputeGlyphSize(self._renderer)
                 self._renderWindow.Render()
-                self._renderer.RemoveActor(selection)
+                self._renderer.RemoveActor(actor)
             else:
                 self._renderWindow.Render()
             self._base.OnMouseMove()

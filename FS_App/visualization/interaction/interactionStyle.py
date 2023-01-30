@@ -153,7 +153,7 @@ class InteractionStyle(ABC):
         point: tuple[int, int],
         target: Literal['Points', 'Cells'],
         renderer: vtkRenderer
-    ) -> tuple[int, vtkActor | None]:
+    ) -> tuple[int, vtkUnstructuredGrid | None]:
         '''Picks a single point or cell.'''
         # perform pick operation
         picker: vtkPicker = vtkPointPicker() if target == 'Points' else vtkCellPicker()
@@ -165,12 +165,8 @@ class InteractionStyle(ABC):
         dataSet: Any | None = mapper.GetInput() if mapper else None # type: ignore
         # return
         if isinstance(dataSet, vtkUnstructuredGrid):
-            if target == 'Points':
-                index: int = picker.GetPointId()
-                return index, InteractionStyle.newPointsHint(dataSet, (index,))
-            else:
-                index: int = picker.GetCellId()                                # type: ignore
-                return index, InteractionStyle.newCellsHint(dataSet, (index,)) # type: ignore
+            index: int = picker.GetPointId() if target == 'Points' else picker.GetCellId() # type: ignore
+            return index, dataSet # type: ignore
         return -1, None
 
     @staticmethod

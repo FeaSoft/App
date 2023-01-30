@@ -10,3 +10,4 @@ class InteractionStyles(Enum):
     Zoom         = 2
     PickSingle   = 3
     PickMultiple = 4
+    Probe        = 5
