@@ -56,6 +56,18 @@ class MainWindow(MainWindowShell):
         super().show()
         self._viewport.initialize(InteractionStyles.Rotate)
 
+    def enablePicking(self, single: bool, multiple: bool) -> None:
+        '''Enables picking.'''
+        if single: self._toolBarInteractionPickSingle.setEnabled(True)
+        if multiple: self._toolBarInteractionPickMultiple.setEnabled(True)
+
+    def disablePicking(self) -> None:
+        '''Disables picking.'''
+        if self._toolBarInteractionPickSingle.isChecked() or self._toolBarInteractionPickMultiple.isChecked():
+            self._toolBarInteractionRotate.trigger()
+        self._toolBarInteractionPickSingle.setEnabled(False)
+        self._toolBarInteractionPickMultiple.setEnabled(False)
+
     def setModelDatabase(self, filePath: str) -> None:
         '''
         Creates a model database from file.
@@ -84,14 +96,17 @@ class MainWindow(MainWindowShell):
         dataObject: DataObject | None = self._modelTree.currentDataObject()
         match dataObject:
             case NodeSet():
+                self.enablePicking(True, True)
                 color: tuple[float, float, float] = (1.0, 0.0, 0.0)
                 self._viewport.info.setText(1, 'Edit Node Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Nodes')
             case ElementSet():
+                self.enablePicking(True, True)
                 color: tuple[float, float, float] = (1.0, 0.0, 0.0)
                 self._viewport.info.setText(1, 'Edit Element Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Elements')
             case _:
+                self.disablePicking()
                 self._viewport.render()
                 return
         self._viewport.setSelectionRenderObject(dataObject, color)
