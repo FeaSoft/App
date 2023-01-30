@@ -1,4 +1,6 @@
 from os import path
+from typing import Literal
+from collections.abc import Callable, Sequence
 from dataModel import ModelingSpaces, DataObject, NodeSet, ElementSet, ModelDatabase
 from inputOutput import AbaqusReader
 from visualization import Viewport, Views, InteractionStyles
@@ -54,15 +56,23 @@ class MainWindow(MainWindowShell):
         Initializes the viewport.
         '''
         super().show()
-        self._viewport.initialize(InteractionStyles.Rotate)
+        self._viewport.initialize()
 
-    def enablePicking(self, single: bool, multiple: bool) -> None:
+    def enablePicking(
+        self,
+        single: bool,
+        multiple: bool,
+        pickTarget: Literal['Points', 'Cells'] | None,
+        onPicked: Callable[[Sequence[int], bool], None] | None
+    ) -> None:
         '''Enables picking.'''
+        self._viewport.setPickAction(onPicked, pickTarget)
         if single: self._toolBarInteractionPickSingle.setEnabled(True)
         if multiple: self._toolBarInteractionPickMultiple.setEnabled(True)
 
     def disablePicking(self) -> None:
         '''Disables picking.'''
+        self._viewport.setPickAction(None, None)
         if self._toolBarInteractionPickSingle.isChecked() or self._toolBarInteractionPickMultiple.isChecked():
             self._toolBarInteractionRotate.trigger()
         self._toolBarInteractionPickSingle.setEnabled(False)
@@ -96,12 +106,12 @@ class MainWindow(MainWindowShell):
         dataObject: DataObject | None = self._modelTree.currentDataObject()
         match dataObject:
             case NodeSet():
-                self.enablePicking(True, True)
+                self.enablePicking(True, True, 'Points', lambda x, y: self.onViewportPick(dataObject, x, y))
                 color: tuple[float, float, float] = (1.0, 0.0, 0.0)
                 self._viewport.info.setText(1, 'Edit Node Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Nodes')
             case ElementSet():
-                self.enablePicking(True, True)
+                self.enablePicking(True, True, 'Cells', lambda x, y: self.onViewportPick(dataObject, x, y))
                 color: tuple[float, float, float] = (1.0, 0.0, 0.0)
                 self._viewport.info.setText(1, 'Edit Element Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Elements')
@@ -110,6 +120,12 @@ class MainWindow(MainWindowShell):
                 self._viewport.render()
                 return
         self._viewport.setSelectionRenderObject(dataObject, color)
+
+    def onViewportPick(self, dataObject: NodeSet | ElementSet, indices: Sequence[int], remove: bool) -> None:
+        '''On viewport picking action performed.'''
+        if remove: dataObject.remove(indices)
+        else: dataObject.add(indices)
+        self._viewport.setSelectionRenderObject(dataObject, (1.0, 0.0, 0.0))
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Menu Bar
@@ -205,7 +221,8 @@ class MainWindow(MainWindowShell):
             return
         self.uncheckToolBarInteraction()
         self._toolBarInteractionPickSingle.setChecked(True)
-        print('pick-single')
+        self._viewport.setInteractionStyle(InteractionStyles.PickSingle)
+        self.onModelTreeSelection() # in order to enable picking
 
     def onToolBarInteractionPickMultiple(self) -> None:
         '''On Tool Bar > Interaction > Pick Multiple.'''

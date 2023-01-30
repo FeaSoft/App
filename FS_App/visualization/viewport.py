@@ -1,10 +1,12 @@
 import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
-from typing import cast
+from typing import Literal, cast
+from collections.abc import Callable, Sequence
 from dataModel import Mesh, NodeSet, ElementSet
 from visualization.decoration import Triad, Info
 from visualization.rendering import RenderObject, MeshRenderObject, PointsRenderObject, CellsRenderObject
 from visualization.interaction import (
-    Views, InteractionStyles, InteractionStyle, RotateInteractionStyle, PanInteractionStyle, ZoomInteractionStyle
+    Views, InteractionStyles, InteractionStyle, RotateInteractionStyle, PanInteractionStyle, ZoomInteractionStyle,
+    PickSingleInteractionStyle
 )
 from PySide6.QtWidgets import QWidget
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor # type: ignore
@@ -22,8 +24,8 @@ class Viewport(QVTKRenderWindowInteractor):
 
     # attribute slots
     __slots__ = (
-        '_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad', '_info', '_meshRenderObject',
-        '_selectionRenderObject'
+        '_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_currentInteractionStyle', '_triad',
+        '_info', '_meshRenderObject', '_selectionRenderObject'
     )
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -39,12 +41,14 @@ class Viewport(QVTKRenderWindowInteractor):
         self._renderWindow.AddRenderer(self._renderer)
         # interactor
         self._interactor: vtkRenderWindowInteractor = self._renderWindow.GetInteractor()
-        # interaction styles
+        # interaction styles & current interaction style
         self._interactionStyles: dict[InteractionStyles, InteractionStyle] = {
-            InteractionStyles.Rotate : RotateInteractionStyle(),
-            InteractionStyles.Pan    : PanInteractionStyle(),
-            InteractionStyles.Zoom   : ZoomInteractionStyle()
+            InteractionStyles.Rotate     : RotateInteractionStyle(),
+            InteractionStyles.Pan        : PanInteractionStyle(),
+            InteractionStyles.Zoom       : ZoomInteractionStyle(),
+            InteractionStyles.PickSingle : PickSingleInteractionStyle()
         }
+        self._currentInteractionStyle: InteractionStyles = InteractionStyles.Rotate
         # triad & info
         self._triad: Triad = Triad()
         self._info: Info = Info()
@@ -52,12 +56,12 @@ class Viewport(QVTKRenderWindowInteractor):
         self._meshRenderObject: MeshRenderObject | None = None
         self._selectionRenderObject: RenderObject | None = None
 
-    def initialize(self, interactionStyle: InteractionStyles) -> None:
+    def initialize(self) -> None:
         '''Initializes the viewport.'''
         self._interactor.Initialize()
         self._triad.initialize(self._interactor)
         self._info.initialize(self._renderer)
-        self.setInteractionStyle(interactionStyle)
+        self.setInteractionStyle(self._currentInteractionStyle)
 
     def render(self) -> None:
         '''Renders the current scene.'''
@@ -77,8 +81,17 @@ class Viewport(QVTKRenderWindowInteractor):
 
     def setInteractionStyle(self, interactionStyle: InteractionStyles) -> None:
         '''Sets the viewport interaction style.'''
-        self._interactor.SetInteractorStyle(self._interactionStyles[interactionStyle].base)
+        self._currentInteractionStyle = interactionStyle
+        self._interactor.SetInteractorStyle(self._interactionStyles[self._currentInteractionStyle].base)
         self._interactor.RemoveObservers('CharEvent')
+
+    def setPickAction(
+        self,
+        onPicked: Callable[[Sequence[int], bool], None] | None,
+        pickTarget: Literal['Points', 'Cells'] | None
+    ) -> None:
+        '''Sets the pick action on the current interaction style.'''
+        self._interactionStyles[self._currentInteractionStyle].setPickAction(onPicked, pickTarget)
 
     def setView(self, view: Views, render: bool = True) -> None:
         '''Sets the camera view.'''
@@ -138,9 +151,9 @@ class Viewport(QVTKRenderWindowInteractor):
         if not self._meshRenderObject: return
         match dataObject:
             case NodeSet():
-                self._selectionRenderObject = PointsRenderObject(self._meshRenderObject, dataObject.indices())
+                self._selectionRenderObject = PointsRenderObject(self._meshRenderObject.dataSet, dataObject.indices())
             case ElementSet():
-                self._selectionRenderObject = CellsRenderObject(self._meshRenderObject, dataObject.indices())
+                self._selectionRenderObject = CellsRenderObject(self._meshRenderObject.dataSet, dataObject.indices())
             case _:
                 self._selectionRenderObject = None
         if self._selectionRenderObject:

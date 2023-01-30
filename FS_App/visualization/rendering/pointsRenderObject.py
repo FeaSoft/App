@@ -1,7 +1,6 @@
 from collections.abc import Sequence
 from visualization.rendering.renderObject import RenderObject
-from visualization.rendering.meshRenderObject import MeshRenderObject
-from vtkmodules.vtkCommonDataModel import vtkPolyData
+from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkUnstructuredGrid
 from vtkmodules.vtkFiltersCore import vtkGlyph3D
 from vtkmodules.vtkFiltersSources import vtkSphereSource
 from vtkmodules.vtkCommonCore import vtkPoints
@@ -15,13 +14,13 @@ class PointsRenderObject(RenderObject):
     # attribute slots
     __slots__ = ('_centers', '_source', '_polyData', '_glyph', '_mapper', '_actor')
 
-    def __init__(self, meshRenderObject: MeshRenderObject, indices: Sequence[int]) -> None:
+    def __init__(self, dataSet: vtkUnstructuredGrid, indices: Sequence[int]) -> None:
         '''Points render object constructor.'''
         # center of spheres
         self._centers: vtkPoints = vtkPoints()
         self._centers.SetNumberOfPoints(len(indices))
         for i, index in enumerate(indices):
-            self._centers.SetPoint(i, meshRenderObject.dataSet.GetPoint(index))
+            self._centers.SetPoint(i, dataSet.GetPoint(index))
         # sphere source
         self._source: vtkSphereSource = vtkSphereSource()
         self._source.SetPhiResolution(16)

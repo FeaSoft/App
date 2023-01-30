@@ -1,8 +1,7 @@
 from collections.abc import Sequence
 from visualization.rendering.renderObject import RenderObject
-from visualization.rendering.meshRenderObject import MeshRenderObject
 from vtkmodules.vtkCommonCore import vtkIdTypeArray
-from vtkmodules.vtkCommonDataModel import vtkSelectionNode, vtkSelection
+from vtkmodules.vtkCommonDataModel import vtkSelectionNode, vtkSelection, vtkUnstructuredGrid
 from vtkmodules.vtkFiltersExtraction import vtkExtractSelection
 from vtkmodules.vtkRenderingCore import vtkDataSetMapper, vtkActor
 
@@ -14,7 +13,7 @@ class CellsRenderObject(RenderObject):
     # attribute slots
     __slots__ = ('_indices', '_selectionNode', '_selection', '_extractionFilter', '_mapper', '_actor')
 
-    def __init__(self, meshRenderObject: MeshRenderObject, indices: Sequence[int]) -> None:
+    def __init__(self, dataSet: vtkUnstructuredGrid, indices: Sequence[int]) -> None:
         '''Cells render object constructor.'''
         # indices
         self._indices: vtkIdTypeArray = vtkIdTypeArray()
@@ -31,13 +30,12 @@ class CellsRenderObject(RenderObject):
         self._selection.AddNode(self._selectionNode)
         # extraction filter
         self._extractionFilter: vtkExtractSelection = vtkExtractSelection()
-        self._extractionFilter.SetInputData(0, meshRenderObject.dataSet) # type: ignore
-        self._extractionFilter.SetInputData(1, self._selection)          # type: ignore
-        self._extractionFilter.Update()                                  # type: ignore
+        self._extractionFilter.SetInputData(0, dataSet)         # type: ignore
+        self._extractionFilter.SetInputData(1, self._selection) # type: ignore
+        self._extractionFilter.Update()                         # type: ignore
         # mapper
         self._mapper: vtkDataSetMapper = vtkDataSetMapper()
         self._mapper.SetInputConnection(self._extractionFilter.GetOutputPort())
-        self._mapper.ScalarVisibilityOff()
         self._mapper.Update() # type: ignore
         # actor
         self._actor: vtkActor = vtkActor()

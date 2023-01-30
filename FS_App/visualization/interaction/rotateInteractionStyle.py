@@ -3,7 +3,7 @@ from vtkmodules.vtkCommonCore import vtkObject
 
 class RotateInteractionStyle(InteractionStyle):
     '''
-    Rotate (or spin) interactor style.
+    Rotate (or spin) interaction style.
     '''
 
     # attribute slots

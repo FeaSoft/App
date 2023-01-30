@@ -1,15 +1,17 @@
 import math
 from abc import ABC, abstractmethod
-from typing import cast
+from typing import Literal, Any, cast
+from collections.abc import Sequence, Callable
+from visualization.rendering import PointsRenderObject, CellsRenderObject
 from vtkmodules.vtkCommonExecutionModel import vtkAlgorithmOutput, vtkAlgorithm
 from vtkmodules.vtkCommonCore import vtkObject, vtkCommand, vtkPoints
-from vtkmodules.vtkCommonDataModel import vtkCellArray, vtkPolyData
+from vtkmodules.vtkCommonDataModel import vtkCellArray, vtkPolyData, vtkUnstructuredGrid
 from vtkmodules.vtkFiltersCore import vtkGlyph3D
 from vtkmodules.vtkFiltersSources import vtkLineSource
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 from vtkmodules.vtkRenderingCore import (
     vtkRenderWindow, vtkRenderer, vtkRenderWindowInteractor, vtkActor2D, vtkActor, vtkPolyDataMapper2D, vtkCoordinate,
-    vtkMapper
+    vtkMapper, vtkPointPicker, vtkCellPicker, vtkPicker
 )
 
 class InteractionStyle(ABC):
@@ -32,7 +34,7 @@ class InteractionStyle(ABC):
                 dy: float = cameraPosition[1] - actorPosition[1]
                 dz: float = cameraPosition[2] - actorPosition[2]
                 distance: float = math.sqrt(dx*dx + dy*dy + dz*dz)
-                scale: float = distance*0.003
+                scale: float = distance*0.005
                 producer.SetScaleFactor(scale)
                 producer.Modified()
         if render: renderer.GetRenderWindow().Render()
@@ -104,6 +106,45 @@ class InteractionStyle(ABC):
         actor2D.SetPosition(0.5, 0.5)
         return actor2D
 
+    @staticmethod
+    def newPointsHint(unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
+        '''Creates a new 3D points hint.'''
+        renderObject: PointsRenderObject = PointsRenderObject(unstructuredGrid, indices)
+        renderObject.setColor((1.0, 0.5, 0.0))
+        return renderObject.actors()[0]
+
+    @staticmethod
+    def newCellsHint(unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
+        '''Creates a new 3D cells hint.'''
+        renderObject: CellsRenderObject = CellsRenderObject(unstructuredGrid, indices)
+        renderObject.setColor((1.0, 0.5, 0.0))
+        return renderObject.actors()[0]
+
+    @staticmethod
+    def pickSingle(
+        position: tuple[int, int],
+        target: Literal['Points', 'Cells'],
+        renderer: vtkRenderer
+    ) -> tuple[int, vtkActor | None]:
+        '''Picks a single point or cell.'''
+        # perform pick operation
+        picker: vtkPicker = vtkPointPicker() if target == 'Points' else vtkCellPicker()
+        picker.SetTolerance(0.003 if target == 'Points' else 0.0)
+        picker.Pick(*position, 0.0, renderer)
+        # get picked data set (if any)
+        actor: vtkActor | None = picker.GetActor()
+        mapper: vtkMapper | None = actor.GetMapper() if actor else None
+        dataSet: Any | None = mapper.GetInput() if mapper else None # type: ignore
+        # return
+        if isinstance(dataSet, vtkUnstructuredGrid):
+            if target == 'Points':
+                index: int = picker.GetPointId()
+                return index, InteractionStyle.newPointsHint(dataSet, (index,))
+            else:
+                index: int = picker.GetCellId()                                # type: ignore
+                return index, InteractionStyle.newCellsHint(dataSet, (index,)) # type: ignore
+        return -1, None
+
     @property
     def base(self) -> vtkInteractorStyleTrackballCamera:
         '''The VTK interactor style.'''
@@ -126,7 +167,8 @@ class InteractionStyle(ABC):
 
     # attribute slots
     __slots__ = (
-        '_base', '_isLeftButtonDown', '_isMiddleButtonDown', '_isRightButtonDown', '_pointA', '_pointB', '_hint2D'
+        '_base', '_isLeftButtonDown', '_isMiddleButtonDown', '_isRightButtonDown', '_pointA', '_pointB', '_hint2D',
+        '_onPicked', '_pickTarget'
     )
 
     @abstractmethod
@@ -149,6 +191,17 @@ class InteractionStyle(ABC):
         self._pointA: tuple[int, int] = (0, 0)
         self._pointB: tuple[int, int] = (0, 0)
         self._hint2D: vtkActor2D | None = None
+        self._onPicked: Callable[[Sequence[int], bool], None] | None = None
+        self._pickTarget: Literal['Points', 'Cells'] | None = None
+
+    def setPickAction(
+        self,
+        onPicked: Callable[[Sequence[int], bool], None] | None,
+        pickTarget: Literal['Points', 'Cells'] | None
+    ) -> None:
+        '''Sets the callback function for when picking is performed.'''
+        self._onPicked = onPicked
+        self._pickTarget = pickTarget
 
     @abstractmethod
     def onLeftButtonPress(self, sender: vtkObject, event: str) -> None:

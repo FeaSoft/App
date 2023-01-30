@@ -3,7 +3,7 @@ from vtkmodules.vtkCommonCore import vtkObject
 
 class ZoomInteractionStyle(InteractionStyle):
     '''
-    Zoom interactor style.
+    Zoom interaction style.
     '''
 
     # attribute slots

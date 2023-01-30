@@ -1,4 +1,4 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Sequence
 from dataModel.dataObject import DataObject
 
 class IndexSet(DataObject):
@@ -23,10 +23,15 @@ class IndexSet(DataObject):
         super().__init__(nameGetter, nameSetter)
         self._indices: set[int] = set()
 
-    def add(self, indices: int | Iterable[int]) -> None:
-        '''Adds the specified indices (or index) to the set.'''
-        if isinstance(indices, int): self._indices.add(indices)
-        else: self._indices.update(indices)
+    def add(self, indices: Sequence[int]) -> None:
+        '''Adds the specified indices to the set.'''
+        self._indices.update(indices)
+        self.notifyPropertyChanged('count')
+
+    def remove(self, indices: Sequence[int]) -> None:
+        '''Removes the specified indices from the set.'''
+        self._indices.difference_update(indices)
+        self.notifyPropertyChanged('count')
 
     def indices(self) -> tuple[int, ...]:
         '''Returns the indices of the set.'''

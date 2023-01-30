@@ -3,7 +3,7 @@ from vtkmodules.vtkCommonCore import vtkObject
 
 class PanInteractionStyle(InteractionStyle):
     '''
-    Pan interactor style.
+    Pan interaction style.
     '''
 
     # attribute slots
