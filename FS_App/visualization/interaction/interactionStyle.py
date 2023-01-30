@@ -1,4 +1,5 @@
 import math
+import visualization.utility as vu
 from abc import ABC, abstractmethod
 from typing import Literal, Any, cast
 from collections.abc import Sequence, Callable
@@ -8,10 +9,11 @@ from vtkmodules.vtkCommonCore import vtkObject, vtkCommand, vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkCellArray, vtkPolyData, vtkUnstructuredGrid
 from vtkmodules.vtkFiltersCore import vtkGlyph3D
 from vtkmodules.vtkFiltersSources import vtkLineSource
+from vtkmodules.vtkFiltersExtraction import vtkExtractGeometry
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 from vtkmodules.vtkRenderingCore import (
     vtkRenderWindow, vtkRenderer, vtkRenderWindowInteractor, vtkActor2D, vtkActor, vtkPolyDataMapper2D, vtkCoordinate,
-    vtkMapper, vtkPointPicker, vtkCellPicker, vtkPicker
+    vtkMapper, vtkPointPicker, vtkCellPicker, vtkPicker, vtkAreaPicker
 )
 
 class InteractionStyle(ABC):
@@ -98,12 +100,38 @@ class InteractionStyle(ABC):
         polyDataMapper2D: vtkPolyDataMapper2D = vtkPolyDataMapper2D()
         polyDataMapper2D.SetTransformCoordinate(coordinate)
         polyDataMapper2D.SetInputData(polyData) # type: ignore
-        polyDataMapper2D.Update() # type: ignore
+        polyDataMapper2D.Update()               # type: ignore
         # actor
         actor2D: vtkActor2D = vtkActor2D()
         actor2D.SetMapper(polyDataMapper2D)
         actor2D.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
         actor2D.SetPosition(0.5, 0.5)
+        return actor2D
+
+    @staticmethod
+    def newRectangleHint(pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
+        '''Creates a new 2D rectangle hint.'''
+        # points
+        points: vtkPoints = vtkPoints()
+        points.SetNumberOfPoints(4)
+        points.SetPoint(0, pointA[0], pointA[1], 0.0)
+        points.SetPoint(1, pointB[0], pointA[1], 0.0)
+        points.SetPoint(2, pointB[0], pointB[1], 0.0)
+        points.SetPoint(3, pointA[0], pointB[1], 0.0)
+        # lines
+        lines: vtkCellArray = vtkCellArray()
+        lines.InsertNextCell(5, (0, 1, 2, 3, 0)) # type: ignore
+        # data set
+        polyData: vtkPolyData = vtkPolyData()
+        polyData.SetPoints(points)  # type: ignore
+        polyData.SetLines(lines)
+        # mapper
+        polyDataMapper2D: vtkPolyDataMapper2D = vtkPolyDataMapper2D()
+        polyDataMapper2D.SetInputData(polyData) # type: ignore
+        polyDataMapper2D.Update()               # type: ignore
+        # actor
+        actor2D: vtkActor2D = vtkActor2D()
+        actor2D.SetMapper(polyDataMapper2D)
         return actor2D
 
     @staticmethod
@@ -122,7 +150,7 @@ class InteractionStyle(ABC):
 
     @staticmethod
     def pickSingle(
-        position: tuple[int, int],
+        point: tuple[int, int],
         target: Literal['Points', 'Cells'],
         renderer: vtkRenderer
     ) -> tuple[int, vtkActor | None]:
@@ -130,7 +158,7 @@ class InteractionStyle(ABC):
         # perform pick operation
         picker: vtkPicker = vtkPointPicker() if target == 'Points' else vtkCellPicker()
         picker.SetTolerance(0.003 if target == 'Points' else 0.0)
-        picker.Pick(*position, 0.0, renderer)
+        picker.Pick(*point, 0.0, renderer)
         # get picked data set (if any)
         actor: vtkActor | None = picker.GetActor()
         mapper: vtkMapper | None = actor.GetMapper() if actor else None
@@ -144,6 +172,30 @@ class InteractionStyle(ABC):
                 index: int = picker.GetCellId()                                # type: ignore
                 return index, InteractionStyle.newCellsHint(dataSet, (index,)) # type: ignore
         return -1, None
+
+    @staticmethod
+    def pickMultiple(
+        pointA: tuple[int, int],
+        pointB: tuple[int, int],
+        target: Literal['Points', 'Cells'],
+        renderer: vtkRenderer
+    ) -> Sequence[int]:
+        '''Picks multiple points or cells.'''
+        picker: vtkAreaPicker = vtkAreaPicker()
+        picker.AreaPick(*pointA, *pointB, renderer)
+        for i in range(picker.GetProp3Ds().GetNumberOfItems()):
+            actor: vtkActor = cast(vtkActor, picker.GetProp3Ds().GetItemAsObject(i))
+            mapper: vtkMapper = actor.GetMapper()
+            dataSet: Any | None = mapper.GetInput() # type: ignore
+            if isinstance(dataSet, vtkUnstructuredGrid):
+                filter: vtkExtractGeometry = vtkExtractGeometry()
+                filter.SetImplicitFunction(picker.GetFrustum())     # type: ignore
+                filter.SetInputData(dataSet)                        # type: ignore
+                filter.Update()                                     # type: ignore
+                selection: vtkUnstructuredGrid = filter.GetOutput() # type: ignore
+                if target == 'Points': return vu.findPointIndices(dataSet, selection)
+                else: return vu.findCellIndices(dataSet, selection)
+        return ()
 
     @property
     def base(self) -> vtkInteractorStyleTrackballCamera:

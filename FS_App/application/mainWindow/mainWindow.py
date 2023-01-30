@@ -231,7 +231,8 @@ class MainWindow(MainWindowShell):
             return
         self.uncheckToolBarInteraction()
         self._toolBarInteractionPickMultiple.setChecked(True)
-        print('pick-multiple')
+        self._viewport.setInteractionStyle(InteractionStyles.PickMultiple)
+        self.onModelTreeSelection() # in order to enable picking
 
     def onToolBarInteractionProbe(self) -> None:
         '''On Tool Bar > Interaction > Probe.'''

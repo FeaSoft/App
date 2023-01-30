@@ -23,8 +23,8 @@ class PointsRenderObject(RenderObject):
             self._centers.SetPoint(i, dataSet.GetPoint(index))
         # sphere source
         self._source: vtkSphereSource = vtkSphereSource()
-        self._source.SetPhiResolution(16)
-        self._source.SetThetaResolution(16)
+        self._source.SetPhiResolution(8)
+        self._source.SetThetaResolution(8)
         self._source.Update() # type: ignore
         # poly data
         self._polyData: vtkPolyData = vtkPolyData()

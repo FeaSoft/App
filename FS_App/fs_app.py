@@ -1,6 +1,4 @@
 
-# fix selection on cells (artifacts)
-
 
 if __name__ == '__main__':
 
