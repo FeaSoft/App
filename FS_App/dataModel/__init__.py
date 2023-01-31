@@ -11,5 +11,6 @@ from dataModel.indexSet            import ElementSet          as ElementSet
 from dataModel.material            import Material            as Material
 from dataModel.section             import Section             as Section
 from dataModel.concentratedLoad    import ConcentratedLoad    as ConcentratedLoad
+from dataModel.boundaryCondition   import BoundaryCondition   as BoundaryCondition
 from dataModel.dataObjectContainer import DataObjectContainer as DataObjectContainer
 from dataModel.modelDatabase       import ModelDatabase       as ModelDatabase

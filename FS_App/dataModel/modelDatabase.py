@@ -5,6 +5,7 @@ from dataModel.indexSet import NodeSet, ElementSet
 from dataModel.material import Material
 from dataModel.section import Section
 from dataModel.concentratedLoad import ConcentratedLoad
+from dataModel.boundaryCondition import BoundaryCondition
 from dataModel.dataObjectContainer import DataObjectContainer
 
 class ModelDatabase:
@@ -54,8 +55,15 @@ class ModelDatabase:
         '''Model database concentrated loads.'''
         return self._concentratedLoads
 
+    @property
+    def boundaryConditions(self) -> DataObjectContainer:
+        '''Model database boundary conditions.'''
+        return self._boundaryConditions
+
     # attribute slots
-    __slots__ = ('_mesh', '_nodeSets', '_elementSets', '_materials', '_sections', '_concentratedLoads')
+    __slots__ = (
+        '_mesh', '_nodeSets', '_elementSets', '_materials', '_sections', '_concentratedLoads', '_boundaryConditions'
+    )
 
     def __init__(self, mesh: Mesh) -> None:
         '''Model database constructor.'''
@@ -74,4 +82,7 @@ class ModelDatabase:
         )
         self._concentratedLoads: DataObjectContainer = DataObjectContainer(
             ConcentratedLoad, 'Concentrated Loads', 'Concentrated-Load-'
+        )
+        self._boundaryConditions: DataObjectContainer = DataObjectContainer(
+            BoundaryCondition, 'Boundary Conditions', 'Boundary-Condition-'
         )

@@ -1,7 +1,7 @@
 from typing import Any, Literal, cast
 from collections.abc import Callable, Sequence
 from dataModel import DataObject, DataObjectContainer
-from PySide6.QtWidgets import QWidget, QLineEdit, QComboBox, QTreeWidget, QTreeWidgetItem
+from PySide6.QtWidgets import QWidget, QLineEdit, QComboBox, QCheckBox, QTreeWidget, QTreeWidgetItem
 from PySide6.QtCore import QMetaObject
 from shiboken6 import isValid
 
@@ -46,6 +46,7 @@ class DataObjectControl(QTreeWidgetItem):
         # update view to show the currently stored property value
         match editWidget:
             case QLineEdit(): editWidget.setText(str(propertyValue))
+            case QCheckBox(): editWidget.setChecked(bool(propertyValue))
             case QComboBox(): editWidget.setCurrentText(str(propertyValue))
             case _: raise NotImplementedError('case not implemented')
 
@@ -61,10 +62,11 @@ class DataObjectControl(QTreeWidgetItem):
         if isinstance(editWidget, QLineEdit) and editWidget.isReadOnly():
             return
 
-        # get the new user-specified property value (as a string)
+        # get the new user-specified property value (possibly as a string)
         match editWidget:
-            case QLineEdit(): propertyValue = editWidget.text()
             case QComboBox(): propertyValue = editWidget.currentText()
+            case QCheckBox(): propertyValue = editWidget.isChecked()
+            case QLineEdit(): propertyValue = editWidget.text()
             case _: raise NotImplementedError('case not implemented')
 
         # the try block is used for validation since the user can specify illegal values
@@ -72,6 +74,7 @@ class DataObjectControl(QTreeWidgetItem):
         try:
             match getattr(self._dataObject, propertyName):
                 case float(): propertyValue = float(propertyValue)
+                case bool(): propertyValue = bool(propertyValue)
                 case str(): propertyValue = str(propertyValue)
                 case _: raise NotImplementedError('case not implemented')
             setattr(self._dataObject, propertyName, propertyValue)
@@ -103,7 +106,7 @@ class DataObjectControl(QTreeWidgetItem):
         self,
         propertyName: str,
         displayNames: Sequence[str],
-        kind: Literal['LineEdit', 'ComboBox'],
+        kind: Literal['LineEdit', 'ComboBox', 'CheckBox'],
         itemSource: DataObjectContainer | Sequence[str] | None = None,
         readOnly: bool = False
     ) -> None:
@@ -141,6 +144,12 @@ class DataObjectControl(QTreeWidgetItem):
                     case _: raise NotImplementedError('case not implemented')
                 self._editWidgetConnections[propertyName] = (                  # type: ignore
                     editWidget.currentIndexChanged.connect(editWidgetCallback) # type: ignore
+                )
+            case 'CheckBox':
+                editWidget = QCheckBox(treeWidget)
+                editWidget.setChecked(bool(propertyValue))
+                self._editWidgetConnections[propertyName] = (      # type: ignore
+                    editWidget.toggled.connect(editWidgetCallback) # type: ignore
                 )
         self._editWidgets[propertyName] = editWidget
 

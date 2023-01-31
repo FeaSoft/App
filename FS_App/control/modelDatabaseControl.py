@@ -106,6 +106,20 @@ class ModelDatabaseControl(QTreeWidget):
             control.newField('z', ('Components', 'Z'), 'LineEdit')
         return control
 
+    def boundaryConditionControlConstructor(self, parent: QTreeWidgetItem, name: str) -> DataObjectControl:
+        '''Returns a new boundary condition control.'''
+        if not self._modelDatabase: raise RuntimeError('a model database is required')
+        control = DataObjectControl(parent, self._modelDatabase.boundaryConditions[name])
+        control.newField('nodeSetName', ('Node Set',), 'ComboBox', self._modelDatabase.nodeSets)
+        control.newField('isActiveInX', ('Active DOFs', 'X'), 'CheckBox')
+        control.newField('isActiveInY', ('Active DOFs', 'Y'), 'CheckBox')
+        control.newField('x', ('Components', 'X'), 'LineEdit')
+        control.newField('y', ('Components', 'Y'), 'LineEdit')
+        if self._modelDatabase.mesh.modelingSpace == ModelingSpaces.ThreeDimensional:
+            control.newField('isActiveInZ', ('Active DOFs', 'Z'), 'CheckBox')
+            control.newField('z', ('Components', 'Z'), 'LineEdit')
+        return control
+
     def setModelDatabase(self, modelDatabase: ModelDatabase | None) -> None:
         '''Builds the model database tree widget based on the specified model database.'''
         # detach from previous model database
@@ -127,6 +141,9 @@ class ModelDatabaseControl(QTreeWidget):
             )
             DataObjectContainerControl(
                 self._rootItem, self._modelDatabase.concentratedLoads, self.concentratedLoadControlConstructor
+            )
+            DataObjectContainerControl(
+                self._rootItem, self._modelDatabase.boundaryConditions, self.boundaryConditionControlConstructor
             )
             self._rootItem.setText(0, self._modelDatabase.name)
             self._rootItem.setExpanded(True)
