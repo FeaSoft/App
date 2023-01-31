@@ -12,7 +12,7 @@ class ModelDatabase:
     @property
     def name(self) -> str:
         '''Model database name.'''
-        return 'Model Database (Solid-3D)'
+        return f'Model Database (Solid-{self._mesh.modelingSpace.value}D)'
 
     @property
     def stressStates(self) -> tuple[str, ...]:
