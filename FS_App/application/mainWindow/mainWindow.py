@@ -1,5 +1,5 @@
 from os import path
-from typing import Literal
+from typing import Literal, Any, cast
 from collections.abc import Callable, Sequence
 from dataModel import ModelingSpaces, DataObject, NodeSet, ElementSet, ModelDatabase
 from inputOutput import AbaqusReader
@@ -32,6 +32,7 @@ class MainWindow(MainWindowShell):
         # model database
         self._modelDatabase: ModelDatabase | None = None
         # setup connections
+        Viewport.registerCallback(self.onViewportOptionChanged)
         self._modelTree.currentItemChanged.connect(self.onModelTreeSelection)                         # type: ignore
         self._menuBarFileNew.triggered.connect(self.onMenuBarFileNew)                                 # type: ignore
         self._toolBarFileNew.triggered.connect(self.onToolBarFileNew)                                 # type: ignore
@@ -128,6 +129,35 @@ class MainWindow(MainWindowShell):
         self._viewport.setSelectionRenderObject(dataObject, (1.0, 0.0, 0.0))
 
 #-----------------------------------------------------------------------------------------------------------------------
+# Viewport -> Main Window
+#-----------------------------------------------------------------------------------------------------------------------
+
+    def onViewportOptionChanged(self, optionName: str, optionValue: Any) -> None:
+        '''On viewport global option changed.'''
+        match optionName:
+            case InteractionStyles.__name__:
+                # uncheck all buttons in the interaction tool bar
+                for action in (
+                    self._toolBarInteractionRotate, self._toolBarInteractionPan, self._toolBarInteractionZoom,
+                    self._toolBarInteractionPickSingle, self._toolBarInteractionPickMultiple,
+                    self._toolBarInteractionProbe, self._toolBarInteractionRuler
+                ): action.setChecked(False)
+                # check corresponding button
+                match cast(InteractionStyles, optionValue):
+                    case InteractionStyles.Rotate:       self._toolBarInteractionRotate.setChecked(True)
+                    case InteractionStyles.Pan:          self._toolBarInteractionPan.setChecked(True)
+                    case InteractionStyles.Zoom:         self._toolBarInteractionZoom.setChecked(True)
+                    case InteractionStyles.PickSingle:   self._toolBarInteractionPickSingle.setChecked(True)
+                    case InteractionStyles.PickMultiple: self._toolBarInteractionPickMultiple.setChecked(True)
+                    case InteractionStyles.Probe:        self._toolBarInteractionProbe.setChecked(True)
+                    case InteractionStyles.Ruler:        self._toolBarInteractionRuler.setChecked(True)
+                # enable picking if necessary
+                match cast(InteractionStyles, optionValue):
+                    case InteractionStyles.PickSingle | InteractionStyles.PickMultiple:
+                        self.onModelTreeSelection() # will enable picking based on selected data object
+                    case _: pass
+
+#-----------------------------------------------------------------------------------------------------------------------
 # Menu Bar
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -177,77 +207,30 @@ class MainWindow(MainWindowShell):
         '''On Tool Bar > View > Isometric.'''
         self._viewport.setView(Views.Isometric)
 
-    def uncheckToolBarInteraction(self) -> None:
-        '''Unchecks all buttons in the interaction tool bar.'''
-        self._toolBarInteractionRotate.setChecked(False)
-        self._toolBarInteractionPan.setChecked(False)
-        self._toolBarInteractionZoom.setChecked(False)
-        self._toolBarInteractionPickSingle.setChecked(False)
-        self._toolBarInteractionPickMultiple.setChecked(False)
-        self._toolBarInteractionProbe.setChecked(False)
-        self._toolBarInteractionRuler.setChecked(False)
-
     def onToolBarInteractionRotate(self) -> None:
         '''On Tool Bar > Interaction > Rotate.'''
-        if not self._toolBarInteractionRotate.isChecked():
-            self._toolBarInteractionRotate.setChecked(True)
-            return
-        self.uncheckToolBarInteraction()
-        self._toolBarInteractionRotate.setChecked(True)
-        self._viewport.setInteractionStyle(InteractionStyles.Rotate)
+        Viewport.setInteractionStyle(InteractionStyles.Rotate)
 
     def onToolBarInteractionPan(self) -> None:
         '''On Tool Bar > Interaction > Pan.'''
-        if not self._toolBarInteractionPan.isChecked():
-            self._toolBarInteractionPan.setChecked(True)
-            return
-        self.uncheckToolBarInteraction()
-        self._toolBarInteractionPan.setChecked(True)
-        self._viewport.setInteractionStyle(InteractionStyles.Pan)
+        Viewport.setInteractionStyle(InteractionStyles.Pan)
 
     def onToolBarInteractionZoom(self) -> None:
         '''On Tool Bar > Interaction > Zoom.'''
-        if not self._toolBarInteractionZoom.isChecked():
-            self._toolBarInteractionZoom.setChecked(True)
-            return
-        self.uncheckToolBarInteraction()
-        self._toolBarInteractionZoom.setChecked(True)
-        self._viewport.setInteractionStyle(InteractionStyles.Zoom)
+        Viewport.setInteractionStyle(InteractionStyles.Zoom)
 
     def onToolBarInteractionPickSingle(self) -> None:
         '''On Tool Bar > Interaction > Pick Single.'''
-        if not self._toolBarInteractionPickSingle.isChecked():
-            self._toolBarInteractionPickSingle.setChecked(True)
-            return
-        self.uncheckToolBarInteraction()
-        self._toolBarInteractionPickSingle.setChecked(True)
-        self._viewport.setInteractionStyle(InteractionStyles.PickSingle)
-        self.onModelTreeSelection() # in order to enable picking
+        Viewport.setInteractionStyle(InteractionStyles.PickSingle)
 
     def onToolBarInteractionPickMultiple(self) -> None:
         '''On Tool Bar > Interaction > Pick Multiple.'''
-        if not self._toolBarInteractionPickMultiple.isChecked():
-            self._toolBarInteractionPickMultiple.setChecked(True)
-            return
-        self.uncheckToolBarInteraction()
-        self._toolBarInteractionPickMultiple.setChecked(True)
-        self._viewport.setInteractionStyle(InteractionStyles.PickMultiple)
-        self.onModelTreeSelection() # in order to enable picking
+        Viewport.setInteractionStyle(InteractionStyles.PickMultiple)
 
     def onToolBarInteractionProbe(self) -> None:
         '''On Tool Bar > Interaction > Probe.'''
-        if not self._toolBarInteractionProbe.isChecked():
-            self._toolBarInteractionProbe.setChecked(True)
-            return
-        self.uncheckToolBarInteraction()
-        self._toolBarInteractionProbe.setChecked(True)
-        self._viewport.setInteractionStyle(InteractionStyles.Probe)
+        Viewport.setInteractionStyle(InteractionStyles.Probe)
 
     def onToolBarInteractionRuler(self) -> None:
         '''On Tool Bar > Interaction > Ruler.'''
-        if not self._toolBarInteractionRuler.isChecked():
-            self._toolBarInteractionRuler.setChecked(True)
-            return
-        self.uncheckToolBarInteraction()
-        self._toolBarInteractionRuler.setChecked(True)
-        self._viewport.setInteractionStyle(InteractionStyles.Ruler)
+        Viewport.setInteractionStyle(InteractionStyles.Ruler)

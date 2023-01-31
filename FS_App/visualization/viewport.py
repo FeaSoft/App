@@ -1,5 +1,5 @@
 import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
-from typing import Literal, cast
+from typing import Literal, Any, cast
 from collections.abc import Callable, Sequence
 from dataModel import Mesh, NodeSet, ElementSet
 from visualization.decoration import Triad, Info
@@ -17,6 +17,50 @@ class Viewport(QVTKRenderWindowInteractor):
     Visualization viewport based on VTK.
     '''
 
+    # class variables
+    _callbacks: dict[int, Callable[[str, Any], None]] = {}
+    _viewports: list['Viewport'] = []
+    _interactionStyles: dict[InteractionStyles, InteractionStyle] = {
+        InteractionStyles.Rotate       : RotateInteractionStyle(),
+        InteractionStyles.Pan          : PanInteractionStyle(),
+        InteractionStyles.Zoom         : ZoomInteractionStyle(),
+        InteractionStyles.PickSingle   : PickSingleInteractionStyle(),
+        InteractionStyles.PickMultiple : PickMultipleInteractionStyle(),
+        InteractionStyles.Probe        : ProbeInteractionStyle(),
+        InteractionStyles.Ruler        : RulerInteractionStyle()
+    }
+    _currentInteractionStyle: InteractionStyles = InteractionStyles.Rotate
+
+    @classmethod
+    def registerCallback(cls, callback: Callable[[str, Any], None]) -> int:
+        '''
+        Adds the specified callback function to the internal container of callbacks.
+        Returns a key used to deregister the callback.
+        '''
+        key: int = 0
+        while key in cls._callbacks: key += 1
+        cls._callbacks[key] = callback
+        return key
+
+    @classmethod
+    def deregisterCallback(cls, key: int) -> None:
+        '''Removes the callback function from the internal container of callbacks using its key.'''
+        del cls._callbacks[key]
+
+    @classmethod
+    def notifyOptionChanged(cls, optionName: str, optionValue: Any) -> None:
+        '''This method is called when a viewport option has changed its value.'''
+        for callback in cls._callbacks.values(): callback(optionName, optionValue)
+
+    @classmethod
+    def setInteractionStyle(cls, interactionStyle: InteractionStyles) -> None:
+        '''Sets the viewport interaction style for all viewports.'''
+        cls._currentInteractionStyle = interactionStyle
+        for viewport in cls._viewports:
+            viewport._interactor.SetInteractorStyle(cls._interactionStyles[cls._currentInteractionStyle].base)
+            viewport._interactor.RemoveObservers('CharEvent')
+        cls.notifyOptionChanged(InteractionStyles.__name__, interactionStyle)
+
     @property
     def info(self) -> Info:
         '''The viewport information object.'''
@@ -24,13 +68,14 @@ class Viewport(QVTKRenderWindowInteractor):
 
     # attribute slots
     __slots__ = (
-        '_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_currentInteractionStyle', '_triad',
-        '_info', '_meshRenderObject', '_selectionRenderObject'
+        '_renderer', '_renderWindow', '_interactor', '_triad', '_info', '_meshRenderObject', '_selectionRenderObject'
     )
 
     def __init__(self, parent: QWidget | None = None) -> None:
         '''Viewport constructor.'''
         super().__init__(parent) # type: ignore
+        # register viewport
+        self._viewports.append(self)
         # renderer
         self._renderer: vtkRenderer = vtkRenderer()
         self._renderer.GradientBackgroundOn()
@@ -41,17 +86,6 @@ class Viewport(QVTKRenderWindowInteractor):
         self._renderWindow.AddRenderer(self._renderer)
         # interactor
         self._interactor: vtkRenderWindowInteractor = self._renderWindow.GetInteractor()
-        # interaction styles & current interaction style
-        self._interactionStyles: dict[InteractionStyles, InteractionStyle] = {
-            InteractionStyles.Rotate       : RotateInteractionStyle(),
-            InteractionStyles.Pan          : PanInteractionStyle(),
-            InteractionStyles.Zoom         : ZoomInteractionStyle(),
-            InteractionStyles.PickSingle   : PickSingleInteractionStyle(),
-            InteractionStyles.PickMultiple : PickMultipleInteractionStyle(),
-            InteractionStyles.Probe        : ProbeInteractionStyle(),
-            InteractionStyles.Ruler        : RulerInteractionStyle()
-        }
-        self._currentInteractionStyle: InteractionStyles = InteractionStyles.Rotate
         # triad & info
         self._triad: Triad = Triad()
         self._info: Info = Info()
@@ -81,12 +115,6 @@ class Viewport(QVTKRenderWindowInteractor):
         '''Removes the renderable visualization object from the scene.'''
         for actor in renderObject.actors(): self._renderer.RemoveActor(actor)
         if render: self.render()
-
-    def setInteractionStyle(self, interactionStyle: InteractionStyles) -> None:
-        '''Sets the viewport interaction style.'''
-        self._currentInteractionStyle = interactionStyle
-        self._interactor.SetInteractorStyle(self._interactionStyles[self._currentInteractionStyle].base)
-        self._interactor.RemoveObservers('CharEvent')
 
     def setPickAction(
         self,
