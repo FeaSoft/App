@@ -50,6 +50,11 @@ class DataObjectControl(QTreeWidgetItem):
             case QComboBox(): editWidget.setCurrentText(str(propertyValue))
             case _: raise NotImplementedError('case not implemented')
 
+        # this trick will update the current selection
+        self.treeWidget().currentItemChanged.emit( # type: ignore
+            self.treeWidget().currentItem(), self.treeWidget().currentItem()
+        )
+
     def onUserEdit(self, propertyName: str) -> None:
         '''
         This method is executed once the user has finished using an edit widget.

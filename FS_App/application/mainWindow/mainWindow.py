@@ -1,7 +1,7 @@
 from os import path
 from typing import Literal, Any, cast
 from collections.abc import Callable, Sequence
-from dataModel import ModelingSpaces, DataObject, NodeSet, ElementSet, ModelDatabase
+from dataModel import ModelingSpaces, DataObject, NodeSet, ElementSet, Section, ModelDatabase
 from inputOutput import AbaqusReader
 from visualization import Viewport, Views, InteractionStyles
 from application.terminal import Terminal
@@ -102,31 +102,45 @@ class MainWindow(MainWindowShell):
 
     def onModelTreeSelection(self) -> None:
         '''On model tree current item changed.'''
+        # clear viewport info and current selection
         self._viewport.info.clear()
         self._viewport.setSelectionRenderObject(None, render=False)
+
+        # if no data object is selected or no model database is loaded:
+        # disable picking, render scene, and return
         dataObject: DataObject | None = self._modelTree.currentDataObject()
+        if not dataObject or not self._modelDatabase:
+            self.disablePicking()
+            self._viewport.render()
+            return
+
+        # render viewport selection based on currently selected data object
         match dataObject:
             case NodeSet():
                 self.enablePicking(True, True, 'Points', lambda x, y: self.onViewportPick(dataObject, x, y))
                 color: tuple[float, float, float] = (1.0, 0.0, 0.0)
                 self._viewport.info.setText(1, 'Edit Node Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Nodes')
+                self._viewport.setSelectionRenderObject(dataObject, color, render=False)
             case ElementSet():
                 self.enablePicking(True, True, 'Cells', lambda x, y: self.onViewportPick(dataObject, x, y))
                 color: tuple[float, float, float] = (1.0, 0.0, 0.0)
                 self._viewport.info.setText(1, 'Edit Element Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Elements')
+                self._viewport.setSelectionRenderObject(dataObject, color, render=False)
+            case Section():
+                if dataObject.elementSetName != '<Undefined>':
+                    color: tuple[float, float, float] = (0.0, 0.75, 0.0)
+                    dataObject = cast(ElementSet, self._modelDatabase.elementSets[dataObject.elementSetName])
+                    self._viewport.setSelectionRenderObject(dataObject, color, render=False)
             case _:
-                self.disablePicking()
-                self._viewport.render()
-                return
-        self._viewport.setSelectionRenderObject(dataObject, color)
+                pass
+        self._viewport.render()
 
     def onViewportPick(self, dataObject: NodeSet | ElementSet, indices: Sequence[int], remove: bool) -> None:
         '''On viewport picking action performed.'''
         if remove: dataObject.remove(indices)
         else: dataObject.add(indices)
-        self._viewport.setSelectionRenderObject(dataObject, (1.0, 0.0, 0.0))
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Viewport -> Main Window
