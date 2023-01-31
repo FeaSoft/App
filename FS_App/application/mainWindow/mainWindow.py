@@ -250,4 +250,4 @@ class MainWindow(MainWindowShell):
             return
         self.uncheckToolBarInteraction()
         self._toolBarInteractionRuler.setChecked(True)
-        print('ruler')
+        self._viewport.setInteractionStyle(InteractionStyles.Ruler)

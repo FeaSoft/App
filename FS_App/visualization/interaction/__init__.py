@@ -8,3 +8,4 @@ from visualization.interaction.zoomInteractionStyle         import ZoomInteracti
 from visualization.interaction.pickSingleInteractionStyle   import PickSingleInteractionStyle   as PickSingleInteractionStyle
 from visualization.interaction.pickMultipleInteractionStyle import PickMultipleInteractionStyle as PickMultipleInteractionStyle
 from visualization.interaction.probeInteractionStyle        import ProbeInteractionStyle        as ProbeInteractionStyle
+from visualization.interaction.rulerInteractionStyle        import RulerInteractionStyle        as RulerInteractionStyle

@@ -37,7 +37,7 @@ class PickMultipleInteractionStyle(InteractionStyle):
         if self._isLeftButtonDown:
             if self._hint2D: self._renderer.RemoveActor2D(self._hint2D)
             self._pointB = self._interactor.GetEventPosition()
-            self._hint2D = self.newRectangleHint(self._pointA, self._pointB)
+            self._hint2D = self.newRectangleHint2D(self._pointA, self._pointB)
             self._renderer.AddActor2D(self._hint2D)
             self._renderWindow.Render()
             self._base.OnMouseMove()

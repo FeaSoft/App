@@ -11,3 +11,4 @@ class InteractionStyles(Enum):
     PickSingle   = 3
     PickMultiple = 4
     Probe        = 5
+    Ruler        = 6

@@ -13,7 +13,7 @@ from vtkmodules.vtkFiltersExtraction import vtkExtractGeometry
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 from vtkmodules.vtkRenderingCore import (
     vtkRenderWindow, vtkRenderer, vtkRenderWindowInteractor, vtkActor2D, vtkActor, vtkPolyDataMapper2D, vtkCoordinate,
-    vtkMapper, vtkPointPicker, vtkCellPicker, vtkPicker, vtkAreaPicker
+    vtkMapper, vtkPointPicker, vtkCellPicker, vtkPicker, vtkAreaPicker, vtkPolyDataMapper
 )
 
 class InteractionStyle(ABC):
@@ -42,7 +42,7 @@ class InteractionStyle(ABC):
         if render: renderer.GetRenderWindow().Render()
 
     @staticmethod
-    def newLineHint(pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
+    def newLineHint2D(pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
         '''Creates a new 2D line hint.'''
         # source
         lineSource: vtkLineSource = vtkLineSource()
@@ -59,7 +59,7 @@ class InteractionStyle(ABC):
         return actor2D
 
     @staticmethod
-    def newArcHint(pointA: tuple[int, int], pointB: tuple[int, int], renderWindowSize: tuple[int, int]) -> vtkActor2D:
+    def newArcHint2D(pointA: tuple[int, int], pointB: tuple[int, int], renderWindowSize: tuple[int, int]) -> vtkActor2D:
         '''Creates a new 2D arc hint.'''
         # compute start and segment angles
         angleA: float = math.atan2(pointA[1] - renderWindowSize[1]/2.0, pointA[0] - renderWindowSize[0]/2.0)
@@ -109,7 +109,7 @@ class InteractionStyle(ABC):
         return actor2D
 
     @staticmethod
-    def newRectangleHint(pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
+    def newRectangleHint2D(pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
         '''Creates a new 2D rectangle hint.'''
         # points
         points: vtkPoints = vtkPoints()
@@ -133,6 +133,23 @@ class InteractionStyle(ABC):
         actor2D: vtkActor2D = vtkActor2D()
         actor2D.SetMapper(polyDataMapper2D)
         return actor2D
+
+    @staticmethod
+    def newLineHint(pointA: tuple[float, float, float], pointB: tuple[float, float, float]) -> vtkActor:
+        '''Creates a new 3D line hint.'''
+        # source
+        lineSource: vtkLineSource = vtkLineSource()
+        lineSource.SetPoint1(pointA)
+        lineSource.SetPoint2(pointB)
+        lineSource.Update() # type: ignore
+        # mapper
+        polyDataMapper: vtkPolyDataMapper = vtkPolyDataMapper()
+        polyDataMapper.SetInputConnection(lineSource.GetOutputPort())
+        polyDataMapper.Update() # type: ignore
+        # actor
+        actor: vtkActor = vtkActor()
+        actor.SetMapper(polyDataMapper)
+        return actor
 
     @staticmethod
     def newPointsHint(unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
@@ -303,6 +320,6 @@ class InteractionStyle(ABC):
             self._pointB = self._interactor.GetEventPosition() if self._isMiddleButtonDown else (
                 self._pointA[0], self._interactor.GetEventPosition()[1]
             )
-            self._hint2D = self.newLineHint(self._pointA, self._pointB)
+            self._hint2D = self.newLineHint2D(self._pointA, self._pointB)
             self._renderer.AddActor2D(self._hint2D)
         self._base.OnMouseMove()

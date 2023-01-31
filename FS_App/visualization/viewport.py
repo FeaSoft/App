@@ -6,7 +6,7 @@ from visualization.decoration import Triad, Info
 from visualization.rendering import RenderObject, MeshRenderObject, PointsRenderObject, CellsRenderObject
 from visualization.interaction import (
     Views, InteractionStyles, InteractionStyle, RotateInteractionStyle, PanInteractionStyle, ZoomInteractionStyle,
-    PickSingleInteractionStyle, PickMultipleInteractionStyle, ProbeInteractionStyle
+    PickSingleInteractionStyle, PickMultipleInteractionStyle, ProbeInteractionStyle, RulerInteractionStyle
 )
 from PySide6.QtWidgets import QWidget
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor # type: ignore
@@ -48,7 +48,8 @@ class Viewport(QVTKRenderWindowInteractor):
             InteractionStyles.Zoom         : ZoomInteractionStyle(),
             InteractionStyles.PickSingle   : PickSingleInteractionStyle(),
             InteractionStyles.PickMultiple : PickMultipleInteractionStyle(),
-            InteractionStyles.Probe        : ProbeInteractionStyle()
+            InteractionStyles.Probe        : ProbeInteractionStyle(),
+            InteractionStyles.Ruler        : RulerInteractionStyle()
         }
         self._currentInteractionStyle: InteractionStyles = InteractionStyles.Rotate
         # triad & info

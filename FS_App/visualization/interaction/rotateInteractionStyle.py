@@ -35,7 +35,7 @@ class RotateInteractionStyle(InteractionStyle):
         if self._isLeftButtonDown and self._isShiftKeyDown:
             if self._hint2D: self._renderer.RemoveActor2D(self._hint2D)
             self._pointB = self._interactor.GetEventPosition()
-            self._hint2D = self.newArcHint(self._pointA, self._pointB, self._renderWindow.GetSize())
+            self._hint2D = self.newArcHint2D(self._pointA, self._pointB, self._renderWindow.GetSize())
             self._renderer.AddActor2D(self._hint2D)
             self._base.OnMouseMove()
         else: super().onMouseMove(sender, event)
