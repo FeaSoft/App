@@ -66,6 +66,7 @@ class ProbeInteractionStyle(InteractionStyle):
                     actor: vtkActor = self.newPointsHint(self._pickedDataSet, (self._pickedIndex,))
                 else:
                     actor: vtkActor = self.newCellsHint(self._pickedDataSet, (self._pickedIndex,))
+                    actor.GetProperty().SetRepresentationToWireframe()
                 self._renderer.AddActor(actor)
                 self.recomputeGlyphSize(self._renderer)
                 self._renderWindow.Render()

@@ -37,8 +37,11 @@ class PickSingleInteractionStyle(InteractionStyle):
             position: tuple[int, int] = self._interactor.GetEventPosition()
             self._pickedIndex, selection = self.pickSingle(position, self._pickTarget, self._renderer)
             if selection:
-                if self._pickTarget == 'Points': actor: vtkActor = self.newPointsHint(selection, (self._pickedIndex,))
-                else: actor: vtkActor = self.newCellsHint(selection, (self._pickedIndex,))
+                if self._pickTarget == 'Points':
+                    actor: vtkActor = self.newPointsHint(selection, (self._pickedIndex,))
+                else:
+                    actor: vtkActor = self.newCellsHint(selection, (self._pickedIndex,))
+                    actor.GetProperty().SetRepresentationToWireframe()
                 self._renderer.AddActor(actor)
                 self.recomputeGlyphSize(self._renderer)
                 self._renderWindow.Render()
