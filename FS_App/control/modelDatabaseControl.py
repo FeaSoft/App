@@ -95,6 +95,17 @@ class ModelDatabaseControl(QTreeWidget):
             control.newField('planeThickness', ('Plane Thickness',), 'LineEdit')
         return control
 
+    def concentratedLoadControlConstructor(self, parent: QTreeWidgetItem, name: str) -> DataObjectControl:
+        '''Returns a new concentrated load control.'''
+        if not self._modelDatabase: raise RuntimeError('a model database is required')
+        control = DataObjectControl(parent, self._modelDatabase.concentratedLoads[name])
+        control.newField('nodeSetName', ('Node Set',), 'ComboBox', self._modelDatabase.nodeSets)
+        control.newField('x', ('Components', 'X'), 'LineEdit')
+        control.newField('y', ('Components', 'Y'), 'LineEdit')
+        if self._modelDatabase.mesh.modelingSpace == ModelingSpaces.ThreeDimensional:
+            control.newField('z', ('Components', 'Z'), 'LineEdit')
+        return control
+
     def setModelDatabase(self, modelDatabase: ModelDatabase | None) -> None:
         '''Builds the model database tree widget based on the specified model database.'''
         # detach from previous model database
@@ -113,6 +124,9 @@ class ModelDatabaseControl(QTreeWidget):
             )
             DataObjectContainerControl(
                 self._rootItem, self._modelDatabase.sections, self.sectionControlConstructor
+            )
+            DataObjectContainerControl(
+                self._rootItem, self._modelDatabase.concentratedLoads, self.concentratedLoadControlConstructor
             )
             self._rootItem.setText(0, self._modelDatabase.name)
             self._rootItem.setExpanded(True)

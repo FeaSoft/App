@@ -4,6 +4,7 @@ from dataModel.mesh import Mesh
 from dataModel.indexSet import NodeSet, ElementSet
 from dataModel.material import Material
 from dataModel.section import Section
+from dataModel.concentratedLoad import ConcentratedLoad
 from dataModel.dataObjectContainer import DataObjectContainer
 
 class ModelDatabase:
@@ -48,13 +49,29 @@ class ModelDatabase:
         '''Model database sections.'''
         return self._sections
 
+    @property
+    def concentratedLoads(self) -> DataObjectContainer:
+        '''Model database concentrated loads.'''
+        return self._concentratedLoads
+
     # attribute slots
-    __slots__ = ('_mesh', '_nodeSets', '_elementSets', '_materials', '_sections')
+    __slots__ = ('_mesh', '_nodeSets', '_elementSets', '_materials', '_sections', '_concentratedLoads')
 
     def __init__(self, mesh: Mesh) -> None:
         '''Model database constructor.'''
         self._mesh: Mesh = mesh
-        self._nodeSets: DataObjectContainer = DataObjectContainer(NodeSet, 'Node Sets', 'Node-Set-')
-        self._elementSets: DataObjectContainer = DataObjectContainer(ElementSet, 'Element Sets', 'Element-Set-')
-        self._materials: DataObjectContainer = DataObjectContainer(Material, 'Materials', 'Material-')
-        self._sections: DataObjectContainer = DataObjectContainer(Section, 'Sections', 'Section-')
+        self._nodeSets: DataObjectContainer = DataObjectContainer(
+            NodeSet, 'Node Sets', 'Node-Set-'
+        )
+        self._elementSets: DataObjectContainer = DataObjectContainer(
+            ElementSet, 'Element Sets', 'Element-Set-'
+        )
+        self._materials: DataObjectContainer = DataObjectContainer(
+            Material, 'Materials', 'Material-'
+        )
+        self._sections: DataObjectContainer = DataObjectContainer(
+            Section, 'Sections', 'Section-'
+        )
+        self._concentratedLoads: DataObjectContainer = DataObjectContainer(
+            ConcentratedLoad, 'Concentrated Loads', 'Concentrated-Load-'
+        )

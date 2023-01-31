@@ -10,5 +10,6 @@ from dataModel.indexSet            import NodeSet             as NodeSet
 from dataModel.indexSet            import ElementSet          as ElementSet
 from dataModel.material            import Material            as Material
 from dataModel.section             import Section             as Section
+from dataModel.concentratedLoad    import ConcentratedLoad    as ConcentratedLoad
 from dataModel.dataObjectContainer import DataObjectContainer as DataObjectContainer
 from dataModel.modelDatabase       import ModelDatabase       as ModelDatabase
