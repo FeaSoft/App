@@ -36,7 +36,7 @@ class InteractionStyle(ABC):
                 dy: float = cameraPosition[1] - actorPosition[1]
                 dz: float = cameraPosition[2] - actorPosition[2]
                 distance: float = math.sqrt(dx*dx + dy*dy + dz*dz)
-                scale: float = distance*0.005
+                scale: float = distance*0.0035
                 producer.SetScaleFactor(scale)
                 producer.Modified()
         if render: renderer.GetRenderWindow().Render()
@@ -137,16 +137,12 @@ class InteractionStyle(ABC):
     @staticmethod
     def newPointsHint(unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
         '''Creates a new 3D points hint.'''
-        renderObject: PointsRenderObject = PointsRenderObject(unstructuredGrid, indices)
-        renderObject.setColor((1.0, 0.5, 0.0))
-        return renderObject.actors()[0]
+        return PointsRenderObject(unstructuredGrid, indices).actors()[0]
 
     @staticmethod
     def newCellsHint(unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
         '''Creates a new 3D cells hint.'''
-        renderObject: CellsRenderObject = CellsRenderObject(unstructuredGrid, indices)
-        renderObject.setColor((1.0, 0.5, 0.0))
-        return renderObject.actors()[0]
+        return CellsRenderObject(unstructuredGrid, indices).actors()[0]
 
     @staticmethod
     def pickSingle(
@@ -157,7 +153,7 @@ class InteractionStyle(ABC):
         '''Picks a single point or cell.'''
         # perform pick operation
         picker: vtkPicker = vtkPointPicker() if target == 'Points' else vtkCellPicker()
-        picker.SetTolerance(0.003 if target == 'Points' else 0.0)
+        picker.SetTolerance(0.0025 if target == 'Points' else 0.0)
         picker.Pick(*point, 0.0, renderer)
         # get picked data set (if any)
         actor: vtkActor | None = picker.GetActor()

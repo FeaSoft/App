@@ -50,7 +50,7 @@ class MeshRenderObject(RenderObject):
         self._actor.SetMapper(self._mapper)
         self._actor.GetProperty().EdgeVisibilityOn()
         self._actor.GetProperty().SetLineWidth(1.5)
-        self._actor.GetProperty().SetColor(1.0, 1.0, 0.75)
+        self._actor.GetProperty().SetColor(0.0, 0.5, 1.0)
 
     def actors(self) -> tuple[vtkActor, ...]:
         '''The renderable VTK actors.'''
