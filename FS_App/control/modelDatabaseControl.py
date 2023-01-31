@@ -1,5 +1,5 @@
 from typing import cast
-from dataModel import ModelDatabase, DataObject
+from dataModel import ModelDatabase, DataObject, ModelingSpaces
 from control.dataObjectControl import DataObjectControl
 from control.dataObjectContainerControl import DataObjectContainerControl
 from PySide6.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem, QMenu
@@ -88,9 +88,11 @@ class ModelDatabaseControl(QTreeWidget):
         '''Returns a new section control.'''
         if not self._modelDatabase: raise RuntimeError('a model database is required')
         control = DataObjectControl(parent, self._modelDatabase.sections[name])
+        control.newField('elementSetName', ('Element Set',), 'ComboBox', self._modelDatabase.elementSets)
         control.newField('materialName', ('Material',), 'ComboBox', self._modelDatabase.materials)
         control.newField('stressState', ('Stress State',), 'ComboBox', self._modelDatabase.stressStates)
-        control.newField('planeThickness', ('Plane Thickness',), 'LineEdit')
+        if self._modelDatabase.mesh.modelingSpace == ModelingSpaces.TwoDimensional:
+            control.newField('planeThickness', ('Plane Thickness',), 'LineEdit')
         return control
 
     def setModelDatabase(self, modelDatabase: ModelDatabase | None) -> None:

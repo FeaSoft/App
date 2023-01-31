@@ -9,7 +9,7 @@ module m_section
     ! available section types
     integer, parameter :: CPS = 101, & ! 2D continuum (solid) plane stress
                           CPE = 102, & ! 2D continuum (solid) plane strain
-                          C3D = 103    ! 3D continuum (solid) general
+                          C3D = 103    ! 3D continuum (solid) general case
     
     ! error messages
     character(*), parameter :: ERROR_UNDEFINED_SECTION_TYPE = 'ERROR: Undefined section type.'

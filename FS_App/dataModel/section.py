@@ -7,6 +7,17 @@ class Section(DataObject):
     '''
 
     @property
+    def elementSetName(self) -> str:
+        '''Name of the associated element set.'''
+        return self._elementSetName
+
+    @elementSetName.setter
+    def elementSetName(self, value: str) -> None:
+        '''Name of the associated element set (setter).'''
+        self._elementSetName = value
+        self.notifyPropertyChanged('elementSetName')
+
+    @property
     def materialName(self) -> str:
         '''Name of the associated material.'''
         return self._materialName
@@ -40,7 +51,7 @@ class Section(DataObject):
         self.notifyPropertyChanged('planeThickness')
 
     # attribute slots
-    __slots__ = ('_materialName', '_stressState', '_planeThickness')
+    __slots__ = ('_elementSetName', '_materialName', '_stressState', '_planeThickness')
 
     def __init__(
         self,
@@ -49,6 +60,7 @@ class Section(DataObject):
     ) -> None:
         '''Section constructor.'''
         super().__init__(nameGetter, nameSetter)
+        self._elementSetName: str = '<Undefined>'
         self._materialName: str = '<Undefined>'
         self._stressState: str = '<Undefined>'
         self._planeThickness: float = 0.0

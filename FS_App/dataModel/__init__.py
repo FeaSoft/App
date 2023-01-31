@@ -1,5 +1,6 @@
 '''Public exports.'''
 from dataModel.elementTypes        import ElementTypes        as ElementTypes
+from dataModel.stressStates        import StressStates        as StressStates
 from dataModel.modelingSpaces      import ModelingSpaces      as ModelingSpaces
 from dataModel.node                import Node                as Node
 from dataModel.element             import Element             as Element

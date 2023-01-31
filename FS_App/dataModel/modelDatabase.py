@@ -1,3 +1,5 @@
+from dataModel.stressStates import StressStates
+from dataModel.modelingSpaces import ModelingSpaces
 from dataModel.mesh import Mesh
 from dataModel.indexSet import NodeSet, ElementSet
 from dataModel.material import Material
@@ -17,7 +19,9 @@ class ModelDatabase:
     @property
     def stressStates(self) -> tuple[str, ...]:
         '''Available stress states.'''
-        return ('2D Plane Stress', '2D Plane Strain', '3D General')
+        match self._mesh.modelingSpace:
+            case ModelingSpaces.TwoDimensional: return (StressStates.CPS.name, StressStates.CPE.name)
+            case ModelingSpaces.ThreeDimensional: return (StressStates.C3D.name,)
 
     @property
     def mesh(self) -> Mesh:
