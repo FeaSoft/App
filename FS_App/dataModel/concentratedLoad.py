@@ -56,10 +56,11 @@ class ConcentratedLoad(DataObject):
     def __init__(
         self,
         nameGetter: Callable[[DataObject], str],
-        nameSetter: Callable[[DataObject, str], None]
+        nameSetter: Callable[[DataObject, str], None],
+        isAssignedGetter: Callable[[DataObject], bool]
     ) -> None:
         '''Concentrated load constructor.'''
-        super().__init__(nameGetter, nameSetter)
+        super().__init__(nameGetter, nameSetter, isAssignedGetter)
         self._nodeSetName: str = '<Undefined>'
         self._x: float = 0.0
         self._y: float = 0.0

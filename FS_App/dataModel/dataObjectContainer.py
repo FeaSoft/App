@@ -15,13 +15,20 @@ class DataObjectContainer:
         return self._name
 
     # attribute slots
-    __slots__ = ('_dataObjectType', '_name', '_prefix', '_names', '_dataObjects', '_callbacks')
+    __slots__ = ('_dataObjectType', '_name', '_prefix', '_isDataObjectAssigned', '_names', '_dataObjects', '_callbacks')
 
-    def __init__(self, dataObjectType: Type[DataObject], name: str, prefix: str) -> None:
+    def __init__(
+        self,
+        dataObjectType: Type[DataObject],
+        name: str,
+        prefix: str,
+        isDataObjectAssigned: Callable[[DataObject], bool]
+    ) -> None:
         '''Data object container constructor.'''
         self._dataObjectType: Type[DataObject] = dataObjectType
         self._name: str = name
         self._prefix: str = prefix
+        self._isDataObjectAssigned: Callable[[DataObject], bool] = isDataObjectAssigned
         self._names: list[str] = []
         self._dataObjects: list[DataObject] = []
         self._callbacks: dict[int, Callable[[str | None, str | None], None]] = {}
@@ -37,6 +44,8 @@ class DataObjectContainer:
     def __delitem__(self, name: str) -> None:
         '''Delete the data object with the specified name.'''
         index: int = self._names.index(name)
+        if self._dataObjects[index].isAssigned:
+            raise RuntimeError(f"data object is currently assigned and cannot be deleted: '{self._names[index]}'")
         del self._names[index]
         del self._dataObjects[index]
         self.notifyContainerChanged(oldName=name)
@@ -101,10 +110,14 @@ class DataObjectContainer:
         '''Returns a tuple with the data object names.'''
         return tuple(self._names)
 
+    def dataObjects(self) -> tuple[DataObject, ...]:
+        '''Returns a tuple with the data objects.'''
+        return tuple(self._dataObjects)
+
     def new(self) -> DataObject:
         '''Creates a new default instance of a data object and adds it to the container.'''
         newName: str = self.generateUniqueName()
-        newDataObject: DataObject = self._dataObjectType(self.findName, self.changeName)
+        newDataObject: DataObject = self._dataObjectType(self.findName, self.changeName, self._isDataObjectAssigned)
         self._names.append(newName)
         self._dataObjects.append(newDataObject)
         self.notifyContainerChanged(newName=newName)

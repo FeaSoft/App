@@ -13,13 +13,13 @@ class App(QApplication):
         return self._mainWindow
 
     # attribute slots
-    __slots__ = ('_running', '_mainWindow')
+    __slots__ = ('_isRunning', '_mainWindow')
 
     def __init__(self, argv: list[str]) -> None:
         '''App constructor.'''
         super().__init__(argv)
         super().setStyle('Fusion')
-        self._running: bool = False
+        self._isRunning: bool = False
         self._mainWindow: MainWindow = MainWindow()
 
     def start(self) -> int:
@@ -27,9 +27,9 @@ class App(QApplication):
         Starts the application.
         Returns the exit code.
         '''
-        if self._running:
+        if self._isRunning:
             raise RuntimeError('the application event loop has already been started')
-        self._running = True
+        self._isRunning = True
         self._mainWindow.show()
         return self.exec()
 

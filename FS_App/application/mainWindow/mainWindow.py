@@ -63,15 +63,15 @@ class MainWindow(MainWindowShell):
 
     def enablePicking(
         self,
-        single: bool,
-        multiple: bool,
+        pickSingle: bool,
+        pickMultiple: bool,
         pickTarget: Literal['Points', 'Cells'] | None,
         onPicked: Callable[[Sequence[int], bool], None] | None
     ) -> None:
         '''Enables picking.'''
         self._viewport.setPickAction(onPicked, pickTarget)
-        if single: self._toolBarInteractionPickSingle.setEnabled(True)
-        if multiple: self._toolBarInteractionPickMultiple.setEnabled(True)
+        if pickSingle: self._toolBarInteractionPickSingle.setEnabled(True)
+        if pickMultiple: self._toolBarInteractionPickMultiple.setEnabled(True)
 
     def disablePicking(self) -> None:
         '''Disables picking.'''
@@ -117,16 +117,16 @@ class MainWindow(MainWindowShell):
             return
 
         # render viewport selection based on currently selected data object
-        stopPickingFlag: bool = True
+        stopPicking: bool = True
         match dataObject:
             case NodeSet():
-                stopPickingFlag = False
+                stopPicking = False
                 self.enablePicking(True, True, 'Points', lambda x, y: self.onViewportPick(dataObject, x, y))
                 self._viewport.info.setText(1, 'Edit Node Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Nodes')
                 self._viewport.setSelectionRenderObject(dataObject, (1.0, 0.0, 0.0), render=False)
             case ElementSet():
-                stopPickingFlag = False
+                stopPicking = False
                 self.enablePicking(True, True, 'Cells', lambda x, y: self.onViewportPick(dataObject, x, y))
                 self._viewport.info.setText(1, 'Edit Element Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Elements')
@@ -147,7 +147,7 @@ class MainWindow(MainWindowShell):
                     )
             case _:
                 pass
-        if stopPickingFlag: self.disablePicking()
+        if stopPicking: self.disablePicking()
         self._viewport.render()
 
     def onViewportPick(self, dataObject: NodeSet | ElementSet, indices: Sequence[int], remove: bool) -> None:

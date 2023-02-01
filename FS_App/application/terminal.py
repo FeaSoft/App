@@ -26,11 +26,11 @@ class Terminal(QWidget):
 
         def write(self, text: str) -> None:
             '''On write.'''
-            printFlag: bool = False
-            if len(text) >= 1 and text[-1]  == '\n':   printFlag = True
-            if len(text) >= 1 and text[-1]  == '\r':   printFlag = True
-            if len(text) >= 2 and text[-2:] == '\r\n': printFlag = True
-            if printFlag:
+            print: bool = False
+            if len(text) >= 1 and text[-1]  == '\n':   print = True
+            if len(text) >= 1 and text[-1]  == '\r':   print = True
+            if len(text) >= 2 and text[-2:] == '\r\n': print = True
+            if print:
                 text = (''.join(self._buffer) + text).rstrip()
                 self._onWrite(text, self._textColor)
                 self._buffer.clear()

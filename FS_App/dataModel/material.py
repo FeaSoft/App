@@ -45,10 +45,11 @@ class Material(DataObject):
     def __init__(
         self,
         nameGetter: Callable[[DataObject], str],
-        nameSetter: Callable[[DataObject, str], None]
+        nameSetter: Callable[[DataObject, str], None],
+        isAssignedGetter: Callable[[DataObject], bool]
     ) -> None:
         '''Material constructor.'''
-        super().__init__(nameGetter, nameSetter)
+        super().__init__(nameGetter, nameSetter, isAssignedGetter)
         self._young: float = 0.0
         self._poisson: float = 0.0
         self._density: float = 0.0

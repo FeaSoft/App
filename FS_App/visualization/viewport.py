@@ -212,7 +212,7 @@ class Viewport(QVTKRenderWindowInteractor):
                         self._selectionRenderObject.add(ArrowsRenderObject(origins, directions, 'Normal', color))
             case BoundaryCondition():
                 if not modelDatabase: raise ValueError("missing optional argument: 'modelDatabase'")
-                if True not in dataObject.activeFlags():
+                if True not in dataObject.activeDOFs():
                     self._selectionRenderObject = None
                 else:
                     nodeSet: NodeSet = cast(NodeSet, modelDatabase.nodeSets[dataObject.nodeSetName])
@@ -221,7 +221,7 @@ class Viewport(QVTKRenderWindowInteractor):
                     )
                     self._selectionRenderObject = GroupRenderObject()
                     for i in range(3):
-                        if not dataObject.activeFlags()[i]: continue
+                        if not dataObject.activeDOFs()[i]: continue
                         a: float = +1.0 if dataObject.components()[i] >= 0.0 else -1.0
                         directions: tuple[tuple[float, float, float], ...] = (
                             tuple(a if k == i else 0.0 for k in range(3)),

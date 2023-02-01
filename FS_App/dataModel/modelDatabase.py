@@ -1,6 +1,8 @@
+from typing import cast
 from dataModel.stressStates import StressStates
 from dataModel.modelingSpaces import ModelingSpaces
 from dataModel.mesh import Mesh
+from dataModel.dataObject import DataObject
 from dataModel.indexSet import NodeSet, ElementSet
 from dataModel.material import Material
 from dataModel.section import Section
@@ -69,20 +71,44 @@ class ModelDatabase:
         '''Model database constructor.'''
         self._mesh: Mesh = mesh
         self._nodeSets: DataObjectContainer = DataObjectContainer(
-            NodeSet, 'Node Sets', 'Node-Set-'
+            NodeSet, 'Node Sets', 'Node-Set-', self.isAssigned
         )
         self._elementSets: DataObjectContainer = DataObjectContainer(
-            ElementSet, 'Element Sets', 'Element-Set-'
+            ElementSet, 'Element Sets', 'Element-Set-', self.isAssigned
         )
         self._materials: DataObjectContainer = DataObjectContainer(
-            Material, 'Materials', 'Material-'
+            Material, 'Materials', 'Material-', self.isAssigned
         )
         self._sections: DataObjectContainer = DataObjectContainer(
-            Section, 'Sections', 'Section-'
+            Section, 'Sections', 'Section-', self.isAssigned
         )
         self._concentratedLoads: DataObjectContainer = DataObjectContainer(
-            ConcentratedLoad, 'Concentrated Loads', 'Concentrated-Load-'
+            ConcentratedLoad, 'Concentrated Loads', 'Concentrated-Load-', self.isAssigned
         )
         self._boundaryConditions: DataObjectContainer = DataObjectContainer(
-            BoundaryCondition, 'Boundary Conditions', 'Boundary-Condition-'
+            BoundaryCondition, 'Boundary Conditions', 'Boundary-Condition-', self.isAssigned
         )
+
+    def isAssigned(self, dataObject: DataObject) -> bool:
+        '''Determines if the specified data object is currently assigned.'''
+        match dataObject:
+            case NodeSet():
+                for concentratedLoad in self._concentratedLoads.dataObjects():
+                    if cast(ConcentratedLoad, concentratedLoad).nodeSetName == dataObject.name:
+                        return True
+                for boundaryCondition in self._boundaryConditions.dataObjects():
+                    if cast(BoundaryCondition, boundaryCondition).nodeSetName == dataObject.name:
+                        return True
+            case ElementSet():
+                for section in self._sections.dataObjects():
+                    if cast(Section, section).elementSetName == dataObject.name:
+                        return True
+            case Material():
+                for section in self._sections.dataObjects():
+                    if cast(Section, section).materialName == dataObject.name:
+                        return True
+            case Section() | ConcentratedLoad() | BoundaryCondition():
+                pass
+            case _:
+                pass
+        return False

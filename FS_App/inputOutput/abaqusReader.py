@@ -54,7 +54,7 @@ class AbaqusReader:
         elementData: list[tuple[str, tuple[int, ...]]] = [] # the element data
         nodeSet: NodeSet | None = None                      # the node set being parsed
         elementSet: ElementSet | None = None                # the element set being parsed
-        generateFlag: bool = False                          # specifies if the set being parsed is to be generated
+        generate: bool = False                              # specifies if the set being parsed is to be generated
 
         # read file line by line and parse its data
         with open(filePath, 'r') as file:
@@ -88,14 +88,14 @@ class AbaqusReader:
                     if command == 'node-set' and modelDatabase:
                         nodeSet = cast(NodeSet, modelDatabase.nodeSets.new())
                         nodeSet.name = line.split(',')[1].split('=')[1]
-                        generateFlag = ',generate' in line
+                        generate = ',generate' in line
                     else: nodeSet = None
 
                     # if read element set command, create a new element set
                     if command == 'element-set' and modelDatabase:
                         elementSet = cast(ElementSet, modelDatabase.elementSets.new())
                         elementSet.name = line.split(',')[1].split('=')[1]
-                        generateFlag = ',generate' in line
+                        generate = ',generate' in line
                     else: elementSet = None
                 else:
                     # parse data
@@ -116,7 +116,7 @@ class AbaqusReader:
                         # parse node set
                         case 'node-set':
                             if nodeSet:
-                                if not generateFlag:
+                                if not generate:
                                     indices: list[int] = [int(x) - 1 for x in line.split(',')]
                                     nodeSet.add(indices)
                                 else:
@@ -129,7 +129,7 @@ class AbaqusReader:
                         # parse element set
                         case 'element-set':
                             if elementSet:
-                                if not generateFlag:
+                                if not generate:
                                     indices: list[int] = [int(x) - 1 for x in line.split(',')]
                                     elementSet.add(indices)
                                 else:

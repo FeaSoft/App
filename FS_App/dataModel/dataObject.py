@@ -18,19 +18,26 @@ class DataObject(ABC):
         self._nameSetter(self, value)
         self.notifyPropertyChanged('name')
 
+    @property
+    def isAssigned(self) -> bool:
+        '''Determines if the data object is currently assigned.'''
+        return self._isAssignedGetter(self)
+
     # attribute slots
-    __slots__ = ('_nameGetter', '_nameSetter', '_callbacks')
+    __slots__ = ('_nameGetter', '_nameSetter', '_isAssignedGetter', '_callbacks')
 
     @abstractmethod
     def __init__(
         self,
         nameGetter: Callable[['DataObject'], str],
-        nameSetter: Callable[['DataObject', str], None]
+        nameSetter: Callable[['DataObject', str], None],
+        isAssignedGetter: Callable[['DataObject'], bool]
     ) -> None:
         '''Data object constructor.'''
         super().__init__()
         self._nameGetter: Callable[[DataObject], str] = nameGetter
         self._nameSetter: Callable[[DataObject, str], None] = nameSetter
+        self._isAssignedGetter: Callable[[DataObject], bool] = isAssignedGetter
         self._callbacks: dict[int, Callable[[str], None]] = {}
 
     def notifyPropertyChanged(self, propertyName: str) -> None:

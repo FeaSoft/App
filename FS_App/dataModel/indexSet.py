@@ -17,10 +17,11 @@ class IndexSet(DataObject):
     def __init__(
         self,
         nameGetter: Callable[[DataObject], str],
-        nameSetter: Callable[[DataObject, str], None]
+        nameSetter: Callable[[DataObject, str], None],
+        isAssignedGetter: Callable[[DataObject], bool]
     ) -> None:
         '''Index set constructor.'''
-        super().__init__(nameGetter, nameSetter)
+        super().__init__(nameGetter, nameSetter, isAssignedGetter)
         self._indices: set[int] = set()
 
     def add(self, indices: Sequence[int]) -> None:
