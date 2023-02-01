@@ -13,8 +13,14 @@ class CellsRenderObject(RenderObject):
     # attribute slots
     __slots__ = ('_indices', '_selectionNode', '_selection', '_extractionFilter', '_mapper', '_actor')
 
-    def __init__(self, dataSet: vtkUnstructuredGrid, indices: Sequence[int]) -> None:
+    def __init__(
+        self,
+        dataSet: vtkUnstructuredGrid,
+        indices: Sequence[int],
+        color: tuple[float, float, float] | None = None
+    ) -> None:
         '''Cells render object constructor.'''
+        super().__init__()
         # indices
         self._indices: vtkIdTypeArray = vtkIdTypeArray()
         self._indices.SetNumberOfValues(len(indices))
@@ -43,11 +49,8 @@ class CellsRenderObject(RenderObject):
         self._actor.GetProperty().EdgeVisibilityOn()
         self._actor.GetProperty().SetLineWidth(1.5)
         self._actor.GetProperty().LightingOff()
+        if color: self._actor.GetProperty().SetColor(*color)
 
-    def actors(self) -> tuple[vtkActor, ...]:
+    def actors(self) -> Sequence[vtkActor]:
         '''The renderable VTK actors.'''
         return (self._actor,)
-
-    def setColor(self, color: tuple[float, float, float]) -> None:
-        '''Sets the renderable object color.'''
-        self._actor.GetProperty().SetColor(*color)

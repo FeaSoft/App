@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from vtkmodules.vtkRenderingCore import vtkActor
 
 class RenderObject(ABC):
@@ -15,6 +16,6 @@ class RenderObject(ABC):
         super().__init__()
 
     @abstractmethod
-    def actors(self) -> tuple[vtkActor, ...]:
+    def actors(self) -> Sequence[vtkActor]:
         '''The renderable VTK actors.'''
         ...

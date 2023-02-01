@@ -1,9 +1,11 @@
 import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
 from typing import Literal, Any, cast
 from collections.abc import Callable, Sequence
-from dataModel import Mesh, NodeSet, ElementSet
+from dataModel import Mesh, NodeSet, ElementSet, BoundaryCondition, ModelDatabase
 from visualization.decoration import Triad, Info
-from visualization.rendering import RenderObject, MeshRenderObject, PointsRenderObject, CellsRenderObject
+from visualization.rendering import (
+    RenderObject, MeshRenderObject, PointsRenderObject, CellsRenderObject, ArrowsRenderObject, GroupRenderObject
+)
 from visualization.interaction import (
     Views, InteractionStyles, InteractionStyle, RotateInteractionStyle, PanInteractionStyle, ZoomInteractionStyle,
     PickSingleInteractionStyle, PickMultipleInteractionStyle, ProbeInteractionStyle, RulerInteractionStyle
@@ -173,8 +175,9 @@ class Viewport(QVTKRenderWindowInteractor):
 
     def setSelectionRenderObject(
         self,
-        dataObject: NodeSet | ElementSet | None,
+        dataObject: NodeSet | ElementSet | BoundaryCondition | None,
         color: tuple[float, float, float] | None = None,
+        modelDatabase: ModelDatabase | None = None,
         render: bool = True
     ) -> None:
         '''Renders the specified selection.'''
@@ -182,12 +185,34 @@ class Viewport(QVTKRenderWindowInteractor):
         if not self._meshRenderObject: return
         match dataObject:
             case NodeSet():
-                self._selectionRenderObject = PointsRenderObject(self._meshRenderObject.dataSet, dataObject.indices())
+                self._selectionRenderObject = PointsRenderObject(
+                    self._meshRenderObject.dataSet, dataObject.indices(), color
+                )
             case ElementSet():
-                self._selectionRenderObject = CellsRenderObject(self._meshRenderObject.dataSet, dataObject.indices())
+                self._selectionRenderObject = CellsRenderObject(
+                    self._meshRenderObject.dataSet, dataObject.indices(), color
+                )
+            case BoundaryCondition():
+                if not modelDatabase: raise ValueError("missing optional argument: 'modelDatabase'")
+                if True not in dataObject.activeFlags():
+                    self._selectionRenderObject = None
+                else:
+                    nodeSet: NodeSet = cast(NodeSet, modelDatabase.nodeSets[dataObject.nodeSetName])
+                    self._selectionRenderObject = GroupRenderObject()
+                    for i in range(3):
+                        if not dataObject.activeFlags()[i]: continue
+                        a: float = +1.0 if dataObject.components()[i] >= 0.0 else -1.0
+                        origins: tuple[tuple[float, float, float], ...] = tuple(
+                            modelDatabase.mesh.nodes[k].coordinates for k in nodeSet.indices()
+                        )
+                        directions: tuple[tuple[float, float, float], ...] = (
+                            tuple(a if k == i else 0.0 for k in range(3)),
+                        )*nodeSet.count
+                        arrowType: str = 'Normal' if dataObject.components()[i] != 0.0 else 'NoShaft'
+                        self._selectionRenderObject.add(ArrowsRenderObject(origins, directions, arrowType, color))
             case _:
                 self._selectionRenderObject = None
         if self._selectionRenderObject:
-            if color: self._selectionRenderObject.setColor(color)
             self.add(self._selectionRenderObject, render=False)
+            InteractionStyle.recomputeGlyphSize(self._renderer)
         if render: self.render()

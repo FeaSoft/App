@@ -1,4 +1,5 @@
-
+# BUGS:
+# selection stays after model closed
 
 if __name__ == '__main__':
 

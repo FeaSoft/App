@@ -100,3 +100,11 @@ class BoundaryCondition(DataObject):
         self._isActiveInX: bool = False
         self._isActiveInY: bool = False
         self._isActiveInZ: bool = False
+
+    def components(self) -> tuple[float, float, float]:
+        '''Returns the boundary condition components.'''
+        return (self._x, self._y, self._z)
+
+    def activeFlags(self) -> tuple[bool, bool, bool]:
+        '''Returns the boundary condition active flags.'''
+        return (self._isActiveInX, self._isActiveInY, self._isActiveInZ)

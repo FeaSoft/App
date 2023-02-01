@@ -36,8 +36,11 @@ class InteractionStyle(ABC):
                 dy: float = cameraPosition[1] - actorPosition[1]
                 dz: float = cameraPosition[2] - actorPosition[2]
                 distance: float = math.sqrt(dx*dx + dy*dy + dz*dz)
-                scale: float = distance*0.0035
-                producer.SetScaleFactor(scale)
+                match producer.GetObjectName():
+                    case 'points': scaleFactor: float = 0.0035
+                    case 'arrows': scaleFactor: float = 0.02
+                    case _: raise NotImplementedError('case not implemented')
+                producer.SetScaleFactor(distance*scaleFactor)
                 producer.Modified()
         if render: renderer.GetRenderWindow().Render()
 

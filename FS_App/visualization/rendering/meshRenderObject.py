@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataModel import Mesh
 from visualization.rendering.renderObject import RenderObject
 from vtkmodules.vtkCommonCore import vtkPoints
@@ -52,6 +53,6 @@ class MeshRenderObject(RenderObject):
         self._actor.GetProperty().SetLineWidth(1.5)
         self._actor.GetProperty().SetColor(0.0, 0.5, 1.0)
 
-    def actors(self) -> tuple[vtkActor, ...]:
+    def actors(self) -> Sequence[vtkActor]:
         '''The renderable VTK actors.'''
         return (self._actor,)
