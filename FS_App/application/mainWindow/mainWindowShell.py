@@ -21,8 +21,9 @@ class MainWindowShell(QMainWindow):
         # load icons
         self._icons: dict[str, QIcon] = {
             x: QIcon(f'./resources/images/{x}.svg') for x in (
-                'file-new', 'view-front', 'view-back', 'view-top', 'view-bottom', 'view-left', 'view-right',
-                'view-isometric', 'interaction-style-rotate', 'interaction-style-pan', 'interaction-style-zoom',
+                'file-new', 'file-open', 'file-save', 'file-save-as', 'file-close', 'file-exit', 'view-front',
+                'view-back', 'view-top', 'view-bottom', 'view-left', 'view-right', 'view-isometric',
+                'interaction-style-rotate', 'interaction-style-pan', 'interaction-style-zoom',
                 'interaction-style-pick-single', 'interaction-style-pick-multiple', 'interaction-style-probe',
                 'interaction-style-ruler'
             )
@@ -47,6 +48,39 @@ class MainWindowShell(QMainWindow):
         self._menuBarFileNew.setIcon(self._icons['file-new'])
         self._menuBarFile.addAction(self._menuBarFileNew) # type: ignore
 
+        # menu bar > file > open
+        self._menuBarFileOpen: QAction = QAction(self._menuBarFile)
+        self._menuBarFileOpen.setText('Open...')
+        self._menuBarFileOpen.setIcon(self._icons['file-open'])
+        self._menuBarFile.addAction(self._menuBarFileOpen) # type: ignore
+
+        # menu bar > file > save
+        self._menuBarFileSave: QAction = QAction(self._menuBarFile)
+        self._menuBarFileSave.setText('Save')
+        self._menuBarFileSave.setIcon(self._icons['file-save'])
+        self._menuBarFile.addAction(self._menuBarFileSave) # type: ignore
+
+        # menu bar > file > save as
+        self._menuBarFileSaveAs: QAction = QAction(self._menuBarFile)
+        self._menuBarFileSaveAs.setText('Save As...')
+        self._menuBarFileSaveAs.setIcon(self._icons['file-save-as'])
+        self._menuBarFile.addAction(self._menuBarFileSaveAs) # type: ignore
+
+        # menu bar > file > close
+        self._menuBarFileClose: QAction = QAction(self._menuBarFile)
+        self._menuBarFileClose.setText('Close')
+        self._menuBarFileClose.setIcon(self._icons['file-close'])
+        self._menuBarFile.addAction(self._menuBarFileClose) # type: ignore
+
+        # separator
+        self._menuBarFile.addSeparator()
+
+        # menu bar > file > exit
+        self._menuBarFileExit: QAction = QAction(self._menuBarFile)
+        self._menuBarFileExit.setText('Exit')
+        self._menuBarFileExit.setIcon(self._icons['file-exit'])
+        self._menuBarFile.addAction(self._menuBarFileExit) # type: ignore
+
         # tool bar (file)
         self._toolBarFile: QToolBar = QToolBar(self)
         self._toolBarFile.setFloatable(False)
@@ -57,6 +91,18 @@ class MainWindowShell(QMainWindow):
         self._toolBarFileNew.setToolTip('New Model Database')
         self._toolBarFileNew.setIcon(self._icons['file-new'])
         self._toolBarFile.addAction(self._toolBarFileNew)
+
+        # tool bar (file) > open
+        self._toolBarFileOpen: QAction = QAction(self._toolBarFile)
+        self._toolBarFileOpen.setToolTip('Open Database')
+        self._toolBarFileOpen.setIcon(self._icons['file-open'])
+        self._toolBarFile.addAction(self._toolBarFileOpen)
+
+        # tool bar (file) > save
+        self._toolBarFileSave: QAction = QAction(self._toolBarFile)
+        self._toolBarFileSave.setToolTip('Save Model Database')
+        self._toolBarFileSave.setIcon(self._icons['file-save'])
+        self._toolBarFile.addAction(self._toolBarFileSave)
 
         # tool bar (view)
         self._toolBarView: QToolBar = QToolBar(self)

@@ -16,6 +16,16 @@ class ModelDatabase:
     '''
 
     @property
+    def filePath(self) -> str:
+        '''Model database file path.'''
+        return self._filePath
+
+    @filePath.setter
+    def filePath(self, value: str) -> None:
+        '''Model database file path (setter).'''
+        self._filePath = value
+
+    @property
     def name(self) -> str:
         '''Model database name.'''
         return f'Model Database (Solid-{self._mesh.modelingSpace.value}D)'
@@ -64,11 +74,13 @@ class ModelDatabase:
 
     # attribute slots
     __slots__ = (
-        '_mesh', '_nodeSets', '_elementSets', '_materials', '_sections', '_concentratedLoads', '_boundaryConditions'
+        '_filePath', '_mesh', '_nodeSets', '_elementSets', '_materials', '_sections', '_concentratedLoads',
+        '_boundaryConditions'
     )
 
     def __init__(self, mesh: Mesh) -> None:
         '''Model database constructor.'''
+        self._filePath: str = ''
         self._mesh: Mesh = mesh
         self._nodeSets: DataObjectContainer = DataObjectContainer(
             NodeSet, 'Node Sets', 'Node-Set-', self.isAssigned

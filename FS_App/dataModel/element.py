@@ -7,8 +7,13 @@ class Element:
     '''
 
     @property
+    def elementType(self) -> ElementTypes:
+        '''Finite element type.'''
+        return self._elementType
+
+    @property
     def cellType(self) -> int:
-        '''The corresponding VTK cell type.'''
+        '''Corresponding VTK cell type.'''
         match self._elementType:
             case ElementTypes.E2D3: return VTK_TRIANGLE
             case ElementTypes.E2D4: return VTK_QUAD
@@ -36,11 +41,12 @@ class Element:
     # attribute slots
     __slots__ = ('_elementType', '_nodeIndices')
 
-    def __init__(self, elementType: ElementTypes, nodeIndices: tuple[int, ...]) -> None:
+    def __init__(self, elementType: ElementTypes | str, nodeIndices: tuple[int, ...]) -> None:
         '''Element constructor.'''
-        self._elementType: ElementTypes = elementType
+        if isinstance(elementType, ElementTypes): self._elementType: ElementTypes = elementType
+        else: self._elementType: ElementTypes = ElementTypes[elementType]
         self._nodeIndices: tuple[int, ...] = nodeIndices
         if len(nodeIndices) != self.nodeCount:
             raise ValueError(
-                f'element {elementType.name} requires {self.nodeCount} nodes (got {len(nodeIndices)})'
+                f'element {self._elementType.name} requires {self.nodeCount} nodes (got {len(nodeIndices)})'
             )

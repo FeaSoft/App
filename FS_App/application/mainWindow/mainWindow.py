@@ -4,11 +4,11 @@ from collections.abc import Callable, Sequence
 from dataModel import (
     ModelingSpaces, DataObject, NodeSet, ElementSet, Section, ConcentratedLoad, BoundaryCondition, ModelDatabase
 )
-from inputOutput import AbaqusReader
+from inputOutput import AbaqusReader, FSWriter, FSReader
 from visualization import Viewport, Views, InteractionStyles
 from application.terminal import Terminal
 from application.mainWindow.mainWindowShell import MainWindowShell
-from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 class MainWindow(MainWindowShell):
     '''
@@ -37,7 +37,14 @@ class MainWindow(MainWindowShell):
         Viewport.registerCallback(self.onViewportOptionChanged)
         self._modelTree.currentItemChanged.connect(self.onModelTreeSelection)                         # type: ignore
         self._menuBarFileNew.triggered.connect(self.onMenuBarFileNew)                                 # type: ignore
+        self._menuBarFileOpen.triggered.connect(self.onMenuBarFileOpen)                               # type: ignore
+        self._menuBarFileSave.triggered.connect(self.onMenuBarFileSave)                               # type: ignore
+        self._menuBarFileSaveAs.triggered.connect(self.onMenuBarFileSaveAs)                           # type: ignore
+        self._menuBarFileClose.triggered.connect(self.onMenuBarFileClose)                             # type: ignore
+        self._menuBarFileExit.triggered.connect(self.onMenuBarFileExit)                               # type: ignore
         self._toolBarFileNew.triggered.connect(self.onToolBarFileNew)                                 # type: ignore
+        self._toolBarFileOpen.triggered.connect(self.onToolBarFileOpen)                               # type: ignore
+        self._toolBarFileSave.triggered.connect(self.onToolBarFileSave)                               # type: ignore
         self._toolBarViewFront.triggered.connect(self.onToolBarViewFront)                             # type: ignore
         self._toolBarViewBack.triggered.connect(self.onToolBarViewBack)                               # type: ignore
         self._toolBarViewTop.triggered.connect(self.onToolBarViewTop)                                 # type: ignore
@@ -81,22 +88,29 @@ class MainWindow(MainWindowShell):
         self._toolBarInteractionPickSingle.setEnabled(False)
         self._toolBarInteractionPickMultiple.setEnabled(False)
 
-    def setModelDatabase(self, filePath: str) -> None:
+    def setModelDatabase(self, filePath: str | None) -> None:
         '''
         Creates a model database from file.
         Updates the GUI based on the new model database.
         '''
-        # create model database from file
-        extension: str = path.splitext(filePath)[1]
-        match extension:
-            case '.inp': self._modelDatabase = AbaqusReader.read(filePath)
-            case _: raise ValueError(f"invalid file extension: '{extension}'")
+        # if a file is not given, dereference the model database
+        if not filePath:
+            self._modelDatabase = None
+        else:
+            # create model database from file
+            extension: str = path.splitext(filePath)[1]
+            match extension:
+                case '.inp': self._modelDatabase = AbaqusReader.readModelDatabase(filePath)
+                case '.fs_mdb': self._modelDatabase = FSReader.readModelDatabase(filePath)
+                case _: raise ValueError(f"invalid file extension: '{extension}'")
         # update model tree and viewport
         self._modelTree.setModelDatabase(self._modelDatabase)
-        self._viewport.setMeshRenderObject(self._modelDatabase.mesh, render=False)
+        self._viewport.setMeshRenderObject(self._modelDatabase.mesh if self._modelDatabase else None, render=False)
         # set correct camera view
-        if self._modelDatabase.mesh.modelingSpace == ModelingSpaces.TwoDimensional: self._viewport.setView(Views.Front)
-        else: self._viewport.setView(Views.Isometric)
+        if self._modelDatabase and self._modelDatabase.mesh.modelingSpace == ModelingSpaces.ThreeDimensional:
+            self._viewport.setView(Views.Isometric)
+        else:
+            self._viewport.setView(Views.Front)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tree -> Viewport
@@ -196,7 +210,66 @@ class MainWindow(MainWindowShell):
             filter='Abaqus Input Files (*.inp);;All Files (*.*)',
             options=QFileDialog.Option.DontUseNativeDialog
         )[0]
-        if filePath != '': self.setModelDatabase(filePath)
+        if filePath != '':
+            if path.isfile(path.splitext(filePath)[0] + '.fs_mdb'):
+                result: int = QMessageBox.warning(
+                    self,
+                    'Save Model Database',
+                    'A model database already exists.\nDo you want to replace it?',
+                    QMessageBox.StandardButton.Yes,
+                    QMessageBox.StandardButton.No
+                )
+                if result != QMessageBox.StandardButton.Yes: return
+            self.setModelDatabase(filePath)
+            if self._modelDatabase:
+                FSWriter.writeModelDatabase(self._modelDatabase)
+                print(f"Model database created: '{self._modelDatabase.filePath}'")
+
+    def onMenuBarFileOpen(self) -> None:
+        '''On Menu Bar > File > Open.'''
+        filePath: str = QFileDialog.getOpenFileName( # type: ignore
+            parent=self,
+            caption='Open Database',
+            filter='FeaSoft Model Database Files (*.fs_mdb);;All Files (*.*)',
+            options=QFileDialog.Option.DontUseNativeDialog
+        )[0]
+        if filePath != '':
+            self.setModelDatabase(filePath)
+            if self._modelDatabase:
+                print(f"Model database opened: '{self._modelDatabase.filePath}'")
+
+    def onMenuBarFileSave(self) -> None:
+        '''On Menu Bar > File > Save.'''
+        if not self._modelDatabase:
+            raise RuntimeError('a model database must first be opened')
+        FSWriter.writeModelDatabase(self._modelDatabase)
+        print(f"Model database saved: '{self._modelDatabase.filePath}'")
+
+    def onMenuBarFileSaveAs(self) -> None:
+        '''On Menu Bar > File > Save As.'''
+        if not self._modelDatabase:
+            raise RuntimeError('a model database must first be opened')
+        filePath: str = QFileDialog.getSaveFileName( # type: ignore
+            parent=self,
+            caption='Save Model Database',
+            filter='FeaSoft Model Database Files (*.fs_mdb)',
+            options=QFileDialog.Option.DontUseNativeDialog
+        )[0]
+        if filePath != '':
+            self._modelDatabase.filePath = path.splitext(filePath)[0] + '.fs_mdb'
+            FSWriter.writeModelDatabase(self._modelDatabase)
+            print(f"Model database saved: '{self._modelDatabase.filePath}'")
+
+    def onMenuBarFileClose(self) -> None:
+        '''On Menu Bar > File > Close.'''
+        if not self._modelDatabase:
+            raise RuntimeError('a model database must first be opened')
+        self.setModelDatabase(None)
+        print('Model database closed')
+
+    def onMenuBarFileExit(self) -> None:
+        '''On Menu Bar > File > Exit.'''
+        self.close()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tool Bar
@@ -205,6 +278,14 @@ class MainWindow(MainWindowShell):
     def onToolBarFileNew(self) -> None:
         '''On Tool Bar > File > New.'''
         self.onMenuBarFileNew()
+
+    def onToolBarFileOpen(self) -> None:
+        '''On Tool Bar > File > Open.'''
+        self.onMenuBarFileOpen()
+
+    def onToolBarFileSave(self) -> None:
+        '''On Tool Bar > File > Save.'''
+        self.onMenuBarFileSave()
 
     def onToolBarViewFront(self) -> None:
         '''On Tool Bar > View > Front.'''

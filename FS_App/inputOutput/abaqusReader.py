@@ -1,3 +1,4 @@
+from os import path
 from typing import cast
 from dataModel import ModelingSpaces, ElementTypes, Mesh, NodeSet, ElementSet, ModelDatabase
 
@@ -43,18 +44,19 @@ class AbaqusReader:
             case _: return None
 
     @staticmethod
-    def read(filePath: str) -> ModelDatabase:
+    def readModelDatabase(filePath: str) -> ModelDatabase:
         '''Creates a new finite element model database from the specified Abaqus input (*.inp) file.'''
         # initialize variables
-        modelDatabase: ModelDatabase | None = None          # the new model database
-        command: str = '...'                                # the Abaqus command being parsed
-        modelingSpace: ModelingSpaces | None = None         # the current modeling space
-        elementType: ElementTypes | None = None             # the type of element being parsed
-        nodeData: list[tuple[float, float, float]] = []     # the node data
-        elementData: list[tuple[str, tuple[int, ...]]] = [] # the element data
-        nodeSet: NodeSet | None = None                      # the node set being parsed
-        elementSet: ElementSet | None = None                # the element set being parsed
-        generate: bool = False                              # specifies if the set being parsed is to be generated
+        fs_mdb: str = path.splitext(filePath)[0] + '.fs_mdb' # the model database file (for storage)
+        modelDatabase: ModelDatabase | None = None           # the new model database
+        command: str = '...'                                 # the Abaqus command being parsed
+        modelingSpace: ModelingSpaces | None = None          # the current modeling space
+        elementType: ElementTypes | None = None              # the type of element being parsed
+        nodeData: list[tuple[float, float, float]] = []      # the node data
+        elementData: list[tuple[str, tuple[int, ...]]] = []  # the element data
+        nodeSet: NodeSet | None = None                       # the node set being parsed
+        elementSet: ElementSet | None = None                 # the element set being parsed
+        generate: bool = False                               # specifies if the set being parsed is to be generated
 
         # read file line by line and parse its data
         with open(filePath, 'r') as file:
@@ -142,10 +144,13 @@ class AbaqusReader:
                         # do nothing
                         case _: pass
 
-        # done reading
+        # create model database if not done already
         if not modelDatabase:
             if not modelingSpace: raise RuntimeError('unsupported modeling space')
             modelDatabase = ModelDatabase(Mesh(modelingSpace, nodeData, elementData))
+
+        # done reading
+        modelDatabase.filePath = fs_mdb
         return modelDatabase
 
     # attribute slots

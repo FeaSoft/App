@@ -29,12 +29,13 @@ class Mesh:
 
     def __init__(
         self,
-        modelingSpace: ModelingSpaces,
+        modelingSpace: ModelingSpaces | int,
         nodeData: Sequence[tuple[float, float, float]],
         elementData: Sequence[tuple[str, tuple[int, ...]]]
     ) -> None:
         '''Mesh constructor.'''
-        self._modelingSpace: ModelingSpaces = modelingSpace
+        if isinstance(modelingSpace, ModelingSpaces): self._modelingSpace: ModelingSpaces = modelingSpace
+        else: self._modelingSpace: ModelingSpaces = ModelingSpaces(modelingSpace)
         self._nodes: tuple[Node, ...] = tuple(Node(coordinates) for coordinates in nodeData)
         self._elements: tuple[Element, ...] = tuple(
             Element(ElementTypes[elementType], nodeIndices) for elementType, nodeIndices in elementData
