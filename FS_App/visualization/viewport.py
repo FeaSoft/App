@@ -1,7 +1,7 @@
 import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
 from typing import Literal, Any, cast
 from collections.abc import Callable, Sequence
-from dataModel import Mesh, NodeSet, ElementSet, BoundaryCondition, ModelDatabase
+from dataModel import Mesh, NodeSet, ElementSet, ConcentratedLoad, BoundaryCondition, ModelDatabase
 from visualization.decoration import Triad, Info
 from visualization.rendering import (
     RenderObject, MeshRenderObject, PointsRenderObject, CellsRenderObject, ArrowsRenderObject, GroupRenderObject
@@ -168,6 +168,7 @@ class Viewport(QVTKRenderWindowInteractor):
 
     def setMeshRenderObject(self, mesh: Mesh | None, render: bool = True) -> None:
         '''Renders the specified mesh.'''
+        if self._selectionRenderObject: self.remove(self._selectionRenderObject, render=False)
         if self._meshRenderObject: self.remove(self._meshRenderObject, render=False)
         self._meshRenderObject = MeshRenderObject(mesh) if mesh else None
         if self._meshRenderObject: self.add(self._meshRenderObject, render=False)
@@ -175,7 +176,7 @@ class Viewport(QVTKRenderWindowInteractor):
 
     def setSelectionRenderObject(
         self,
-        dataObject: NodeSet | ElementSet | BoundaryCondition | None,
+        dataObject: NodeSet | ElementSet | ConcentratedLoad | BoundaryCondition | None,
         color: tuple[float, float, float] | None = None,
         modelDatabase: ModelDatabase | None = None,
         render: bool = True
@@ -192,19 +193,36 @@ class Viewport(QVTKRenderWindowInteractor):
                 self._selectionRenderObject = CellsRenderObject(
                     self._meshRenderObject.dataSet, dataObject.indices(), color
                 )
+            case ConcentratedLoad():
+                if not modelDatabase: raise ValueError("missing optional argument: 'modelDatabase'")
+                if sum(tuple(abs(x) for x in dataObject.components())) == 0.0:
+                    self._selectionRenderObject = None
+                else:
+                    nodeSet: NodeSet = cast(NodeSet, modelDatabase.nodeSets[dataObject.nodeSetName])
+                    origins: tuple[tuple[float, float, float], ...] = tuple(
+                        modelDatabase.mesh.nodes[k].coordinates for k in nodeSet.indices()
+                    )
+                    self._selectionRenderObject = GroupRenderObject()
+                    for i in range(3):
+                        if dataObject.components()[i] == 0.0: continue
+                        a: float = +1.0 if dataObject.components()[i] >= 0.0 else -1.0
+                        directions: tuple[tuple[float, float, float], ...] = (
+                            tuple(a if k == i else 0.0 for k in range(3)),
+                        )*nodeSet.count
+                        self._selectionRenderObject.add(ArrowsRenderObject(origins, directions, 'Normal', color))
             case BoundaryCondition():
                 if not modelDatabase: raise ValueError("missing optional argument: 'modelDatabase'")
                 if True not in dataObject.activeFlags():
                     self._selectionRenderObject = None
                 else:
                     nodeSet: NodeSet = cast(NodeSet, modelDatabase.nodeSets[dataObject.nodeSetName])
+                    origins: tuple[tuple[float, float, float], ...] = tuple(
+                        modelDatabase.mesh.nodes[k].coordinates for k in nodeSet.indices()
+                    )
                     self._selectionRenderObject = GroupRenderObject()
                     for i in range(3):
                         if not dataObject.activeFlags()[i]: continue
                         a: float = +1.0 if dataObject.components()[i] >= 0.0 else -1.0
-                        origins: tuple[tuple[float, float, float], ...] = tuple(
-                            modelDatabase.mesh.nodes[k].coordinates for k in nodeSet.indices()
-                        )
                         directions: tuple[tuple[float, float, float], ...] = (
                             tuple(a if k == i else 0.0 for k in range(3)),
                         )*nodeSet.count

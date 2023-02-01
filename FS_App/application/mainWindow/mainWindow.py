@@ -1,7 +1,9 @@
 from os import path
 from typing import Literal, Any, cast
 from collections.abc import Callable, Sequence
-from dataModel import ModelingSpaces, DataObject, NodeSet, ElementSet, Section, BoundaryCondition, ModelDatabase
+from dataModel import (
+    ModelingSpaces, DataObject, NodeSet, ElementSet, Section, ConcentratedLoad, BoundaryCondition, ModelDatabase
+)
 from inputOutput import AbaqusReader
 from visualization import Viewport, Views, InteractionStyles
 from application.terminal import Terminal
@@ -120,26 +122,29 @@ class MainWindow(MainWindowShell):
             case NodeSet():
                 stopPickingFlag = False
                 self.enablePicking(True, True, 'Points', lambda x, y: self.onViewportPick(dataObject, x, y))
-                color: tuple[float, float, float] = (1.0, 0.0, 0.0)
                 self._viewport.info.setText(1, 'Edit Node Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Nodes')
-                self._viewport.setSelectionRenderObject(dataObject, color, render=False)
+                self._viewport.setSelectionRenderObject(dataObject, (1.0, 0.0, 0.0), render=False)
             case ElementSet():
                 stopPickingFlag = False
                 self.enablePicking(True, True, 'Cells', lambda x, y: self.onViewportPick(dataObject, x, y))
-                color: tuple[float, float, float] = (1.0, 0.0, 0.0)
                 self._viewport.info.setText(1, 'Edit Element Set')
                 self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Elements')
-                self._viewport.setSelectionRenderObject(dataObject, color, render=False)
+                self._viewport.setSelectionRenderObject(dataObject, (1.0, 0.0, 0.0), render=False)
             case Section():
                 if dataObject.elementSetName != '<Undefined>':
-                    color: tuple[float, float, float] = (0.0, 0.75, 0.0)
                     dataObject = cast(ElementSet, self._modelDatabase.elementSets[dataObject.elementSetName])
-                    self._viewport.setSelectionRenderObject(dataObject, color, render=False)
+                    self._viewport.setSelectionRenderObject(dataObject, (0.0, 0.75, 0.0), render=False)
+            case ConcentratedLoad():
+                if dataObject.nodeSetName != '<Undefined>':
+                    self._viewport.setSelectionRenderObject(
+                        dataObject, (1.0, 1.0, 0.0), self._modelDatabase, render=False
+                    )
             case BoundaryCondition():
                 if dataObject.nodeSetName != '<Undefined>':
-                    color: tuple[float, float, float] = (1.0, 0.5, 0.0)
-                    self._viewport.setSelectionRenderObject(dataObject, color, self._modelDatabase, render=False)
+                    self._viewport.setSelectionRenderObject(
+                        dataObject, (1.0, 0.5, 0.0), self._modelDatabase, render=False
+                    )
             case _:
                 pass
         if stopPickingFlag: self.disablePicking()

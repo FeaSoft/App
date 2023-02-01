@@ -64,3 +64,7 @@ class ConcentratedLoad(DataObject):
         self._x: float = 0.0
         self._y: float = 0.0
         self._z: float = 0.0
+
+    def components(self) -> tuple[float, float, float]:
+        '''Returns the concentrated load components.'''
+        return (self._x, self._y, self._z)
