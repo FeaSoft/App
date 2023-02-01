@@ -54,6 +54,9 @@ class MainWindowShell(QMainWindow):
         self._menuBarFileOpen.setIcon(self._icons['file-open'])
         self._menuBarFile.addAction(self._menuBarFileOpen) # type: ignore
 
+        # separator
+        self._menuBarFile.addSeparator()
+
         # menu bar > file > save
         self._menuBarFileSave: QAction = QAction(self._menuBarFile)
         self._menuBarFileSave.setText('Save')
@@ -65,6 +68,9 @@ class MainWindowShell(QMainWindow):
         self._menuBarFileSaveAs.setText('Save As...')
         self._menuBarFileSaveAs.setIcon(self._icons['file-save-as'])
         self._menuBarFile.addAction(self._menuBarFileSaveAs) # type: ignore
+
+        # separator
+        self._menuBarFile.addSeparator()
 
         # menu bar > file > close
         self._menuBarFileClose: QAction = QAction(self._menuBarFile)
