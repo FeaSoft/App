@@ -1,10 +1,10 @@
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import (
-    QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QLineEdit, QRadioButton, QFrame, QSizePolicy,
+    QWidget, QDialog, QGridLayout, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QLineEdit, QRadioButton, QFrame, QSizePolicy,
     QPushButton, QTextEdit
 )
 
-class SolverDialogShell(QWidget):
+class SolverDialogShell(QDialog):
     '''
     The solver dialog shell (basic UI).
     '''

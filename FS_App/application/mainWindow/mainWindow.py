@@ -7,6 +7,7 @@ from dataModel import (
 from inputOutput import AbaqusReader, FSWriter, FSReader
 from visualization import Viewport, Views, InteractionStyles
 from application.terminal import Terminal
+from application.solverDialog import SolverDialog
 from application.mainWindow.mainWindowShell import MainWindowShell
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
@@ -42,6 +43,7 @@ class MainWindow(MainWindowShell):
         self._menuBarFileSaveAs.triggered.connect(self.onMenuBarFileSaveAs)                           # type: ignore
         self._menuBarFileClose.triggered.connect(self.onMenuBarFileClose)                             # type: ignore
         self._menuBarFileExit.triggered.connect(self.onMenuBarFileExit)                               # type: ignore
+        self._menuBarSolverDialog.triggered.connect(self.onMenuBarSolverDialog)                       # type: ignore
         self._toolBarFileNew.triggered.connect(self.onToolBarFileNew)                                 # type: ignore
         self._toolBarFileOpen.triggered.connect(self.onToolBarFileOpen)                               # type: ignore
         self._toolBarFileSave.triggered.connect(self.onToolBarFileSave)                               # type: ignore
@@ -270,6 +272,11 @@ class MainWindow(MainWindowShell):
     def onMenuBarFileExit(self) -> None:
         '''On Menu Bar > File > Exit.'''
         self.close()
+
+    def onMenuBarSolverDialog(self) -> None:
+        '''On Menu Bar > Solver > Dialog.'''
+        solverDialog: SolverDialog = SolverDialog(self)
+        solverDialog.exec()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tool Bar

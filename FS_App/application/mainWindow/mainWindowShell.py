@@ -21,8 +21,8 @@ class MainWindowShell(QMainWindow):
         # load icons
         self._icons: dict[str, QIcon] = {
             x: QIcon(f'./resources/images/{x}.svg') for x in (
-                'file-new', 'file-open', 'file-save', 'file-save-as', 'file-close', 'file-exit', 'view-front',
-                'view-back', 'view-top', 'view-bottom', 'view-left', 'view-right', 'view-isometric',
+                'file-new', 'file-open', 'file-save', 'file-save-as', 'file-close', 'file-exit', 'solver-dialog',
+                'view-front', 'view-back', 'view-top', 'view-bottom', 'view-left', 'view-right', 'view-isometric',
                 'interaction-style-rotate', 'interaction-style-pan', 'interaction-style-zoom',
                 'interaction-style-pick-single', 'interaction-style-pick-multiple', 'interaction-style-probe',
                 'interaction-style-ruler'
@@ -86,6 +86,17 @@ class MainWindowShell(QMainWindow):
         self._menuBarFileExit.setText('Exit')
         self._menuBarFileExit.setIcon(self._icons['file-exit'])
         self._menuBarFile.addAction(self._menuBarFileExit) # type: ignore
+
+        # menu bar > solver
+        self._menuBarSolver: QMenu = QMenu(self._menuBar)
+        self._menuBarSolver.setTitle('Solver')
+        self._menuBar.addAction(self._menuBarSolver.menuAction())
+
+        # menu bar > solver > dialog
+        self._menuBarSolverDialog: QAction = QAction(self._menuBarSolver)
+        self._menuBarSolverDialog.setText('Dialog')
+        self._menuBarSolverDialog.setIcon(self._icons['solver-dialog'])
+        self._menuBarSolver.addAction(self._menuBarSolverDialog) # type: ignore
 
         # tool bar (file)
         self._toolBarFile: QToolBar = QToolBar(self)
