@@ -94,7 +94,7 @@ class MainWindowShell(QMainWindow):
 
         # menu bar > solver > dialog
         self._menuBarSolverDialog: QAction = QAction(self._menuBarSolver)
-        self._menuBarSolverDialog.setText('Dialog')
+        self._menuBarSolverDialog.setText('Submit Job')
         self._menuBarSolverDialog.setIcon(self._icons['solver-dialog'])
         self._menuBarSolver.addAction(self._menuBarSolverDialog) # type: ignore
 

@@ -1,29 +1,77 @@
+from typing import Literal
 
-
+from multiprocessing import Process
 
 
 
 from application.solverDialog.solverDialogShell import SolverDialogShell
+from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QTimer
 
 
+
+
+
+
+def function() -> None:
+    import time
+    for i in range(5):
+        print(i)
+        time.sleep(2)
 
 class SolverDialog(SolverDialogShell):
-    pass
+    
+
+    # attribute slots
+    __slots__ = ('_timer', '_solverProcess', '_solveProcessStatus')
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+
+        self._timer: QTimer = QTimer(self)
+        self._timer.timeout.connect(self.onTimeOut) # type: ignore
+        self._timer.start(250)
+
+        self._solverProcess: Process | None = None
+        self._solveProcessStatus: Literal['Dead', 'Alive'] = 'Dead'
+
+        self._startSolverButton.clicked.connect(self.onStartSolver) # type: ignore
+        self._terminateSolverButton.clicked.connect(self.onTerminateSolver) # type: ignore
 
 
+    def onTimeOut(self) -> None:
+        if self._solverProcess and not self._solverProcess.is_alive():
+            self._solverProcess.close()
+            self._solverProcess = None
+            self._solveProcessStatus = 'Dead'
+            
+        
+        print(self._solveProcessStatus)
 
 
-# import time
+    def onStartSolver(self) -> None:
+        if self._solverProcess or self._solveProcessStatus == 'Alive':
+            raise RuntimeError('...')
+
+
+        self._solveProcessStatus = 'Alive'
+        self._solverProcess = Process(target=function)
+        self._solverProcess.start()
+        
+    def onTerminateSolver(self) -> None:
+        if not self._solverProcess: return
+
+        self._solverProcess.terminate()
+        self._solverProcess.join()
+        print('joined')
+        self._solverProcess.close()
+        self._solverProcess = None
+        self._solveProcessStatus = 'Dead'
+
 
 
 
 # from multiprocessing import Process
-
-
-# def function():
-#     for i in range(10):
-#         print(i)
-#         time.sleep(2)
 
 # process: Process = Process(target=function)
 
