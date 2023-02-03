@@ -1,4 +1,4 @@
-from PySide6.QtGui import Qt
+from PySide6.QtGui import Qt, QIcon
 from PySide6.QtWidgets import (
     QWidget, QDialog, QGridLayout, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QLineEdit, QRadioButton, QFrame, QSizePolicy,
     QPushButton, QTextEdit
@@ -45,6 +45,11 @@ class SolverDialogShell(QDialog):
         self._modelDatabaseBox.setText('...')
         self._currentJobGroupBoxLayout.addWidget(self._modelDatabaseBox, 0, 1)
 
+        # open model database button
+        self._openModelDatabaseButton: QPushButton = QPushButton(self._currentJobGroupBox)
+        self._openModelDatabaseButton.setIcon(QIcon('./resources/images/file-open.svg'))
+        self._currentJobGroupBoxLayout.addWidget(self._openModelDatabaseButton, 0, 2)
+
         # solver job input label
         self._solverJobInputLabel: QLabel = QLabel(self._currentJobGroupBox)
         self._solverJobInputLabel.setText('Solver Job Input:')
@@ -68,6 +73,18 @@ class SolverDialogShell(QDialog):
         self._outputDatabaseBox.setReadOnly(True)
         self._outputDatabaseBox.setText('...')
         self._currentJobGroupBoxLayout.addWidget(self._outputDatabaseBox, 2, 1)
+
+        # log file label
+        self._logFileLabel: QLabel = QLabel(self._currentJobGroupBox)
+        self._logFileLabel.setText('Log File:')
+        self._logFileLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self._currentJobGroupBoxLayout.addWidget(self._logFileLabel, 3, 0)
+
+        # log file box
+        self._logFileBox: QLineEdit = QLineEdit(self._currentJobGroupBox)
+        self._logFileBox.setReadOnly(True)
+        self._logFileBox.setText('...')
+        self._currentJobGroupBoxLayout.addWidget(self._logFileBox, 3, 1)
 
         # analysis type group box
         self._analysisTypeGroupBox: QGroupBox = QGroupBox(self)
@@ -146,37 +163,37 @@ class SolverDialogShell(QDialog):
         # status label
         self._statusLabel: QLabel = QLabel(self._processGroupBox)
         self._statusLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self._statusLabel.setText('Status:')
+        self._statusLabel.setText('Process Status:')
         self._processGroupBoxLayout.addWidget(self._statusLabel, 0, 0)
 
         # status box
         self._statusBox: QLineEdit = QLineEdit(self._processGroupBox)
         self._statusBox.setReadOnly(True)
-        self._statusBox.setText('...')
+        self._statusBox.setText('Dead')
         self._processGroupBoxLayout.addWidget(self._statusBox, 0, 1)
 
         # cpu label
         self._cpuLabel: QLabel = QLabel(self._processGroupBox)
         self._cpuLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self._cpuLabel.setText('CPU:')
+        self._cpuLabel.setText('CPU Usage:')
         self._processGroupBoxLayout.addWidget(self._cpuLabel, 1, 0)
 
         # cpu box
         self._cpuBox: QLineEdit = QLineEdit(self._processGroupBox)
         self._cpuBox.setReadOnly(True)
-        self._cpuBox.setText('...')
+        self._cpuBox.setText('0%')
         self._processGroupBoxLayout.addWidget(self._cpuBox, 1, 1)
 
         # time label
         self._timeLabel: QLabel = QLabel(self._processGroupBox)
         self._timeLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self._timeLabel.setText('Time:')
+        self._timeLabel.setText('CPU Time:')
         self._processGroupBoxLayout.addWidget(self._timeLabel, 2, 0)
 
         # time box
         self._timeBox: QLineEdit = QLineEdit(self._processGroupBox)
         self._timeBox.setReadOnly(True)
-        self._timeBox.setText('...')
+        self._timeBox.setText('0 s')
         self._processGroupBoxLayout.addWidget(self._timeBox, 2, 1)
 
         # memory label
@@ -188,7 +205,7 @@ class SolverDialogShell(QDialog):
         # memory box
         self._memoryBox: QLineEdit = QLineEdit(self._processGroupBox)
         self._memoryBox.setReadOnly(True)
-        self._memoryBox.setText('...')
+        self._memoryBox.setText('0 MB')
         self._processGroupBoxLayout.addWidget(self._memoryBox, 3, 1)
 
         # actions group box
@@ -203,21 +220,25 @@ class SolverDialogShell(QDialog):
 
         # start solver button
         self._startSolverButton: QPushButton = QPushButton(self._actionsGroupBox)
+        self._startSolverButton.setEnabled(False)
         self._startSolverButton.setText('Start Solver Process')
         self._actionsGroupBoxLayout.addWidget(self._startSolverButton)
 
         # terminate solver button
         self._terminateSolverButton: QPushButton = QPushButton(self._actionsGroupBox)
+        self._terminateSolverButton.setEnabled(False)
         self._terminateSolverButton.setText('Terminate Solver Process')
         self._actionsGroupBoxLayout.addWidget(self._terminateSolverButton)
 
         # write solver job input button
         self._writeSolverJobInputButton: QPushButton = QPushButton(self._actionsGroupBox)
+        self._writeSolverJobInputButton.setEnabled(False)
         self._writeSolverJobInputButton.setText('Write Solver Job Input')
         self._actionsGroupBoxLayout.addWidget(self._writeSolverJobInputButton)
 
         # open output database button
         self._openOutputDatabaseButton: QPushButton = QPushButton(self._actionsGroupBox)
+        self._openOutputDatabaseButton.setEnabled(False)
         self._openOutputDatabaseButton.setText('Open Output Database')
         self._actionsGroupBoxLayout.addWidget(self._openOutputDatabaseButton)
 

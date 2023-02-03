@@ -1,4 +1,5 @@
 from application.terminal import Terminal
+from application.solverDialog import SolverDialog
 from control import ModelDatabaseControl
 from visualization import Viewport
 from PySide6.QtGui import Qt, QAction, QIcon
@@ -275,3 +276,6 @@ class MainWindowShell(QMainWindow):
         # viewport
         self._viewport: Viewport = Viewport(self._viewportFrame)
         self._viewportFrameLayout.addWidget(self._viewport)
+
+        # solver dialog
+        self._solverDialog: SolverDialog = SolverDialog(self)

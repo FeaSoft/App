@@ -7,7 +7,6 @@ from dataModel import (
 from inputOutput import AbaqusReader, FSWriter, FSReader
 from visualization import Viewport, Views, InteractionStyles
 from application.terminal import Terminal
-from application.solverDialog import SolverDialog
 from application.mainWindow.mainWindowShell import MainWindowShell
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
@@ -275,8 +274,7 @@ class MainWindow(MainWindowShell):
 
     def onMenuBarSolverDialog(self) -> None:
         '''On Menu Bar > Solver > Dialog.'''
-        solverDialog: SolverDialog = SolverDialog(self)
-        solverDialog.exec()
+        self._solverDialog.show()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tool Bar
