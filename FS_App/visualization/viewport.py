@@ -195,7 +195,7 @@ class Viewport(QVTKRenderWindowInteractor):
                 )
             case ConcentratedLoad():
                 if not modelDatabase: raise ValueError("missing optional argument: 'modelDatabase'")
-                if sum(tuple(abs(x) for x in dataObject.components())) == 0.0:
+                if sum(abs(x) for x in dataObject.components()) == 0.0:
                     self._selectionRenderObject = None
                 else:
                     nodeSet: NodeSet = cast(NodeSet, modelDatabase.nodeSets[dataObject.nodeSetName])
