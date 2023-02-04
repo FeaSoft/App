@@ -1,4 +1,5 @@
 from vtkmodules.vtkCommonDataModel import VTK_TRIANGLE, VTK_QUAD, VTK_TETRA, VTK_PYRAMID, VTK_WEDGE, VTK_HEXAHEDRON
+from dataModel.modelingSpaces import ModelingSpaces
 from dataModel.elementTypes import ElementTypes
 
 class Element:
@@ -32,6 +33,17 @@ class Element:
             case ElementTypes.E3D5: return 5
             case ElementTypes.E3D6: return 6
             case ElementTypes.E3D8: return 8
+
+    @property
+    def modelingSpace(self) -> ModelingSpaces:
+        '''Number of element nodes.'''
+        match self._elementType:
+            case ElementTypes.E2D3: return ModelingSpaces.TwoDimensional
+            case ElementTypes.E2D4: return ModelingSpaces.TwoDimensional
+            case ElementTypes.E3D4: return ModelingSpaces.ThreeDimensional
+            case ElementTypes.E3D5: return ModelingSpaces.ThreeDimensional
+            case ElementTypes.E3D6: return ModelingSpaces.ThreeDimensional
+            case ElementTypes.E3D8: return ModelingSpaces.ThreeDimensional
 
     @property
     def nodeIndices(self) -> tuple[int, ...]:
