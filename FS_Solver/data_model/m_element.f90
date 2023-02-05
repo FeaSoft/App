@@ -15,7 +15,7 @@ module m_element
                           E3D8 = 16    ! 3D interpolation element with 8 nodes
     
     ! error messages
-    character(*), parameter :: ERROR_UNDEFINED_ELEMENT_TYPE = 'ERROR: Undefined element type.'
+    character(*), parameter :: ERROR_UNDEFINED_ELEMENT_TYPE = 'Error: undefined element type'
     
     type t_element
         integer              :: t_element  ! type of element

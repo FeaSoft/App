@@ -129,6 +129,8 @@ class FSWriter:
                     concentratedLoad = cast(ConcentratedLoad, concentratedLoad)
                     file.write(f'concentratedLoad{i + 1} = modelDatabase.concentratedLoads.new()' + '\n')
                     file.write(f"concentratedLoad{i + 1}.name = '{concentratedLoad.name}'" + '\n')
+                    if concentratedLoad.nodeSetName != '<Undefined>':
+                        file.write(f"concentratedLoad{i + 1}.nodeSetName = '{concentratedLoad.nodeSetName}'" + '\n')
                     if concentratedLoad.x != 0.0: file.write(f'concentratedLoad{i + 1}.x = {concentratedLoad.x}' + '\n')
                     if concentratedLoad.y != 0.0: file.write(f'concentratedLoad{i + 1}.y = {concentratedLoad.y}' + '\n')
                     if concentratedLoad.z != 0.0: file.write(f'concentratedLoad{i + 1}.z = {concentratedLoad.z}' + '\n')
@@ -142,6 +144,8 @@ class FSWriter:
                     boundaryCondition = cast(BoundaryCondition, boundaryCondition)
                     file.write(f'boundaryCondition{i + 1} = modelDatabase.boundaryConditions.new()' + '\n')
                     file.write(f"boundaryCondition{i + 1}.name = '{boundaryCondition.name}'" + '\n')
+                    if boundaryCondition.nodeSetName != '<Undefined>':
+                        file.write(f"boundaryCondition{i + 1}.nodeSetName = '{boundaryCondition.nodeSetName}'" + '\n')
                     if boundaryCondition.x != 0.0:
                         file.write(f'boundaryCondition{i + 1}.x = {boundaryCondition.x}' + '\n')
                     if boundaryCondition.y != 0.0:

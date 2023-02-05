@@ -147,6 +147,7 @@ class DataObjectControl(QTreeWidgetItem):
                     case Sequence():
                         editWidget.addItems(itemSource)
                     case _: raise NotImplementedError('case not implemented')
+                editWidget.setCurrentText(str(propertyValue))
                 self._editWidgetConnections[propertyName] = (                  # type: ignore
                     editWidget.currentIndexChanged.connect(editWidgetCallback) # type: ignore
                 )

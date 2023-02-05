@@ -4,6 +4,21 @@ class Node:
     '''
 
     @property
+    def x(self) -> float:
+        '''The x-coordinate.'''
+        return self._coordinates[0]
+
+    @property
+    def y(self) -> float:
+        '''The y-coordinate.'''
+        return self._coordinates[1]
+
+    @property
+    def z(self) -> float:
+        '''The z-coordinate.'''
+        return self._coordinates[2]
+
+    @property
     def coordinates(self) -> tuple[float, float, float]:
         '''Nodal coordinates.'''
         return self._coordinates

@@ -8,6 +8,11 @@ class DataObject(ABC):
     '''
 
     @property
+    def index(self) -> int:
+        '''Data object index.'''
+        return self._indexGetter(self)
+
+    @property
     def name(self) -> str:
         '''Data object name.'''
         return self._nameGetter(self)
@@ -24,17 +29,19 @@ class DataObject(ABC):
         return self._isAssignedGetter(self)
 
     # attribute slots
-    __slots__ = ('_nameGetter', '_nameSetter', '_isAssignedGetter', '_callbacks')
+    __slots__ = ('_indexGetter', '_nameGetter', '_nameSetter', '_isAssignedGetter', '_callbacks')
 
     @abstractmethod
     def __init__(
         self,
+        indexGetter: Callable[['DataObject'], int],
         nameGetter: Callable[['DataObject'], str],
         nameSetter: Callable[['DataObject', str], None],
         isAssignedGetter: Callable[['DataObject'], bool]
     ) -> None:
         '''Data object constructor.'''
         super().__init__()
+        self._indexGetter: Callable[[DataObject], int] = indexGetter
         self._nameGetter: Callable[[DataObject], str] = nameGetter
         self._nameSetter: Callable[[DataObject, str], None] = nameSetter
         self._isAssignedGetter: Callable[[DataObject], bool] = isAssignedGetter

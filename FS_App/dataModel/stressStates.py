@@ -16,3 +16,12 @@ class StressStates:
     CPS = StressState(101, '2D Plane Stress') # 2D continuum (solid) plane stress
     CPE = StressState(102, '2D Plane Strain') # 2D continuum (solid) plane strain
     C3D = StressState(103, '3D General Case') # 3D continuum (solid) general case
+    _stressStates: tuple[StressState, ...] = (CPS, CPE, C3D)
+
+    @classmethod
+    def fromName(cls, name: str) -> StressState:
+        '''Returns the stress state with the given name.'''
+        for stressState in cls._stressStates:
+            if stressState.name == name:
+                return stressState
+        raise ValueError('invalid name')

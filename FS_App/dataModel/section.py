@@ -55,12 +55,13 @@ class Section(DataObject):
 
     def __init__(
         self,
+        indexGetter: Callable[[DataObject], int],
         nameGetter: Callable[[DataObject], str],
         nameSetter: Callable[[DataObject, str], None],
         isAssignedGetter: Callable[[DataObject], bool]
     ) -> None:
         '''Section constructor.'''
-        super().__init__(nameGetter, nameSetter, isAssignedGetter)
+        super().__init__(indexGetter, nameGetter, nameSetter, isAssignedGetter)
         self._elementSetName: str = '<Undefined>'
         self._materialName: str = '<Undefined>'
         self._stressState: str = '<Undefined>'

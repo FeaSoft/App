@@ -9,7 +9,7 @@ module m_shapef
     public eval_functs, eval_derivs
     
     ! error messages
-    character(*), parameter :: ERROR_UNDEFINED_INTEGRATION_POINT = 'ERROR: Undefined integration point.'
+    character(*), parameter :: ERROR_UNDEFINED_INTEGRATION_POINT = 'Error: undefined integration point'
     
     contains
     

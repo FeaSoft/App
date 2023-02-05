@@ -17,9 +17,9 @@ module m_sparse
                           CSR = 32    ! compressed sparse row storage format
     
     ! error messages
-    character(*), parameter :: ERROR_COO_FORMAT_REQUIRED_FOR_SPARSE_MATRIX_OPERATION   = 'ERROR: COO format required for sparse matrix operation.',   &
-                               ERROR_CSR_FORMAT_REQUIRED_FOR_SPARSE_MATRIX_OPERATION   = 'ERROR: CSR format required for sparse matrix operation.',   &
-                               ERROR_INDEX_OUT_OF_RANGE_DURING_SPARSE_MATRIX_OPERATION = 'ERROR: Index out of range during sparse matrix operation.'
+    character(*), parameter :: ERROR_COO_FORMAT_REQUIRED_FOR_SPARSE_MATRIX_OPERATION   = 'Error: COO format required for sparse matrix operation',   &
+                               ERROR_CSR_FORMAT_REQUIRED_FOR_SPARSE_MATRIX_OPERATION   = 'Error: CSR format required for sparse matrix operation',   &
+                               ERROR_INDEX_OUT_OF_RANGE_DURING_SPARSE_MATRIX_OPERATION = 'Error: index out of range during sparse matrix operation'
     
     type t_sparse
         integer              :: mode   ! sparse matrix mode (COO or CSR)

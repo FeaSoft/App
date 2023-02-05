@@ -12,7 +12,7 @@ module m_section
                           C3D = 103    ! 3D continuum (solid) general case
     
     ! error messages
-    character(*), parameter :: ERROR_UNDEFINED_SECTION_TYPE = 'ERROR: Undefined section type.'
+    character(*), parameter :: ERROR_UNDEFINED_SECTION_TYPE = 'Error: undefined section type'
     
     type t_section
         integer :: t_section  ! type of section

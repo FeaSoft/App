@@ -16,12 +16,13 @@ class IndexSet(DataObject):
 
     def __init__(
         self,
+        indexGetter: Callable[[DataObject], int],
         nameGetter: Callable[[DataObject], str],
         nameSetter: Callable[[DataObject, str], None],
         isAssignedGetter: Callable[[DataObject], bool]
     ) -> None:
         '''Index set constructor.'''
-        super().__init__(nameGetter, nameSetter, isAssignedGetter)
+        super().__init__(indexGetter, nameGetter, nameSetter, isAssignedGetter)
         self._indices: set[int] = set()
 
     def add(self, indices: Sequence[int]) -> None:

@@ -8,9 +8,9 @@ module m_linalg
     public multiply, determinant, inverse
     
     ! error messages
-    character(*), parameter :: ERROR_SIZE_MISMATCH_FOR_MATRIX_MATRIX_PRODUCT = 'ERROR: Size mismatch for matrix-matrix product.', &
-                               ERROR_MATRIX_MUST_BE_SQUARE_FOR_OPERATION     = 'ERROR: Matrix must be square for operation.',     &
-                               ERROR_MATRIX_MUST_BE_SMALL_FOR_OPERATION      = 'ERROR: Matrix must be small for operation.'
+    character(*), parameter :: ERROR_SIZE_MISMATCH_FOR_MATRIX_MATRIX_PRODUCT = 'Error: size mismatch for matrix-matrix product', &
+                               ERROR_MATRIX_MUST_BE_SQUARE_FOR_OPERATION     = 'Error: matrix must be square for operation',     &
+                               ERROR_MATRIX_MUST_BE_SMALL_FOR_OPERATION      = 'Error: matrix must be small for operation'
     
     interface multiply
         module procedure :: BLAS_GEMM_1, BLAS_GEMM_2

@@ -76,6 +76,10 @@ class DataObjectContainer:
         if newName in self._names and self[newName] != dataObject:
             raise ValueError('name is already in use')
 
+    def findIndex(self, dataObject: DataObject) -> int:
+        '''Returns the index of the specified data object.'''
+        return self._dataObjects.index(dataObject)
+
     def findName(self, dataObject: DataObject) -> str:
         '''Returns the name of the specified data object.'''
         return self._names[self._dataObjects.index(dataObject)]
@@ -117,7 +121,9 @@ class DataObjectContainer:
     def new(self) -> DataObject:
         '''Creates a new default instance of a data object and adds it to the container.'''
         newName: str = self.generateUniqueName()
-        newDataObject: DataObject = self._dataObjectType(self.findName, self.changeName, self._isDataObjectAssigned)
+        newDataObject: DataObject = self._dataObjectType(
+            self.findIndex, self.findName, self.changeName, self._isDataObjectAssigned
+        )
         self._names.append(newName)
         self._dataObjects.append(newDataObject)
         self.notifyContainerChanged(newName=newName)

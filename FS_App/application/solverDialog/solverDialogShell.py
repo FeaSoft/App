@@ -1,7 +1,7 @@
 from PySide6.QtGui import Qt, QIcon
 from PySide6.QtWidgets import (
     QWidget, QDialog, QGridLayout, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QLineEdit, QRadioButton, QFrame, QSizePolicy,
-    QPushButton, QTextEdit
+    QPushButton, QPlainTextEdit
 )
 
 class SolverDialogShell(QDialog):
@@ -257,7 +257,7 @@ class SolverDialogShell(QDialog):
         self._logFrameLayout.addWidget(self._logLabel)
 
         # log box
-        self._logBox: QTextEdit = QTextEdit(self._logFrame)
+        self._logBox: QPlainTextEdit = QPlainTextEdit(self._logFrame)
         self._logBox.setReadOnly(True)
-        self._logBox.setText('...')
+        self._logBox.setPlainText('...')
         self._logFrameLayout.addWidget(self._logBox)
