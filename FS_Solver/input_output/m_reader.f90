@@ -99,9 +99,6 @@ module m_reader
         
         ! close file
         close(unit=1)
-        
-        ! call finalizing procedures
-        call mdb%build_dofs()
     end function
     
 end module

@@ -139,7 +139,7 @@ class SolverDialog(SolverDialogShell):
         self._runSolverNext = False
         with open(self._logFile, 'a') as log:
             self._solverProcess.start(
-                exe='C:/Users/Carlos/Source/Repos/FeaSoft/App/FS_Solver/x64/Debug/FS_Solver.exe',
+                exe='C:/Users/Carlos/Source/Repos/FeaSoft/App/FS_Solver/x64/Release/FS_Solver.exe',
                 args=(f'"{self._solverJobInputFile}"', f'"{self._outputDatabaseFile}"'),
                 stdout=log,
                 stderr=log

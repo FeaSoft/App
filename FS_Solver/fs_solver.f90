@@ -31,6 +31,26 @@ program fs_solver
     print '("Solver job input loaded")'
     print '("")'
     
+    ! compute algebraic connectivity
+    print '("Building algebraic connectivity")'
+    call mdb%build_dofs()
+    print '("Active degrees of freedom: ",I0)', mdb%n_adofs
+    print '("Inactive degrees of freedom: ",I0)', mdb%n_idofs
+    print '("")'
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -38,9 +58,6 @@ program fs_solver
     
     
 
-    
-
-    
     
     
     
@@ -81,36 +98,7 @@ end program
 !!!    
 !!!    mdb = read_input('C:/Users/Carlos/Desktop/data.txt')
 !!!    
-!!!    allocate(Ks(mdb%mesh%n_elements))
-!!!    Kaa = new_sparse(mdb%n_adofs, mdb%n_adofs)
-!!!    Kab = new_sparse(mdb%n_adofs, mdb%n_idofs)
-!!!    
-!!!    do i = 1, mdb%mesh%n_elements
-!!!        element  = mdb%mesh%elements(i)
-!!!        section  = mdb%sections(element%i_section)
-!!!        material = mdb%materials(section%i_material)
-!!!        Ks(i) = e_get_K(element, section, material, mdb%mesh%nodes)
-!!!        
-!!!        do il = 1, element%n_edofs
-!!!            ig = element%dofs(il)
-!!!            if (ig > 0) then
-!!!                do jl = 1, element%n_edofs
-!!!                    jg = element%dofs(jl)
-!!!                    if (jg < 0) then
-!!!                        call Kab%add(ig, -jg, Ks(i)%at(il, jl))
-!!!                    else
-!!!                        call Kaa%add(ig, jg, Ks(i)%at(il, jl))
-!!!                    end if
-!!!                end do
-!!!            end if
-!!!        end do
-!!!    end do
-!!!    
-!!!    
-!!!    call Kaa%to_csr()
-!!!    call Kab%to_csr()
-!!!    
-!!!    deallocate(Ks)
+
 !!!    
 !!!    
 !!!
