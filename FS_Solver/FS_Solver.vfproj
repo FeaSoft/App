@@ -40,7 +40,8 @@
 		<File RelativePath=".\execution_model\__init__.f90"/>
 		<File RelativePath=".\execution_model\m_eproc.f90"/>
 		<File RelativePath=".\execution_model\m_gproc.f90"/>
-		<File RelativePath=".\execution_model\m_shapef.f90"/></Filter>
+		<File RelativePath=".\execution_model\m_shapef.f90"/>
+		<File RelativePath=".\execution_model\m_sproc.f90"/></Filter>
 		<Filter Name="input_output">
 		<File RelativePath=".\input_output\__init__.f90"/>
 		<File RelativePath=".\input_output\m_reader.f90"/></Filter>
@@ -48,6 +49,7 @@
 		<File RelativePath=".\linear_algebra\__init__.f90"/>
 		<File RelativePath=".\linear_algebra\m_linalg.f90"/>
 		<File RelativePath=".\linear_algebra\m_matrix.f90"/>
-		<File RelativePath=".\linear_algebra\m_sparse.f90"/></Filter>
+		<File RelativePath=".\linear_algebra\m_sparse.f90"/>
+		<File RelativePath=".\linear_algebra\m_vector.f90"/></Filter>
 		<File RelativePath=".\fs_solver.f90"/></Files>
 	<Globals/></VisualStudioProject>

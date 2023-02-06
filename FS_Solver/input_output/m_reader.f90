@@ -37,7 +37,7 @@ module m_reader
         ! parse: nodes
         read(unit=1, fmt=*) command; if (trim(command) /= 'nodes') error stop ERROR_UNDEFINED_INPUT_SEQUENCE
         do i = 1, mesh%n_nodes
-            read(unit=1, fmt=*) rp1, rp2, rp3; mesh%nodes(i) = new_node(rp1, rp2, rp3)
+            read(unit=1, fmt=*) rp1, rp2, rp3; mesh%nodes(i) = new_node(mesh%m_space, rp1, rp2, rp3)
         end do
         
         ! parse: elements

@@ -7,7 +7,7 @@ module m_gproc
     implicit none
     
     private
-    public g_get_K
+    public g_get_K, g_get_Ub, g_add_Pc
     
     contains
     
@@ -36,18 +36,80 @@ module m_gproc
         end do
         
         ! build global matrix
-        call local_to_global_matrix(n_adofs, n_idofs, mesh%elements, Ks, Kaa, Kab)
+        call local_to_global_matrix(n_adofs, n_idofs, mesh%n_elements, mesh%elements, Ks, Kaa, Kab)
         
         ! deallocate Ks
         if (allocated(Ks)) deallocate(Ks)
     end subroutine
     
     ! Description:
+    ! Returns the known displacements vector, Ub.
+    type(t_vector) function g_get_Ub(m_space, n_idofs, n_boundaries, nodes, boundaries, nsets) result(Ub)
+        integer,          intent(in) :: m_space       ! modeling space
+        integer,          intent(in) :: n_idofs       ! number of inactive degrees of freedom
+        integer,          intent(in) :: n_boundaries  ! number of boundary conditions
+        type(t_node),     intent(in) :: nodes(:)      ! mesh nodes
+        type(t_boundary), intent(in) :: boundaries(:) ! boundary conditions
+        type(t_nset),     intent(in) :: nsets(:)      ! node sets
+        type(t_boundary)             :: boundary      ! boundary condition
+        type(t_nset)                 :: nset          ! node set
+        type(t_node)                 :: node          ! mesh node
+        integer                      :: i, j, k       ! loop counters
+        
+        ! initialize vector
+        Ub = new_vector(n_idofs)
+        
+        ! build vector
+        do i = 1, n_boundaries
+            boundary = boundaries(i)
+            nset     = nsets(boundary%i_nset)
+            do j = 1, nset%n_nodes
+                node = nodes(nset%i_nodes(j))
+                do k = 1, m_space
+                    if (node%dofs(k) < 0) then
+                        Ub%at(abs(node%dofs(k))) = boundary%components(k)
+                    end if
+                end do
+            end do
+        end do
+    end function
+    
+    ! Description:
+    ! Adds the global concentrated loads vector, Pc, to the equivalent nodal loads vector, Pa.
+    subroutine g_add_Pc(m_space, n_cloads, nodes, cloads, nsets, Pa)
+        integer,        intent(in)    :: m_space   ! modeling space
+        integer,        intent(in)    :: n_cloads  ! number of concentrated loads
+        type(t_node),   intent(in)    :: nodes(:)  ! mesh nodes
+        type(t_cload),  intent(in)    :: cloads(:) ! concentrated loads
+        type(t_nset),   intent(in)    :: nsets(:)  ! node sets
+        type(t_vector), intent(inout) :: Pa        ! equivalent nodal loads vector
+        type(t_cload)                 :: cload     ! concentrated load
+        type(t_nset)                  :: nset      ! node set
+        type(t_node)                  :: node      ! mesh node
+        integer                       :: i, j, k   ! loop counters
+        
+        ! add contributions to vector
+        do i = 1, n_cloads
+            cload = cloads(i)
+            nset  = nsets(cload%i_nset)
+            do j = 1, nset%n_nodes
+                node = nodes(nset%i_nodes(j))
+                do k = 1, m_space
+                    if (node%dofs(k) > 0) then
+                        Pa%at(node%dofs(k)) = Pa%at(node%dofs(k)) + cload%components(k)
+                    end if
+                end do
+            end do
+        end do
+    end subroutine
+    
+    ! Description:
     ! Builds a global system matrix based on the specified element matrices.
-    subroutine local_to_global_matrix(n_adofs, n_idofs, elements, As, Aaa, Aab)
+    subroutine local_to_global_matrix(n_adofs, n_idofs, n_elements, elements, As, Aaa, Aab)
         integer,         intent(in)  :: n_adofs     ! number of active degrees of freedom
         integer,         intent(in)  :: n_idofs     ! number of inactive degrees of freedom
-        type(t_element), intent(in)  :: elements(:) ! the finite elements
+        integer,         intent(in)  :: n_elements  ! number of elements
+        type(t_element), intent(in)  :: elements(:) ! mesh elements
         type(t_matrix),  intent(in)  :: As(:)       ! the element matrices
         type(t_sparse),  intent(out) :: Aaa, Aab    ! the global matrix
         integer                      :: il, jl      ! local indices
@@ -59,7 +121,7 @@ module m_gproc
         Aab = new_sparse(n_adofs, n_idofs)
         
         ! local to global
-        do k = 1, size(elements)
+        do k = 1, n_elements
             do il = 1, elements(k)%n_edofs
                 ig = elements(k)%dofs(il)
                 if (ig > 0) then

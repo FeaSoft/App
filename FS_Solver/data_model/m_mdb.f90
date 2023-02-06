@@ -81,11 +81,7 @@ module m_mdb
     ! Build element DOFs (algebraic connectivity).
     subroutine build_dofs(this)
         class(t_mdb), intent(inout) :: this
-        integer, allocatable :: matrix(:, :)
         integer :: i, j, k, l
-        
-        ! allocate helper matrix
-        allocate(matrix(this%mesh%n_nodes, this%mesh%m_space), source=0)
         
         ! identify inactive DOFs
         do i = 1, this%mesh%n_nodes
@@ -93,7 +89,7 @@ module m_mdb
                 do k = 1, this%n_boundaries
                     do l = 1, this%nsets(this%boundaries(k)%i_nset)%n_nodes
                         if (this%nsets(this%boundaries(k)%i_nset)%i_nodes(l) == i .AND. this%boundaries(k)%active(j)) then
-                            matrix(i, j) = -1
+                            this%mesh%nodes(i)%dofs(j) = -1
                         end if
                     end do
                 end do
@@ -105,12 +101,12 @@ module m_mdb
         this%n_idofs = 0
         do i = 1, this%mesh%n_nodes
             do j = 1, this%mesh%m_space
-                if (matrix(i, j) == -1) then
+                if (this%mesh%nodes(i)%dofs(j) == -1) then
                     this%n_idofs = this%n_idofs + 1
-                    matrix(i, j) = -this%n_idofs
+                    this%mesh%nodes(i)%dofs(j) = -this%n_idofs
                 else
                     this%n_adofs = this%n_adofs + 1
-                    matrix(i, j) = +this%n_adofs
+                    this%mesh%nodes(i)%dofs(j) = +this%n_adofs
                 end if
             end do
         end do
@@ -121,13 +117,10 @@ module m_mdb
             do k = 1, this%mesh%elements(i)%n_nodes
                 do l = 1, this%mesh%elements(i)%n_ndofs
                     j = j + 1
-                    this%mesh%elements(i)%dofs(j) = matrix(this%mesh%elements(i)%i_nodes(k), l)
+                    this%mesh%elements(i)%dofs(j) = this%mesh%nodes(this%mesh%elements(i)%i_nodes(k))%dofs(l)
                 end do
             end do
         end do
-        
-        ! deallocate helper matrix
-        if (allocated(matrix)) deallocate(matrix)
     end subroutine
     
 end module

@@ -2,6 +2,7 @@
 ! Main program.
 program fs_solver
     use data_model
+    use execution_model
     use input_output
     implicit none
     
@@ -38,6 +39,9 @@ program fs_solver
     print '("Inactive degrees of freedom: ",I0)', mdb%n_idofs
     print '("")'
     
+    ! perform static analysis
+    print '("Performing static analysis")'
+    call static_analysis(mdb)
     
     
     
@@ -65,7 +69,7 @@ program fs_solver
     
     
     
-    if (allocated(argv)) deallocate(argv)
+    if (allocated(argv)) deallocate(argv) ! ha mais??
     
     
 
@@ -130,36 +134,3 @@ end program
 !!!    
 !!!    lol = maxval(x)
 !!!    
-!!!    
-!!!
-!!!    
-!!!!internal static SparseDOK GetGlobalStiffnessMatrix(ModelDatabase model)
-!!!!{
-!!!!	Matrix[] Kes = new Matrix[model.Mesh.Elements.Count];
-!!!!	Parallel.For(0, Kes.Length, i => Kes[i] = model.Mesh.Elements[i].GetStiffnessMatrix());
-!!!!
-!!!!	SparseDOK K = new(model.DegreesOfFreedom, model.DegreesOfFreedom);
-!!!!	for (int i = 0; i < Kes.Length; i++) LocalToGlobal_Matrix(K, Kes[i], model.Mesh.Elements[i]);
-!!!!	return K;
-!!!!}
-!!!    
-!!!
-!!!
-!!!    print *, 'Hi'
-!!!
-!!!    end program
-!!!
-!!!        !Ub = zeros(size(Kab, 2), 1);
-!!!        !for bc = model.boundaryConditions
-!!!        !    nodeSet = getField(model.mesh.nodeSets, bc.nodeSetName);
-!!!        !    nodeIndices = nodeSet.indices;
-!!!        !    for il = 1 : length(nodeIndices)
-!!!        !        ig = nodeIndices(il);
-!!!        !        for jjj = 1 : length(bc.activeDOFs)
-!!!        !            dim = bc.activeDOFs(jjj);
-!!!        !            ind = dofTable(dim, ig);
-!!!        !            Ub(-ind) = bc.values(jjj);
-!!!        !        end
-!!!        !    end
-!!!        !end
-!!!    !Pg = Pg - Kab*Ub;
