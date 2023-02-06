@@ -14,17 +14,20 @@ module m_gproc
     ! Description:
     ! Computes the global stiffness matrix, Kaa and Kab.
     subroutine g_get_K(n_adofs, n_idofs, mesh, sections, materials, Kaa, Kab)
+        ! procedure arguments
         integer,          intent(in)  :: n_adofs      ! number of active degrees of freedom
         integer,          intent(in)  :: n_idofs      ! number of inactive degrees of freedom
         type(t_mesh),     intent(in)  :: mesh         ! finite element mesh
         type(t_section),  intent(in)  :: sections(:)  ! the sections
         type(t_material), intent(in)  :: materials(:) ! the materials
         type(t_sparse),   intent(out) :: Kaa, Kab     ! global stiffness matrix
-        type(t_matrix),   allocatable :: Ks(:)        ! element stiffness matrices
-        type(t_element)               :: element      ! finite element
-        type(t_section)               :: section      ! element section
-        type(t_material)              :: material     ! section material
-        integer                       :: i            ! loop counter
+        
+        ! additional variables
+        type(t_matrix), allocatable :: Ks(:)    ! element stiffness matrices
+        type(t_element)             :: element  ! finite element
+        type(t_section)             :: section  ! element section
+        type(t_material)            :: material ! section material
+        integer                     :: i        ! loop counter
         
         ! compute element stiffness matrices first (giving a chance for this loop to be parallelized)
         allocate(Ks(mesh%n_elements))
@@ -45,16 +48,19 @@ module m_gproc
     ! Description:
     ! Returns the known displacements vector, Ub.
     type(t_vector) function g_get_Ub(m_space, n_idofs, n_boundaries, nodes, boundaries, nsets) result(Ub)
+        ! procedure arguments
         integer,          intent(in) :: m_space       ! modeling space
         integer,          intent(in) :: n_idofs       ! number of inactive degrees of freedom
         integer,          intent(in) :: n_boundaries  ! number of boundary conditions
         type(t_node),     intent(in) :: nodes(:)      ! mesh nodes
         type(t_boundary), intent(in) :: boundaries(:) ! boundary conditions
         type(t_nset),     intent(in) :: nsets(:)      ! node sets
-        type(t_boundary)             :: boundary      ! boundary condition
-        type(t_nset)                 :: nset          ! node set
-        type(t_node)                 :: node          ! mesh node
-        integer                      :: i, j, k       ! loop counters
+        
+        ! additional variables
+        type(t_boundary) :: boundary ! boundary condition
+        type(t_nset)     :: nset     ! node set
+        type(t_node)     :: node     ! mesh node
+        integer          :: i, j, k  ! loop counters
         
         ! initialize vector
         Ub = new_vector(n_idofs)
@@ -77,16 +83,19 @@ module m_gproc
     ! Description:
     ! Adds the global concentrated loads vector, Pc, to the equivalent nodal loads vector, Pa.
     subroutine g_add_Pc(m_space, n_cloads, nodes, cloads, nsets, Pa)
+        ! procedure arguments
         integer,        intent(in)    :: m_space   ! modeling space
         integer,        intent(in)    :: n_cloads  ! number of concentrated loads
         type(t_node),   intent(in)    :: nodes(:)  ! mesh nodes
         type(t_cload),  intent(in)    :: cloads(:) ! concentrated loads
         type(t_nset),   intent(in)    :: nsets(:)  ! node sets
         type(t_vector), intent(inout) :: Pa        ! equivalent nodal loads vector
-        type(t_cload)                 :: cload     ! concentrated load
-        type(t_nset)                  :: nset      ! node set
-        type(t_node)                  :: node      ! mesh node
-        integer                       :: i, j, k   ! loop counters
+        
+        ! additional variables
+        type(t_cload) :: cload   ! concentrated load
+        type(t_nset)  :: nset    ! node set
+        type(t_node)  :: node    ! mesh node
+        integer       :: i, j, k ! loop counters
         
         ! add contributions to vector
         do i = 1, n_cloads
@@ -106,15 +115,18 @@ module m_gproc
     ! Description:
     ! Builds a global system matrix based on the specified element matrices.
     subroutine local_to_global_matrix(n_adofs, n_idofs, n_elements, elements, As, Aaa, Aab)
+        ! procedure arguments
         integer,         intent(in)  :: n_adofs     ! number of active degrees of freedom
         integer,         intent(in)  :: n_idofs     ! number of inactive degrees of freedom
         integer,         intent(in)  :: n_elements  ! number of elements
         type(t_element), intent(in)  :: elements(:) ! mesh elements
         type(t_matrix),  intent(in)  :: As(:)       ! the element matrices
         type(t_sparse),  intent(out) :: Aaa, Aab    ! the global matrix
-        integer                      :: il, jl      ! local indices
-        integer                      :: ig, jg      ! global indices
-        integer                      :: k           ! element index
+        
+        ! additional variables
+        integer :: il, jl ! local indices
+        integer :: ig, jg ! global indices
+        integer :: k      ! element index
         
         ! initialize global sparse matrices
         Aaa = new_sparse(n_adofs, n_adofs)

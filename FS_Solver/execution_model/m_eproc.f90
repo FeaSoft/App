@@ -169,4 +169,65 @@ module m_eproc
         end do
     end function
     
+    ! Description:
+    ! Computes the element internal forces vector, Fi.
+    ! Also computes strains and stress at the integration points.
+    type(t_vector) function e_get_Fi(element, section, material, nodes, Ua, Ub, strain, stress) result(Fi)
+        ! procedure arguments
+        type(t_element),  intent(in)  :: element  ! finite element
+        type(t_section),  intent(in)  :: section  ! element section
+        type(t_material), intent(in)  :: material ! section material
+        type(t_node),     intent(in)  :: nodes(:) ! mesh nodes
+        type(t_vector),   intent(in)  :: Ua, Ub   ! nodal displacements (global)
+        type(t_matrix),   intent(out) :: strain   ! strain at the integration points
+        type(t_matrix),   intent(out) :: stress   ! stress at the integration points
+        
+        ! additional variables
+        type(t_vector) :: U        ! element nodal displacements
+        type(t_matrix) :: D        ! stress-strain matrix
+        type(t_matrix) :: B        ! strain-displacement matrix
+        type(t_vector) :: epsilon  ! strain components
+        type(t_vector) :: sigma    ! stress components
+        real           :: jacobian ! determinant of the Jacobian matrix
+        real           :: weight   ! integration point weight
+        real           :: dV       ! integration factor
+        integer        :: i_ip     ! integration point index
+        integer        :: i        ! loop counters
+        
+        ! get nodal displacements
+        U = new_vector(element%n_edofs)
+        do i = 1, element%n_edofs
+            if (element%dofs(i) > 0) then
+                U%at(i) = Ua%at(element%dofs(i))
+            else
+                U%at(i) = Ub%at(abs(element%dofs(i)))
+            end if
+        end do
+        
+        ! initialize Fi and compute D
+        Fi = new_vector(element%n_edofs)
+        D  = e_get_D(element, section, material)
+        
+        ! initialize strain and stress storage
+        strain = new_matrix(D%n_rows, element%n_ips)
+        stress = new_matrix(D%n_rows, element%n_ips)
+        
+        ! loop over integration points
+        do i_ip = 1, element%n_ips
+            B  = e_get_B(element, section, nodes, i_ip, jacobian, weight)
+            dV = weight*section%thickness*abs(jacobian)
+            
+            ! compute strain and stress
+            epsilon = multiply(B, U)
+            sigma   = multiply(D, epsilon)
+            
+            ! store strain and stress
+            strain%at(:, i_ip) = epsilon%at(:)
+            stress%at(:, i_ip) = sigma%at(:)
+            
+            ! internal forces
+            call multiply(B, sigma, Fi, alpha=dV, transposeA=.true.)
+        end do
+    end function
+    
 end module

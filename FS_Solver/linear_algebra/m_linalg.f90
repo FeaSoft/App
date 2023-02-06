@@ -28,7 +28,7 @@ module m_linalg
     end interface
     
     interface multiply
-        module procedure :: BLAS_GEMM_1, BLAS_GEMM_2, SPBLAS_MV_1, SPBLAS_MV_2
+        module procedure :: BLAS_GEMV_1, BLAS_GEMV_2, BLAS_GEMM_1, BLAS_GEMM_2, SPBLAS_MV_1, SPBLAS_MV_2
     end interface
     
     interface solve
@@ -67,6 +67,68 @@ module m_linalg
         ! call computational routine
         y = new_vector(a%n_vals)
         call vdsub(a%n_vals, a%at, b%at, y%at)
+    end function
+    
+    ! Description:
+    ! Computes a matrix-vector product using a general matrix.
+    ! The operation is defined as y := alpha*op(A)*x + beta*y, where:
+    ! * A is a matrix.
+    ! * x and y are vectors.
+    ! * alpha and beta are scalars.
+    ! * op(A) = transpose(A) if transposeA is true; otherwise, op(A) = A.
+    subroutine BLAS_GEMV_1(A, x, y, alpha, beta, transposeA)
+        ! procedure arguments
+        type(t_matrix),    intent(in)    :: A
+        type(t_vector),    intent(in)    :: x
+        type(t_vector),    intent(inout) :: y
+        real,    optional, intent(in)    :: alpha, beta
+        logical, optional, intent(in)    :: transposeA
+        
+        ! additional variables
+        real         :: scalarA, scalarB
+        character(1) :: transA
+        
+        ! initialize variables
+        if (present(alpha)) then; scalarA = alpha; else; scalarA = 1.0; end if
+        if (present(beta )) then; scalarB = beta ; else; scalarB = 1.0; end if
+        if (present(transposeA).and.transposeA) then; transA = 't'; else; transA = 'n'; end if
+        
+        ! check for invalid arguments
+        if (present(transposeA).and.transposeA) then
+            if (A%n_rows /= x%n_vals .or. A%n_cols /= y%n_vals) error stop ERROR_SIZE_MISMATCH_FOR_MATRIX_VECTOR_OPERATION
+        else
+            if (A%n_cols /= x%n_vals .or. A%n_rows /= y%n_vals) error stop ERROR_SIZE_MISMATCH_FOR_MATRIX_VECTOR_OPERATION
+        end if
+        
+        ! call computational routine
+        call dgemv(transA, A%n_rows, A%n_cols, scalarA, A%at, A%n_rows, x%at, 1, scalarB, y%at, 1)
+    end subroutine
+    
+    ! Description:
+    ! Computes a matrix-vector product using a general matrix.
+    ! The operation is defined as y := alpha*op(A)*x, where:
+    ! * A is a matrix.
+    ! * x and y are vectors.
+    ! * alpha is a scalar.
+    ! * op(A) = transpose(A) if transposeA is true; otherwise, op(A) = A.
+    type(t_vector) function BLAS_GEMV_2(A, x, alpha, transposeA) result(y)
+        ! procedure arguments
+        type(t_matrix),    intent(in) :: A
+        type(t_vector),    intent(in) :: x
+        real,    optional, intent(in) :: alpha
+        logical, optional, intent(in) :: transposeA
+        
+        ! additional variables
+        real    :: scalarA
+        logical :: transA
+        
+        ! initialize variables
+        if (present(alpha)) then; scalarA = alpha; else; scalarA = 1.0; end if
+        if (present(transposeA)) then; transA = transposeA; else; transA = .false.; end if
+        if (.not.transA) then; y = new_vector(A%n_rows); else; y = new_vector(A%n_cols); end if
+        
+        ! call computational routine
+        call BLAS_GEMV_1(A, x, y, scalarA, 0.0, transA)
     end function
     
     ! Description:
