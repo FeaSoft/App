@@ -9,4 +9,12 @@ if __name__ == '__main__':
     sys.stdin  = application.current.mainWindow.terminal.stdin
 
     # start the application event loop
-    sys.exit(application.current.start())
+    exitCode: int = application.current.start()
+
+    # reset streams
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+    sys.stdin  = sys.__stdin__
+
+    # exit application
+    sys.exit(exitCode)

@@ -89,14 +89,28 @@ class AbaqusReader:
                     # if read node set command, create a new node set
                     if command == 'node-set' and modelDatabase:
                         nodeSet = cast(NodeSet, modelDatabase.nodeSets.new())
-                        nodeSet.name = line.split(',')[1].split('=')[1]
+                        name: str = line.split(',')[1].split('=')[1]
+                        try:
+                            nodeSet.name = name
+                        except:
+                            i: int = 2
+                            while name + f'_{i}' in modelDatabase.nodeSets.names():
+                                i += 1
+                            nodeSet.name = name + f'_{i}'
                         generate = ',generate' in line
                     else: nodeSet = None
 
                     # if read element set command, create a new element set
                     if command == 'element-set' and modelDatabase:
                         elementSet = cast(ElementSet, modelDatabase.elementSets.new())
-                        elementSet.name = line.split(',')[1].split('=')[1]
+                        name: str = line.split(',')[1].split('=')[1]
+                        try:
+                            elementSet.name = name
+                        except:
+                            i: int = 2
+                            while name + f'_{i}' in modelDatabase.elementSets.names():
+                                i += 1
+                            elementSet.name = name + f'_{i}'
                         generate = ',generate' in line
                     else: elementSet = None
                 else:
