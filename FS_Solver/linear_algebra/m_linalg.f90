@@ -198,7 +198,11 @@ module m_linalg
         if (present(transposeA).and.transposeA) then; transA = SPARSE_OPERATION_TRANSPOSE; else; transA = SPARSE_OPERATION_NON_TRANSPOSE; end if
         
         ! check for invalid arguments
-        if (A%n_cols /= x%n_vals .or. A%n_rows /= y%n_vals) error stop ERROR_SIZE_MISMATCH_FOR_MATRIX_VECTOR_OPERATION
+        if (present(transposeA).and.transposeA) then
+            if (A%n_rows /= x%n_vals .or. A%n_cols /= y%n_vals) error stop ERROR_SIZE_MISMATCH_FOR_MATRIX_VECTOR_OPERATION
+        else
+            if (A%n_cols /= x%n_vals .or. A%n_rows /= y%n_vals) error stop ERROR_SIZE_MISMATCH_FOR_MATRIX_VECTOR_OPERATION
+        end if
         
         ! call computational routine
         description%type = SPARSE_MATRIX_TYPE_GENERAL
@@ -229,7 +233,7 @@ module m_linalg
         ! initialize variables
         if (present(alpha)) then; scalarA = alpha; else; scalarA = 1.0; end if
         if (present(transposeA)) then; transA = transposeA; else; transA = .false.; end if
-        y = new_vector(A%n_rows)
+        if (.not.transA) then; y = new_vector(A%n_rows); else; y = new_vector(A%n_cols); end if
         
         ! call computational routine
         call SPBLAS_MV_1(A, x, y, scalarA, 0.0, transA)
@@ -274,6 +278,10 @@ module m_linalg
         integer              :: msglvl    = 0  ! message level information
         integer              :: error          ! error information
         integer, allocatable :: perm(:)        ! permutation vector
+        
+        ! check for invalid arguments
+        if (A%n_rows /= A%n_cols) error stop ERROR_MATRIX_MUST_BE_SQUARE_FOR_OPERATION
+        if (A%n_rows /= b%n_vals) error stop ERROR_SIZE_MISMATCH_FOR_MATRIX_VECTOR_OPERATION
         
         ! allocate permutation vector
         allocate(perm(A%n_rows), source=0)

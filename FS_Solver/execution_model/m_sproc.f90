@@ -17,8 +17,10 @@ module m_sproc
         type(t_mdb), intent(in) :: mdb      ! model database
         type(t_sparse)          :: Kaa, Kab ! global stiffness matrix
         type(t_vector)          :: Pa       ! equivalent nodal loads vector
+        type(t_vector)          :: Fe       ! external nodal forces
         type(t_vector)          :: Ua       ! unknown displacements
         type(t_vector)          :: Ub       ! prescribed nodal displacements
+        type(t_vector)          :: R        ! reaction forces
         
         ! compute global stiffness matrix
         call g_get_K(mdb%n_adofs, mdb%n_idofs, mdb%mesh, mdb%sections, mdb%materials, Kaa, Kab)
@@ -29,10 +31,25 @@ module m_sproc
         
         ! add contribution from prescribed nodal displacements
         Ub = g_get_Ub(mdb%mesh%m_space, mdb%n_idofs, mdb%n_boundaries, mdb%mesh%nodes, mdb%boundaries, mdb%nsets)
-        Pa = subtract(Pa, multiply(Kab, Ub))
+        Fe = subtract(Pa, multiply(Kab, Ub))
         
-        ! solve system
-        Ua = solve(Kaa, Pa)
+        ! compute unknown displacements
+        Ua = solve(Kaa, Fe)
+        
+        ! compute reaction forces
+        R = multiply(Kab, Ua, transposeA=.true.)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     end subroutine
     
 end module
