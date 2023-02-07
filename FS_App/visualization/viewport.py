@@ -164,6 +164,7 @@ class Viewport(QVTKRenderWindowInteractor):
         self._renderer.GetActiveCamera().SetPosition(position)
         self._renderer.GetActiveCamera().SetViewUp(viewUp)
         self._renderer.ResetCamera()
+        InteractionStyle.recomputeGlyphSize(self._renderer, render=False)
         if render: self.render()
 
     def setMeshRenderObject(self, mesh: Mesh | None, render: bool = True) -> None:
@@ -232,5 +233,5 @@ class Viewport(QVTKRenderWindowInteractor):
                 self._selectionRenderObject = None
         if self._selectionRenderObject:
             self.add(self._selectionRenderObject, render=False)
-            InteractionStyle.recomputeGlyphSize(self._renderer)
+            InteractionStyle.recomputeGlyphSize(self._renderer, render=False)
         if render: self.render()

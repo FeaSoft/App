@@ -41,8 +41,8 @@ class ArrowsRenderObject(RenderObject):
         self._source: vtkArrowSource = vtkArrowSource()
         if arrowType == 'NoShaft': self._source.SetShaftRadius(0)
         if arrowType == 'NoShaft': self._source.InvertOn()
-        self._source.SetTipResolution(16)
-        self._source.SetShaftResolution(16)
+        self._source.SetTipResolution(4)
+        self._source.SetShaftResolution(4)
         self._source.Update() # type: ignore
         # poly data
         self._polyData: vtkPolyData = vtkPolyData()

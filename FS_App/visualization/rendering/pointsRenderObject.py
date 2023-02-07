@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from visualization.rendering.renderObject import RenderObject
 from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkUnstructuredGrid
 from vtkmodules.vtkFiltersCore import vtkGlyph3D
-from vtkmodules.vtkFiltersSources import vtkSphereSource
+from vtkmodules.vtkFiltersSources import vtkCubeSource
 from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkActor
 
@@ -28,9 +28,7 @@ class PointsRenderObject(RenderObject):
         for i, index in enumerate(indices):
             self._centers.SetPoint(i, dataSet.GetPoint(index))
         # sphere source
-        self._source: vtkSphereSource = vtkSphereSource()
-        self._source.SetPhiResolution(16)
-        self._source.SetThetaResolution(16)
+        self._source: vtkCubeSource = vtkCubeSource()
         self._source.Update() # type: ignore
         # poly data
         self._polyData: vtkPolyData = vtkPolyData()
