@@ -28,6 +28,10 @@ module m_sproc
         type(t_matrix), allocatable :: strain_ips(:) ! strain at the integration points
         type(t_matrix), allocatable :: stress_ips(:) ! stress at the integration points
         
+        ! allocate storage
+        allocate(strain_ips(mdb%mesh%n_elements))
+        allocate(stress_ips(mdb%mesh%n_elements))
+        
         ! compute global stiffness matrix
         call g_get_K(mdb%n_adofs, mdb%n_idofs, mdb%mesh, mdb%sections, mdb%materials, Kaa, Kab)
         
@@ -47,8 +51,6 @@ module m_sproc
         
         ! compute internal nodal forces
         ! also computes strains and stresses at the integration points
-        allocate(strain_ips(mdb%mesh%n_elements))
-        allocate(stress_ips(mdb%mesh%n_elements))
         call g_get_F(mdb%n_adofs, mdb%n_idofs, mdb%mesh, mdb%sections, mdb%materials, Ua, Ub, Fa, Fb, strain_ips, stress_ips)
         
         ! compute residual (infinity norm of the out-of-balance forces vector)
@@ -80,7 +82,7 @@ module m_sproc
         
         
         
-        ! deallocate strain and stress!!!!!!!!!!!!!!!!
+        ! DEALLOCATE STORAGE !!!!!!!!
         
     end subroutine
     
