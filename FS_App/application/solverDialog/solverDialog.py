@@ -58,12 +58,13 @@ class SolverDialog(SolverDialogShell):
         self._outputDatabaseBox.setText(self._outputDatabaseFile if self._outputDatabaseFile else '...')
         self._logFileBox.setText(self._logFile if self._logFile else '...')
 
-        # check if preprocessor is successfully done
+        # check if preprocessor/solver is successfully done
         if self._solverProcess.exitCode() == 0:
             # append CPU time to log
             if self._logFile:
                 with open(self._logFile, 'a') as file:
-                    file.write('Elapsed CPU time: ' + self._timeBox.text() + '\n\n')
+                    cpuTime: float = float(self._timeBox.text()[:-2])
+                    file.write('Elapsed CPU time: ' + ('<250 ms' if cpuTime == 0 else self._timeBox.text()) + '\n\n')
             # reset exit code to None
             self._solverProcess.terminate()
             # run solver if requested

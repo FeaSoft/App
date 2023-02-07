@@ -52,7 +52,8 @@ program fs_solver
     print '("Output database stored")'
     print '("")'
     
-    ! deallocate argv
+    ! done
     if (allocated(argv)) deallocate(argv)
+    print '("Solver is done")'
     
 end program
