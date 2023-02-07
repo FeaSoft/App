@@ -8,7 +8,7 @@ module m_gproc
     implicit none
     
     private
-    public g_get_K, g_get_F, g_get_Ub, g_add_Pc, extra_strain, extra_stress, extrapolate, average
+    public g_get_K, g_get_F, g_get_Ub, g_add_Pc, extra_strain, extra_stress, extrapolate, average, convert_vector
     
     contains
     
@@ -333,6 +333,42 @@ module m_gproc
         end do
         do i = 1, n_components
             at_mesh%at(:, i) = at_mesh%at(:, i)/mesh%e_counts(:)
+        end do
+    end function
+    
+    ! Description:
+    ! Converts a global vector into a matrix of values per node.
+    type(t_matrix) function convert_vector(m_space, n_nodes, nodes, Va, Vb) result(matrix)
+        ! procedure arguments
+        integer,        intent(in) :: m_space  ! modeling space
+        integer,        intent(in) :: n_nodes  ! number of nodes
+        type(t_node),   intent(in) :: nodes(:) ! mesh nodes
+        type(t_vector), intent(in) :: Va, Vb   ! global vector
+        
+        ! additional variables
+        real    :: x, y, z   ! components
+        real    :: magnitude ! magnitude (norm)
+        integer :: i         ! loop counter
+        
+        ! initialize results matrix
+        matrix = new_matrix(n_nodes, 4) ! x, y, z, magnitude
+        
+        ! build matrix
+        do i = 1, n_nodes
+            ! get individual components
+            if (nodes(i)%dofs(1) > 0) then; x = Va%at(nodes(i)%dofs(1)); else; x = Vb%at(abs(nodes(i)%dofs(1))); end if
+            if (nodes(i)%dofs(2) > 0) then; y = Va%at(nodes(i)%dofs(2)); else; y = Vb%at(abs(nodes(i)%dofs(2))); end if
+            if (m_space == 3) then
+                if (nodes(i)%dofs(3) > 0) then; z = Va%at(nodes(i)%dofs(3)); else; z = Vb%at(abs(nodes(i)%dofs(3))); end if
+            else
+                z = 0.0
+            end if
+            
+            ! compute magnitude
+            magnitude = sqrt(x*x + y*y + z*z)
+            
+            ! store results
+            matrix%at(i, :) = [x, y, z, magnitude]
         end do
     end function
     

@@ -33,6 +33,8 @@ module m_sproc
         type(t_matrix), allocatable :: stress_extra_nodes(:) ! stress at the element nodes (basic components + extra measures)
         type(t_matrix)              :: strain_extra_mesh     ! strain at the mesh nodes (basic components + extra measures)
         type(t_matrix)              :: stress_extra_mesh     ! stress at the mesh nodes (basic components + extra measures)
+        type(t_matrix)              :: displacements         ! displacements at the mesh nodes
+        type(t_matrix)              :: reactions             ! reaction forces at the mesh nodes
         
         ! allocate storage
         allocate(strain_ips(mdb%mesh%n_elements))
@@ -80,12 +82,15 @@ module m_sproc
         strain_extra_mesh = average(mdb%mesh, strain_extra_nodes, 10); if (allocated(strain_extra_nodes)) deallocate(strain_extra_nodes)
         stress_extra_mesh = average(mdb%mesh, stress_extra_nodes, 12); if (allocated(stress_extra_nodes)) deallocate(stress_extra_nodes)
         
+        ! convert global vectors to result matrices
+        displacements = convert_vector(mdb%mesh%m_space, mdb%mesh%n_nodes, mdb%mesh%nodes, Ua, Ub)
+        reactions     = convert_vector(mdb%mesh%m_space, mdb%mesh%n_nodes, mdb%mesh%nodes, new_vector(mdb%n_adofs), R)
         
         
         
         
         
-        
+        print *, displacements%at(:, 4)
         
         
         
