@@ -82,7 +82,7 @@ module m_reader
         ! parse: section
         do i = 1, mdb%n_sections
             read(unit=1, fmt=*) command; if (trim(command) /= 'section') error stop ERROR_UNDEFINED_INPUT_SEQUENCE
-            read(unit=1, fmt=*) ip1, ip2, ip3, rp1; mdb%sections(i) = new_section(ip1, ip2, ip3, rp1)
+            read(unit=1, fmt=*) ip1, ip2, ip3, rp1; mdb%sections(i) = new_section(mdb%mesh%m_space, ip1, ip2, ip3, rp1)
         end do
         
         ! parse: concentrated-load

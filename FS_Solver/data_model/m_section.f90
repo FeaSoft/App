@@ -29,7 +29,8 @@ module m_section
     
     ! Description:
     ! Section constructor.
-    type(t_section) function constructor(t_section, i_eset, i_material, thickness) result(this)
+    type(t_section) function constructor(m_space, t_section, i_eset, i_material, thickness) result(this)
+        integer, intent(in) :: m_space    ! modeling space
         integer, intent(in) :: t_section  ! type of section
         integer, intent(in) :: i_eset     ! index of element set
         integer, intent(in) :: i_material ! index o material
@@ -37,7 +38,11 @@ module m_section
         this%t_section  = t_section
         this%i_eset     = i_eset
         this%i_material = i_material
-        this%thickness  = thickness
+        if (m_space == 2) then
+            this%thickness = thickness
+        else
+            this%thickness = 1.0
+        end if
     end function
     
 end module

@@ -1,5 +1,3 @@
-include 'mkl_spblas.f90'
-
 ! Description:
 ! Linear algebra computational routines (Intel MKL wrappers).
 module m_linalg

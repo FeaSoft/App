@@ -7,6 +7,8 @@
 !   compact mode is used for computational procedures and elements can no
 !   longer be added to the matrix.
 module m_sparse
+    use iso_c_binding
+    use mkl_spblas
     implicit none
     
     private
@@ -88,33 +90,6 @@ module m_sparse
     end subroutine
     
     ! Description:
-    ! Converts internal matrix storage from COO to CSR format.
-    subroutine to_csr(this)
-        class(t_sparse), intent(inout) :: this
-        integer, allocatable :: new_row(:)
-        integer :: i
-        
-        ! check for errors
-        if (this%mode /= COO) error stop ERROR_COO_FORMAT_REQUIRED_FOR_SPARSE_MATRIX_OPERATION
-        
-        ! sort arrays and deallocate excess storage
-        call sort_and_collapse(this)
-        
-        ! compute new array
-        allocate(new_row(this%n_rows + 1), source=0)                                           ! allocate storage
-        do i = 1, this%n_nzrs; new_row(this%row(i) + 1) = new_row(this%row(i) + 1) + 1; end do ! count number of non-zeros per row
-        do i = 1, this%n_rows; new_row(i + 1) = new_row(i + 1) + new_row(i); end do            ! cumulative sum per row
-        new_row = new_row + 1                                                                  ! get 1-based indices
-        
-        ! swap old by new array
-        call move_alloc(new_row, this%row) ! new_row is deallocated
-        
-        ! update mode flag and size info
-        this%mode = CSR
-        this%size = -1
-    end subroutine
-    
-    ! Description:
     ! Resize storage arrays without losing stored data.
     subroutine resize(sparse_matrix, new_size)
         type(t_sparse), intent(inout) :: sparse_matrix ! matrix to resize
@@ -152,58 +127,61 @@ module m_sparse
     end subroutine
     
     ! Description:
-    ! Sort storage arrays and deallocate excess storage.
-    subroutine sort_and_collapse(sparse_matrix)
-        type(t_sparse), intent(inout) :: sparse_matrix ! matrix to update
-        integer :: n_rep ! number of repeated matrix entries
-        integer :: i, j  ! loop counters
-        integer :: i_min ! index of minimal matrix entry
-        integer :: itemp ! integer temp variable
-        real    :: rtemp ! real temp variable
+    ! Converts internal matrix storage from COO to CSR format.
+    subroutine to_csr(this)
+        class(t_sparse), intent(inout) :: this
         
-        ! check for errors
-        if (sparse_matrix%mode /= COO) error stop ERROR_COO_FORMAT_REQUIRED_FOR_SPARSE_MATRIX_OPERATION
+        ! helper variables
+        type(sparse_matrix_t)     :: handle_COO, handle_CSR
+        integer                   :: status, indexing, n_rows, n_cols
+        type(c_ptr)               :: row_start_c, row_end_c, col_c, val_c
+        integer, pointer          :: row_start_f(:), row_end_f(:), col_f(:)
+        real,    pointer          :: val_f(:)
+        integer, allocatable      :: new_row(:), new_col(:)
+        real,    allocatable      :: new_val(:)
         
-        ! add repeated matrix entries
-        n_rep = 0
-        do i = 1, sparse_matrix%n_nzrs
-            if (sparse_matrix%row(i) > 0) then
-                do j = i + 1, sparse_matrix%n_nzrs
-                    if (sparse_matrix%row(j) > 0) then
-                        if (sparse_matrix%row(i) == sparse_matrix%row(j) .and. sparse_matrix%col(i) == sparse_matrix%col(j)) then
-                            sparse_matrix%val(i) = sparse_matrix%val(i) + sparse_matrix%val(j)
-                            sparse_matrix%row(j) = 0
-                            sparse_matrix%col(j) = 0
-                            sparse_matrix%val(j) = 0.0
-                            n_rep = n_rep + 1
-                        end if
-                    end if
-                end do
-            end if
-        end do
+        ! create COO handle
+        status = mkl_sparse_d_create_coo(handle_COO, SPARSE_INDEX_BASE_ONE, this%n_rows, this%n_cols, this%n_nzrs, this%row, this%col, this%val)
+        if (status /= SPARSE_STATUS_SUCCESS) error stop 'Error: failure to create MKL handle'
         
-        ! sort entries (using selection sort)
-        do i = 1, sparse_matrix%n_nzrs
-            i_min = i
-            do j = i + 1, sparse_matrix%n_nzrs
-                if (sparse_matrix%row(j) > 0) then
-                    if (sparse_matrix%row(i_min) == 0 .or. sparse_matrix%row(j) < sparse_matrix%row(i_min) .or. (sparse_matrix%row(j) == sparse_matrix%row(i_min) .and. sparse_matrix%col(j) < sparse_matrix%col(i_min))) then
-                        i_min = j
-                    end if
-                end if
-            end do
-            if (i_min /= i) then
-                itemp = sparse_matrix%row(i_min); sparse_matrix%row(i_min) = sparse_matrix%row(i); sparse_matrix%row(i) = itemp ! swap row
-                itemp = sparse_matrix%col(i_min); sparse_matrix%col(i_min) = sparse_matrix%col(i); sparse_matrix%col(i) = itemp ! swap col
-                rtemp = sparse_matrix%val(i_min); sparse_matrix%val(i_min) = sparse_matrix%val(i); sparse_matrix%val(i) = rtemp ! swap val
-            end if
-        end do
+        ! convert from COO to CSR
+        status = mkl_sparse_convert_csr(handle_COO, SPARSE_OPERATION_NON_TRANSPOSE, handle_CSR)
+        if (status /= SPARSE_STATUS_SUCCESS) error stop 'Error: failure to convert COO to CSR'
         
-        ! update non-zero element count
-        sparse_matrix%n_nzrs = sparse_matrix%n_nzrs - n_rep
+        ! export CSR
+        status = mkl_sparse_d_export_csr(handle_CSR, indexing, n_rows, n_cols, row_start_c, row_end_c, col_c, val_c)
+        if (status /= SPARSE_STATUS_SUCCESS) error stop 'Error: failure to export MKL handle'
         
-        ! deallocate excess storage
-        call resize(sparse_matrix, sparse_matrix%n_nzrs)
+        ! convert C pointers to Fortran pointers
+        call c_f_pointer(row_start_c, row_start_f, [n_rows])
+        call c_f_pointer(row_end_c,   row_end_f,   [n_rows])
+        call c_f_pointer(col_c,       col_f,       [row_end_f(n_rows) - 1])
+        call c_f_pointer(val_c,       val_f,       [row_end_f(n_rows) - 1])
+        
+        ! update number of non-zero elements
+        this%n_nzrs = row_end_f(n_rows) - 1
+        
+        ! create new_row
+        allocate(new_row(n_rows + 1))
+        new_row(1 : n_rows) = row_start_f(:)
+        new_row(n_rows + 1) = row_end_f(n_rows)
+        
+        ! create new_col
+        allocate(new_col(this%n_nzrs))
+        new_col(:) = col_f(:)
+        
+        ! create new_val
+        allocate(new_val(this%n_nzrs))
+        new_val(:) = val_f(:)
+        
+        ! swap old by new arrays
+        call move_alloc(new_row, this%row) ! new_row is deallocated
+        call move_alloc(new_col, this%col) ! new_col is deallocated
+        call move_alloc(new_val, this%val) ! new_val is deallocated
+        
+        ! destroy MKL handles
+        status = mkl_sparse_destroy(handle_COO); if (status /= SPARSE_STATUS_SUCCESS) error stop 'Error: failure to destroy MKL handle'
+        status = mkl_sparse_destroy(handle_CSR); if (status /= SPARSE_STATUS_SUCCESS) error stop 'Error: failure to destroy MKL handle'
     end subroutine
     
 end module

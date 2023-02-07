@@ -1,3 +1,5 @@
+include 'mkl_spblas.f90'
+
 ! Description:
 ! Main program.
 program fs_solver
