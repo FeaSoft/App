@@ -43,10 +43,19 @@ class SolverDialog(SolverDialogShell):
         The log is also updated.
         '''
         # update GUI to show current solver process status and info
+        cpuPercentage: int = self._solverProcess.cpuPercentage()
         self._statusBox.setText('Alive' if self._solverProcess.isAlive() else 'Dead')
-        self._cpuBox.setText(str(self._solverProcess.cpuPercentage()) + '%')
+        self._cpuBox.setText(str(cpuPercentage) + '%')
         self._memoryBox.setText(str(self._solverProcess.memory()) + ' MB')
         if self._solverProcess.isAlive(): self._timeBox.setText(str(self._solverProcess.cpuTime()) + ' s')
+        color: str = (
+            '255,255,255' if      cpuPercentage <= 0 else
+            '000,255,000' if  0 < cpuPercentage < 25 else
+            '255,255,000' if 25 < cpuPercentage < 50 else
+            '255,127,000' if 50 < cpuPercentage < 75 else
+            '255,000,000'
+        )
+        self._cpuBox.setStyleSheet(f'background: rgb({color});')
 
         # enable/disable action buttons
         self._startSolverButton.setEnabled(not self._solverProcess.isAlive())

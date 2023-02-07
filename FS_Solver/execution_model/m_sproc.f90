@@ -66,7 +66,7 @@ module m_sproc
         call g_get_F(mdb%n_adofs, mdb%n_idofs, mdb%mesh, mdb%sections, mdb%materials, Ua, Ub, Fa, Fb, strain_ips, stress_ips)
         
         ! compute residual (infinity norm of the out-of-balance forces vector)
-        print '("Infinity norm of the out-of-balance forces vector (residual): ",E11.4)', maxval(abs(Fe%at(:) - Fa%at(:)))
+        print '("Infinity norm of the out-of-balance forces vector (residual): ",SP,E11.4)', maxval(abs(Fe%at(:) - Fa%at(:)))
         
         ! perform extrapolation from element integration points to element nodes
         ! deallocate unused storage

@@ -19,7 +19,6 @@ module m_reader
         
         ! reader helper variables
         character(64) :: command                      ! current command being parsed
-        character(4)  :: version                      ! job input file version
         character(3)  :: advance                      ! reader advance flag
         integer       :: i, j                         ! loop counters
         integer       :: ip1, ip2, ip3, ip4, ip5, ip6 ! integer parameters

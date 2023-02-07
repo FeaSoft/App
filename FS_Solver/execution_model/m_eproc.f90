@@ -30,9 +30,8 @@ module m_eproc
     
     ! Description:
     ! Computes the element stress-strain matrix, D.
-    type(t_matrix) function e_get_D(element, section, material) result(D)
+    type(t_matrix) function e_get_D(section, material) result(D)
         ! procedure arguments
-        type(t_element),  intent(in) :: element  ! finite element
         type(t_section),  intent(in) :: section  ! element section
         type(t_material), intent(in) :: material ! section material
         
@@ -159,7 +158,7 @@ module m_eproc
         
         ! initialize K and compute D
         K = new_matrix(element%n_edofs, element%n_edofs)
-        D = e_get_D(element, section, material)
+        D = e_get_D(section, material)
         
         ! loop over integration points
         do i_ip = 1, element%n_ips
@@ -206,7 +205,7 @@ module m_eproc
         
         ! initialize F and compute D
         F = new_vector(element%n_edofs)
-        D = e_get_D(element, section, material)
+        D = e_get_D(section, material)
         
         ! initialize strain and stress storage
         strain = new_matrix(D%n_rows, element%n_ips)

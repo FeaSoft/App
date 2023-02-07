@@ -47,6 +47,9 @@ module m_linalg
         ! procedure arguments
         type(t_vector), intent(in) :: a, b
         
+        ! external procedures
+        external :: vdadd
+        
         ! check for invalid arguments
         if (a%n_vals /= b%n_vals) error stop ERROR_SIZE_MISMATCH_FOR_VECTOR_VECTOR_OPERATION
         
@@ -62,6 +65,9 @@ module m_linalg
     type(t_vector) function VML_sub(a, b) result(y)
         ! procedure arguments
         type(t_vector), intent(in) :: a, b
+        
+        ! external procedures
+        external :: vdsub
         
         ! check for invalid arguments
         if (a%n_vals /= b%n_vals) error stop ERROR_SIZE_MISMATCH_FOR_VECTOR_VECTOR_OPERATION
@@ -85,6 +91,9 @@ module m_linalg
         type(t_vector),    intent(inout) :: y
         real,    optional, intent(in)    :: alpha, beta
         logical, optional, intent(in)    :: transposeA
+        
+        ! external procedures
+        external :: dgemv
         
         ! additional variables
         real         :: scalarA, scalarB
@@ -146,6 +155,9 @@ module m_linalg
         type(t_matrix),    intent(inout) :: C
         real,    optional, intent(in)    :: alpha, beta
         logical, optional, intent(in)    :: transposeA, transposeB
+        
+        ! external procedures
+        external :: dgemm
         
         ! additional variables
         integer      :: m, n, k, lda, ldb, ldc
@@ -331,6 +343,9 @@ module m_linalg
         type(t_sparse), intent(in) :: A
         type(t_vector), intent(in) :: b
         
+        ! external procedures
+        external :: pardisoinit, pardiso
+        
         ! additional variables
         integer              :: iparm(64) = 0  ! PARDISO parameters (use PARDISO defaults)
         integer              :: pt(64)    = 0  ! handle to internal data structure
@@ -369,6 +384,9 @@ module m_linalg
     type(t_vector) function LAPACK_SYEV(A) result(lambda)
         ! procedure arguments
         type(t_matrix), intent(in) :: A
+        
+        ! external procedures
+        external :: dsyev
         
         ! additional variables
         integer           :: lwork, info
