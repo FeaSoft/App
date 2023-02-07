@@ -14,8 +14,10 @@ module m_mesh
         integer                      :: m_space     ! modeling space
         type(t_node),    allocatable :: nodes(:)    ! mesh nodes
         type(t_element), allocatable :: elements(:) ! mesh elements
+        integer,         allocatable :: e_counts(:) ! number of elements connected to each node
     contains
-        final :: destructor
+        procedure :: count_elements_per_node
+        final     :: destructor
     end type
     
     interface new_mesh
@@ -35,6 +37,7 @@ module m_mesh
         this%m_space    = m_space
         allocate(this%nodes(this%n_nodes))
         allocate(this%elements(this%n_elements))
+        allocate(this%e_counts(this%n_nodes))
     end function
     
     ! Description:
@@ -43,6 +46,21 @@ module m_mesh
         type(t_mesh), intent(inout) :: this
         if (allocated(this%nodes))    deallocate(this%nodes)
         if (allocated(this%elements)) deallocate(this%elements)
+        if (allocated(this%e_counts)) deallocate(this%e_counts)
+    end subroutine
+    
+    ! Description:
+    ! Counts the number of elements connected to each node.
+    subroutine count_elements_per_node(this)
+        class(t_mesh), intent(inout) :: this
+        integer :: i, j
+        
+        ! count elements per node
+        do i = 1, this%n_elements
+            do j = 1, this%elements(i)%n_nodes
+                this%e_counts(this%elements(i)%i_nodes(j)) = this%e_counts(this%elements(i)%i_nodes(j)) + 1
+            end do
+        end do
     end subroutine
     
 end module

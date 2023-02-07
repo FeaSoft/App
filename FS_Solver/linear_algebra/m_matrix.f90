@@ -11,7 +11,8 @@ module m_matrix
         integer           :: n_cols   ! number of columns
         real, allocatable :: at(:, :) ! values
     contains
-        final :: destructor
+        procedure :: T
+        final     :: destructor
     end type
     
     interface new_matrix
@@ -35,6 +36,26 @@ module m_matrix
     subroutine destructor(this)
         type(t_matrix), intent(inout) :: this
         if (allocated(this%at)) deallocate(this%at)
+    end subroutine
+    
+    ! Description:
+    ! Transposes the matrix.
+    subroutine T(this)
+        class(t_matrix), intent(inout) :: this
+        real, allocatable :: new_at(:, :)
+        
+        ! allocate new array
+        allocate(new_at(this%n_cols, this%n_rows))
+        
+        ! transpose
+        new_at(:, :) = transpose(this%at(:, :))
+        
+        ! swap old by new array
+        call move_alloc(new_at, this%at) ! new_at is deallocated
+        
+        ! update matrix shape
+        this%n_rows = size(this%at, dim=1)
+        this%n_cols = size(this%at, dim=2)
     end subroutine
     
 end module

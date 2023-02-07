@@ -3,11 +3,12 @@
 module m_gproc
     use linear_algebra
     use data_model
+    use m_shapef
     use m_eproc
     implicit none
     
     private
-    public g_get_K, g_get_F, g_get_Ub, g_add_Pc, extra_strain, extra_stress
+    public g_get_K, g_get_F, g_get_Ub, g_add_Pc, extra_strain, extra_stress, extrapolate, average
     
     contains
     
@@ -154,8 +155,8 @@ module m_gproc
     ! Computes additional strain measures (principal strains).
     subroutine extra_strain(strain, extra)
         ! procedure arguments
-        type(t_matrix), intent(in)  :: strain(:) ! strain at the integration points (basic components)
-        type(t_matrix), intent(out) :: extra(:)  ! strain at the integration points (with extra strain measures)
+        type(t_matrix), intent(in)    :: strain(:) ! strain at the integration points (basic components)
+        type(t_matrix), intent(inout) :: extra(:)  ! strain at the integration points (with extra strain measures)
         
         ! additional variables
         type(t_matrix) :: matrix                       ! matrix representation of tensor
@@ -222,8 +223,8 @@ module m_gproc
     ! Computes additional stress measures (principal stresses and equivalent stresses).
     subroutine extra_stress(stress, extra)
         ! procedure arguments
-        type(t_matrix), intent(in)  :: stress(:) ! stress at the integration points (basic components)
-        type(t_matrix), intent(out) :: extra(:)  ! stress at the integration points (with extra stress measures)
+        type(t_matrix), intent(in)    :: stress(:) ! stress at the integration points (basic components)
+        type(t_matrix), intent(inout) :: extra(:)  ! stress at the integration points (with extra stress measures)
         
         ! additional variables
         type(t_matrix) :: matrix                       ! matrix representation of tensor
@@ -290,6 +291,50 @@ module m_gproc
             end do
         end do
     end subroutine
+    
+    ! Description:
+    ! Extrapolation from integration points to element nodes.
+    subroutine extrapolate(n_elements, elements, at_ips, at_nodes)
+        ! procedure arguments
+        integer,         intent(in)    :: n_elements  ! number of elements
+        type(t_element), intent(in)    :: elements(:) ! mesh elements
+        type(t_matrix),  intent(in)    :: at_ips(:)   ! values at element integration points
+        type(t_matrix),  intent(inout) :: at_nodes(:) ! values at element nodes
+        
+        ! additional variables
+        type(t_matrix) :: E ! extrapolation matrix
+        integer        :: i ! loop counter
+        
+        ! perform extrapolation
+        do i = 1, n_elements
+            E = extrapolation_matrix(elements(i))
+            at_nodes(i) = multiply(E, at_ips(i), transposeB=.true.)
+            call at_nodes(i)%T ! transpose matrix
+        end do
+    end subroutine
+    
+    ! Description:
+    ! Final nodal average (smoothing).
+    type(t_matrix) function average(mesh, at_elements, n_components) result(at_mesh)
+        ! procedure arguments
+        type(t_mesh),   intent(in) :: mesh           ! finite element mesh
+        type(t_matrix), intent(in) :: at_elements(:) ! values at element nodes
+        integer,        intent(in) :: n_components   ! number of components
+        
+        ! additional variables
+        integer :: i ! loop counter
+        
+        ! initialize matrix
+        at_mesh = new_matrix(mesh%n_nodes, n_components)
+        
+        ! perform smoothing
+        do i = 1, mesh%n_elements
+            at_mesh%at(mesh%elements(i)%i_nodes, :) = at_mesh%at(mesh%elements(i)%i_nodes, :) + transpose(at_elements(i)%at(:, :))
+        end do
+        do i = 1, n_components
+            at_mesh%at(:, i) = at_mesh%at(:, i)/mesh%e_counts(:)
+        end do
+    end function
     
     ! Description:
     ! Builds a global system matrix based on the specified element matrices.

@@ -97,6 +97,9 @@ module m_reader
             read(unit=1, fmt=*) ip1, rp1, rp2, rp3, lp1, lp2, lp3; mdb%boundaries(i) = new_boundary(ip1, rp1, rp2, rp3, lp1, lp2, lp3)
         end do
         
+        ! final actions
+        call mdb%mesh%count_elements_per_node()
+        
         ! close file
         close(unit=1)
     end function
