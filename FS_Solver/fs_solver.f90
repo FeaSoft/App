@@ -11,6 +11,7 @@ program fs_solver
     character(8)                :: date    ! current date
     character(10)               :: time    ! current time
     type(t_mdb)                 :: mdb     ! model database
+    type(t_odb)                 :: odb     ! output database
     integer                     :: i       ! loop counter
     
     ! get command line arguments
@@ -41,37 +42,17 @@ program fs_solver
     
     ! perform static analysis
     print '("Performing static analysis")'
-    call static_analysis(mdb)
+    odb = static_analysis(mdb)
+    print '("Static analysis successfully performed")'
+    print '("")'
     
+    ! write output database
+    print '("Storing output database to file: ''",A,"''")', trim(argv(2))
+    call write_output(trim(argv(2)), mdb%mesh, odb)
+    print '("Output database stored")'
+    print '("")'
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    if (allocated(argv)) deallocate(argv) ! ha mais??
-    
-    
-
+    ! deallocate argv
+    if (allocated(argv)) deallocate(argv)
     
 end program

@@ -13,7 +13,7 @@ module m_sproc
     
     ! Description:
     ! Performs a static analysis
-    subroutine static_analysis(mdb)
+    type(t_odb) function static_analysis(mdb) result(odb)
         ! procedure arguments
         type(t_mdb), intent(in) :: mdb ! model database
         
@@ -66,7 +66,7 @@ module m_sproc
         call g_get_F(mdb%n_adofs, mdb%n_idofs, mdb%mesh, mdb%sections, mdb%materials, Ua, Ub, Fa, Fb, strain_ips, stress_ips)
         
         ! compute residual (infinity norm of the out-of-balance forces vector)
-        print '("Infinity norm of the out-of-balance forces vector (residual): ",E10.4)', maxval(abs(Fe%at(:) - Fa%at(:)))
+        print '("Infinity norm of the out-of-balance forces vector (residual): ",E11.4)', maxval(abs(Fe%at(:) - Fa%at(:)))
         
         ! perform extrapolation from element integration points to element nodes
         ! deallocate unused storage
@@ -86,16 +86,38 @@ module m_sproc
         displacements = convert_vector(mdb%mesh%m_space, mdb%mesh%n_nodes, mdb%mesh%nodes, Ua, Ub)
         reactions     = convert_vector(mdb%mesh%m_space, mdb%mesh%n_nodes, mdb%mesh%nodes, new_vector(mdb%n_adofs), R)
         
-        
-        
-        
-        
-        print *, displacements%at(:, 4)
-        
-        
-        
-        
-        
-    end subroutine
+        ! create output database
+        odb = new_odb(mdb%mesh%n_nodes, 30)
+        call odb%set_field( 1, 'Displacements:Displacement in X',            displacements%at(:,  1))
+        call odb%set_field( 2, 'Displacements:Displacement in Y',            displacements%at(:,  2))
+        call odb%set_field( 3, 'Displacements:Displacement in Z',            displacements%at(:,  3))
+        call odb%set_field( 4, 'Displacements:Magnitude of Displacement',    displacements%at(:,  4))
+        call odb%set_field( 5, 'Reaction Forces:Reaction Force in X',            reactions%at(:,  1))
+        call odb%set_field( 6, 'Reaction Forces:Reaction Force in Y',            reactions%at(:,  2))
+        call odb%set_field( 7, 'Reaction Forces:Reaction Force in Z',            reactions%at(:,  3))
+        call odb%set_field( 8, 'Reaction Forces:Magnitude of Reaction Force',    reactions%at(:,  4))
+        call odb%set_field( 9, 'Strain:Component XX of Strain',          strain_extra_mesh%at(:,  1))
+        call odb%set_field(10, 'Strain:Component YY of Strain',          strain_extra_mesh%at(:,  2))
+        call odb%set_field(11, 'Strain:Component ZZ of Strain',          strain_extra_mesh%at(:,  3))
+        call odb%set_field(12, 'Strain:Component YZ of Strain',          strain_extra_mesh%at(:,  4))
+        call odb%set_field(13, 'Strain:Component ZX of Strain',          strain_extra_mesh%at(:,  5))
+        call odb%set_field(14, 'Strain:Component XY of Strain',          strain_extra_mesh%at(:,  6))
+        call odb%set_field(15, 'Strain:Max. Principal Value of Strain',  strain_extra_mesh%at(:,  7))
+        call odb%set_field(16, 'Strain:Mid. Principal Value of Strain',  strain_extra_mesh%at(:,  8))
+        call odb%set_field(17, 'Strain:Min. Principal Value of Strain',  strain_extra_mesh%at(:,  9))
+        call odb%set_field(18, 'Strain:Major Principal Value of Strain', strain_extra_mesh%at(:, 10))
+        call odb%set_field(19, 'Stress:Component XX of Stress',          stress_extra_mesh%at(:,  1))
+        call odb%set_field(20, 'Stress:Component YY of Stress',          stress_extra_mesh%at(:,  2))
+        call odb%set_field(21, 'Stress:Component ZZ of Stress',          stress_extra_mesh%at(:,  3))
+        call odb%set_field(22, 'Stress:Component YZ of Stress',          stress_extra_mesh%at(:,  4))
+        call odb%set_field(23, 'Stress:Component ZX of Stress',          stress_extra_mesh%at(:,  5))
+        call odb%set_field(24, 'Stress:Component XY of Stress',          stress_extra_mesh%at(:,  6))
+        call odb%set_field(25, 'Stress:Max. Principal Value of Stress',  stress_extra_mesh%at(:,  7))
+        call odb%set_field(26, 'Stress:Mid. Principal Value of Stress',  stress_extra_mesh%at(:,  8))
+        call odb%set_field(27, 'Stress:Min. Principal Value of Stress',  stress_extra_mesh%at(:,  9))
+        call odb%set_field(28, 'Stress:Major Principal Value of Stress', stress_extra_mesh%at(:, 10))
+        call odb%set_field(29, 'Stress:von Mises',                       stress_extra_mesh%at(:, 11))
+        call odb%set_field(30, 'Stress:Tresca',                          stress_extra_mesh%at(:, 12))
+    end function
     
 end module

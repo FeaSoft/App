@@ -1,5 +1,5 @@
 ! Description:
-! Job input file reader.
+! Solver job input file reader.
 module m_reader
     use data_model
     implicit none
@@ -15,7 +15,7 @@ module m_reader
     ! Description:
     ! Create a new finite element model database by reading the user-specified job input file.
     type(t_mdb) function read_input(file) result(mdb)
-        character(*), intent(in) :: file ! job input file path
+        character(*), intent(in) :: file ! solver job input file path
         
         ! reader helper variables
         character(64) :: command                      ! current command being parsed
@@ -27,7 +27,7 @@ module m_reader
         logical       :: lp1, lp2, lp3                ! logical parameters
         type(t_mesh)  :: mesh                         ! finite element mesh
         
-        ! open job input file for reading
+        ! open solver job input file for reading
         open(unit=1, action='read', file=file)
         
         ! parse: mesh

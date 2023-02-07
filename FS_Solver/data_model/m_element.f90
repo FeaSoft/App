@@ -18,6 +18,7 @@ module m_element
     character(*), parameter :: ERROR_UNDEFINED_ELEMENT_TYPE = 'Error: undefined element type'
     
     type t_element
+        character(4)         :: t_name     ! name of element type
         integer              :: t_element  ! type of element
         integer              :: n_nodes    ! number of nodes
         integer              :: n_ndofs    ! number of nodal DOFs
@@ -43,6 +44,17 @@ module m_element
         integer, intent(in) :: i_section ! index of section
         this%t_element = t_element
         this%i_section = i_section
+        
+        ! name of element type based on element type
+        select case (this%t_element)
+            case (E2D3); this%t_name = 'E2D3'
+            case (E2D4); this%t_name = 'E2D4'
+            case (E3D4); this%t_name = 'E3D4'
+            case (E3D5); this%t_name = 'E3D5'
+            case (E3D6); this%t_name = 'E3D6'
+            case (E3D8); this%t_name = 'E3D8'
+            case default; error stop ERROR_UNDEFINED_ELEMENT_TYPE
+        end select
         
         ! number of element nodes based on element type
         select case (this%t_element)

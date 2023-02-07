@@ -11,4 +11,5 @@ module data_model
     use m_cload
     use m_boundary
     use m_mdb
+    use m_odb
 end module

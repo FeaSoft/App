@@ -45,7 +45,8 @@
 		<File RelativePath=".\execution_model\m_sproc.f90"/></Filter>
 		<Filter Name="input_output">
 		<File RelativePath=".\input_output\__init__.f90"/>
-		<File RelativePath=".\input_output\m_reader.f90"/></Filter>
+		<File RelativePath=".\input_output\m_reader.f90"/>
+		<File RelativePath=".\input_output\m_writer.f90"/></Filter>
 		<Filter Name="linear_algebra">
 		<File RelativePath=".\linear_algebra\__init__.f90"/>
 		<File RelativePath=".\linear_algebra\m_linalg.f90"/>
