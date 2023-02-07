@@ -7,7 +7,7 @@ module m_gproc
     implicit none
     
     private
-    public g_get_K, g_get_Ub, g_add_Pc
+    public g_get_K, g_get_F, g_get_Ub, g_add_Pc
     
     contains
     
@@ -18,8 +18,8 @@ module m_gproc
         integer,          intent(in)  :: n_adofs      ! number of active degrees of freedom
         integer,          intent(in)  :: n_idofs      ! number of inactive degrees of freedom
         type(t_mesh),     intent(in)  :: mesh         ! finite element mesh
-        type(t_section),  intent(in)  :: sections(:)  ! the sections
-        type(t_material), intent(in)  :: materials(:) ! the materials
+        type(t_section),  intent(in)  :: sections(:)  ! sections
+        type(t_material), intent(in)  :: materials(:) ! materials
         type(t_sparse),   intent(out) :: Kaa, Kab     ! global stiffness matrix
         
         ! additional variables
@@ -35,7 +35,7 @@ module m_gproc
             element  = mesh%elements(i)
             section  = sections(element%i_section)
             material = materials(section%i_material)
-            Ks(i) = e_get_K(element, section, material, mesh%nodes)
+            Ks(i)    = e_get_K(element, section, material, mesh%nodes)
         end do
         
         ! build global matrix
@@ -43,6 +43,44 @@ module m_gproc
         
         ! deallocate Ks
         if (allocated(Ks)) deallocate(Ks)
+    end subroutine
+    
+    ! Description:
+    ! Computes the global internal forces vector, F.
+    ! Also computes strains and stress at the integration points.
+    subroutine g_get_F(n_adofs, n_idofs, mesh, sections, materials, Ua, Ub, Fa, Fb, strain, stress)
+        ! procedure arguments
+        integer,          intent(in)    :: n_adofs      ! number of active degrees of freedom
+        integer,          intent(in)    :: n_idofs      ! number of inactive degrees of freedom
+        type(t_mesh),     intent(in)    :: mesh         ! finite element mesh
+        type(t_section),  intent(in)    :: sections(:)  ! sections
+        type(t_material), intent(in)    :: materials(:) ! materials
+        type(t_vector),   intent(in)    :: Ua, Ub       ! nodal displacements (global)
+        type(t_vector),   intent(out)   :: Fa, Fb       ! global internal forces vector
+        type(t_matrix),   intent(inout) :: strain(:)    ! strain at the integration points
+        type(t_matrix),   intent(inout) :: stress(:)    ! stress at the integration points
+        
+        ! additional variables
+        type(t_vector), allocatable :: Fs(:)    ! element internal forces vectors
+        type(t_element)             :: element  ! finite element
+        type(t_section)             :: section  ! element section
+        type(t_material)            :: material ! section material
+        integer                     :: i        ! loop counter
+        
+        ! compute element internal forces vectors first (giving a chance for this loop to be parallelized)
+        allocate(Fs(mesh%n_elements))
+        do i = 1, mesh%n_elements
+            element  = mesh%elements(i)
+            section  = sections(element%i_section)
+            material = materials(section%i_material)
+            Fs(i)   = e_get_F(element, section, material, mesh%nodes, Ua, Ub, strain(i), stress(i))
+        end do
+        
+        ! build global vector
+        call local_to_global_vector(n_adofs, n_idofs, mesh%n_elements, mesh%elements, Fs, Fa, Fb)
+        
+        ! deallocate Fs
+        if (allocated(Fs)) deallocate(Fs)
     end subroutine
     
     ! Description:
@@ -152,6 +190,40 @@ module m_gproc
         ! use compact storage
         call Aaa%to_csr()
         call Aab%to_csr()
+    end subroutine
+    
+    ! Description:
+    ! Builds a global system vector based on the specified element vectors.
+    subroutine local_to_global_vector(n_adofs, n_idofs, n_elements, elements, Vs, Vaa, Vab)
+        ! procedure arguments
+        integer,         intent(in)  :: n_adofs     ! number of active degrees of freedom
+        integer,         intent(in)  :: n_idofs     ! number of inactive degrees of freedom
+        integer,         intent(in)  :: n_elements  ! number of elements
+        type(t_element), intent(in)  :: elements(:) ! mesh elements
+        type(t_vector),  intent(in)  :: Vs(:)       ! the element vectors
+        type(t_vector),  intent(out) :: Vaa, Vab    ! the global vector
+        
+        ! additional variables
+        integer :: il ! local index
+        integer :: ig ! global index
+        integer :: k  ! element index
+        
+        ! initialize global vectors
+        Vaa = new_vector(n_adofs)
+        Vab = new_vector(n_idofs)
+        
+        ! local to global
+        do k = 1, n_elements
+            do il = 1, elements(k)%n_edofs
+                ig = elements(k)%dofs(il)
+                if (ig > 0) then
+                    Vaa%at(ig) = Vaa%at(ig) + Vs(k)%at(il)
+                else
+                    Vab%at(ig) = Vab%at(ig) + Vs(k)%at(abs(il))
+                end if
+            end do
+        end do
+        
     end subroutine
     
 end module

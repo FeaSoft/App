@@ -7,7 +7,7 @@ module m_eproc
     implicit none
     
     private
-    public e_get_B, e_get_C, e_get_D, e_get_K
+    public e_get_B, e_get_C, e_get_D, e_get_K, e_get_F
     
     contains
     
@@ -170,9 +170,9 @@ module m_eproc
     end function
     
     ! Description:
-    ! Computes the element internal forces vector, Fi.
+    ! Computes the element internal forces vector, F.
     ! Also computes strains and stress at the integration points.
-    type(t_vector) function e_get_Fi(element, section, material, nodes, Ua, Ub, strain, stress) result(Fi)
+    type(t_vector) function e_get_F(element, section, material, nodes, Ua, Ub, strain, stress) result(F)
         ! procedure arguments
         type(t_element),  intent(in)  :: element  ! finite element
         type(t_section),  intent(in)  :: section  ! element section
@@ -192,7 +192,7 @@ module m_eproc
         real           :: weight   ! integration point weight
         real           :: dV       ! integration factor
         integer        :: i_ip     ! integration point index
-        integer        :: i        ! loop counters
+        integer        :: i        ! loop counter
         
         ! get nodal displacements
         U = new_vector(element%n_edofs)
@@ -204,9 +204,9 @@ module m_eproc
             end if
         end do
         
-        ! initialize Fi and compute D
-        Fi = new_vector(element%n_edofs)
-        D  = e_get_D(element, section, material)
+        ! initialize F and compute D
+        F = new_vector(element%n_edofs)
+        D = e_get_D(element, section, material)
         
         ! initialize strain and stress storage
         strain = new_matrix(D%n_rows, element%n_ips)
@@ -226,7 +226,7 @@ module m_eproc
             stress%at(:, i_ip) = sigma%at(:)
             
             ! internal forces
-            call multiply(B, sigma, Fi, alpha=dV, transposeA=.true.)
+            call multiply(B, sigma, F, alpha=dV, transposeA=.true.)
         end do
     end function
     
