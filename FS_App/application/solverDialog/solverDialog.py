@@ -32,9 +32,10 @@ class SolverDialog(SolverDialogShell):
         self._timer.timeout.connect(self.onTimerTimeout) # type: ignore
         self._timer.start(250)
         # connections
-        self._startSolverButton.clicked.connect(self.onStartSolver)             # type: ignore
-        self._terminateSolverButton.clicked.connect(self.onTerminateSolver)     # type: ignore
-        self._openModelDatabaseButton.clicked.connect(self.onOpenModelDatabase) # type: ignore
+        self._startSolverButton.clicked.connect(self.onStartSolver)                 # type: ignore
+        self._writeSolverJobInputButton.clicked.connect(self.onWriteSolverJobInput) # type: ignore
+        self._terminateSolverButton.clicked.connect(self.onTerminateSolver)         # type: ignore
+        self._openModelDatabaseButton.clicked.connect(self.onOpenModelDatabase)     # type: ignore
 
     def onTimerTimeout(self) -> None:
         '''
@@ -43,22 +44,14 @@ class SolverDialog(SolverDialogShell):
         The log is also updated.
         '''
         # update GUI to show current solver process status and info
-        cpuPercentage: int = self._solverProcess.cpuPercentage()
         self._statusBox.setText('Alive' if self._solverProcess.isAlive() else 'Dead')
-        self._cpuBox.setText(str(cpuPercentage) + '%')
+        self._cpuBox.setText(str(self._solverProcess.cpuPercentage()) + '%')
         self._memoryBox.setText(str(self._solverProcess.memory()) + ' MB')
         if self._solverProcess.isAlive(): self._timeBox.setText(str(self._solverProcess.cpuTime()) + ' s')
-        color: str = (
-            '255,255,255' if      cpuPercentage <= 0 else
-            '000,255,000' if  0 < cpuPercentage < 25 else
-            '255,255,000' if 25 < cpuPercentage < 50 else
-            '255,127,000' if 50 < cpuPercentage < 75 else
-            '255,000,000'
-        )
-        self._cpuBox.setStyleSheet(f'background: rgb({color});')
 
         # enable/disable action buttons
         self._startSolverButton.setEnabled(not self._solverProcess.isAlive())
+        self._writeSolverJobInputButton.setEnabled(not self._solverProcess.isAlive())
         self._terminateSolverButton.setEnabled(self._solverProcess.isAlive())
 
         # file paths
@@ -95,6 +88,11 @@ class SolverDialog(SolverDialogShell):
         '''On start solver button clicked.'''
         self._startSolverButton.setEnabled(False)
         self.startPreprocessor()
+
+    def onWriteSolverJobInput(self) -> None:
+        '''On write solver job input button clicked.'''
+        self._writeSolverJobInputButton.setEnabled(False)
+        self.startPreprocessor(preprocessorOnly=True)
 
     def onTerminateSolver(self) -> None:
         '''On terminate solver button clicked.'''
