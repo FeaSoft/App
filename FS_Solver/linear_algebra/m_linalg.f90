@@ -10,7 +10,7 @@ module m_linalg
     implicit none
     
     private
-    public add, subtract, multiply, solve, determinant, inverse
+    public add, subtract, multiply, solve, eigen, determinant, inverse
     
     ! error messages
     character(*), parameter :: ERROR_SIZE_MISMATCH_FOR_VECTOR_VECTOR_OPERATION = 'Error: size mismatch for vector-vector operation', &
@@ -33,6 +33,10 @@ module m_linalg
     
     interface solve
         module procedure :: MKL_PARDISO
+    end interface
+    
+    interface eigen
+        module procedure :: LAPACK_SYEV
     end interface
     
     contains
@@ -360,6 +364,39 @@ module m_linalg
         
         ! deallocate permutation vector
         if (allocated(perm)) deallocate(perm)
+    end function
+    
+    ! Description:
+    ! Computes all eigenvalues of a real symmetric matrix (in ascending order).
+    type(t_vector) function LAPACK_SYEV(A) result(lambda)
+        ! procedure arguments
+        type(t_matrix), intent(in) :: A
+        
+        ! additional variables
+        integer           :: lwork, info
+        real, allocatable :: work(:)
+        
+        ! check for invalid arguments
+        if (A%n_rows /= A%n_cols) error stop ERROR_MATRIX_MUST_BE_SQUARE_FOR_OPERATION
+        
+        ! initialize vector
+        lambda = new_vector(A%n_rows)
+        
+        ! query optimal size for the work array
+        lwork = -1
+        allocate(work(1))
+        call dsyev('N', 'U', A%n_rows, A%at, A%n_rows, lambda%at, work, lwork, info)
+        if (info /= 0) error stop 'Error: execution error'
+        
+        ! call computational routine
+        lwork = int(work(1))
+        if (allocated(work)) deallocate(work)
+        allocate(work(lwork))
+        call dsyev('N', 'U', A%n_rows, A%at, A%n_rows, lambda%at, work, lwork, info)
+        if (info /= 0) error stop 'Error: execution error'
+        
+        ! deallocate work array
+        if (allocated(work)) deallocate(work)
     end function
     
     ! Description:

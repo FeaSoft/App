@@ -7,7 +7,7 @@ module m_gproc
     implicit none
     
     private
-    public g_get_K, g_get_F, g_get_Ub, g_add_Pc
+    public g_get_K, g_get_F, g_get_Ub, g_add_Pc, extra_strain, extra_stress
     
     contains
     
@@ -146,6 +146,147 @@ module m_gproc
                         Pa%at(node%dofs(k)) = Pa%at(node%dofs(k)) + cload%components(k)
                     end if
                 end do
+            end do
+        end do
+    end subroutine
+    
+    ! Description:
+    ! Computes additional strain measures (principal strains).
+    subroutine extra_strain(strain, extra)
+        ! procedure arguments
+        type(t_matrix), intent(in)  :: strain(:) ! strain at the integration points (basic components)
+        type(t_matrix), intent(out) :: extra(:)  ! strain at the integration points (with extra strain measures)
+        
+        ! additional variables
+        type(t_matrix) :: matrix                       ! matrix representation of tensor
+        type(t_vector) :: eigenvalues                  ! eigenvalues in ascending order
+        real           :: e11, e22, e33, e23, e31, e12 ! strain components
+        real           :: e1, e2, e3, eMajor           ! principal strains
+        integer        :: i, j                         ! loop counters
+        
+        ! compute extra strain components
+        do i = 1, size(strain)                          ! for each element
+            extra(i) = new_matrix(10, strain(i)%n_cols) ! e11, e22, e33, e23, e31, e12, e1, e2, e3, eMajor
+            do j = 1, strain(i)%n_cols                  ! for each integration point
+                ! get individual components
+                select case (strain(i)%n_rows)
+                    ! plane stress
+                    case (3)
+                        e11 = strain(i)%at(1, j)
+                        e22 = strain(i)%at(2, j)
+                        e33 = 0.0
+                        e23 = 0.0
+                        e31 = 0.0
+                        e12 = strain(i)%at(3, j)
+                    ! plane strain
+                    case (4)
+                        e11 = strain(i)%at(1, j)
+                        e22 = strain(i)%at(2, j)
+                        e33 = strain(i)%at(3, j)
+                        e23 = 0.0
+                        e31 = 0.0
+                        e12 = strain(i)%at(4, j)
+                    ! general case
+                    case (6)
+                        e11 = strain(i)%at(1, j)
+                        e22 = strain(i)%at(2, j)
+                        e33 = strain(i)%at(3, j)
+                        e23 = strain(i)%at(4, j)
+                        e31 = strain(i)%at(5, j)
+                        e12 = strain(i)%at(6, j)
+                    ! otherwise
+                    case default
+                        error stop ERROR_UNDEFINED_SECTION_TYPE
+                end select
+                
+                ! build matrix
+                matrix = new_matrix(3, 3)
+                matrix%at(1, :) = [e11,     e12/2.0, e31/2.0]
+                matrix%at(2, :) = [e12/2.0, e22,     e23/2.0]
+                matrix%at(3, :) = [e31/2.0, e23/2.0, e33    ]
+                
+                ! compute principal strains
+                eigenvalues = eigen(matrix)
+                e1          = eigenvalues%at(3)
+                e2          = eigenvalues%at(2)
+                e3          = eigenvalues%at(1)
+                eMajor      = eigenvalues%at(maxloc(abs(eigenvalues%at(:)), dim=1))
+                
+                ! store results
+                extra(i)%at(:, j) = [e11, e22, e33, e23, e31, e12, e1, e2, e3, eMajor]
+            end do
+        end do
+    end subroutine
+    
+    ! Description:
+    ! Computes additional stress measures (principal stresses and equivalent stresses).
+    subroutine extra_stress(stress, extra)
+        ! procedure arguments
+        type(t_matrix), intent(in)  :: stress(:) ! stress at the integration points (basic components)
+        type(t_matrix), intent(out) :: extra(:)  ! stress at the integration points (with extra stress measures)
+        
+        ! additional variables
+        type(t_matrix) :: matrix                       ! matrix representation of tensor
+        type(t_vector) :: eigenvalues                  ! eigenvalues in ascending order
+        real           :: s11, s22, s33, s23, s31, s12 ! stress components
+        real           :: s1, s2, s3, sMajor           ! principal stresses
+        real           :: sTresca, sMises              ! equivalent stresses
+        integer        :: i, j                         ! loop counters
+        
+        ! compute extra stress components
+        do i = 1, size(stress)                          ! for each element
+            extra(i) = new_matrix(12, stress(i)%n_cols) ! s11, s22, s33, s23, s31, s12, s1, s2, s3, sMajor, sTresca, sMises
+            do j = 1, stress(i)%n_cols                  ! for each integration point
+                ! get individual components
+                select case (stress(i)%n_rows)
+                    ! plane stress
+                    case (3)
+                        s11 = stress(i)%at(1, j)
+                        s22 = stress(i)%at(2, j)
+                        s33 = 0.0
+                        s23 = 0.0
+                        s31 = 0.0
+                        s12 = stress(i)%at(3, j)
+                    ! plane strain
+                    case (4)
+                        s11 = stress(i)%at(1, j)
+                        s22 = stress(i)%at(2, j)
+                        s33 = stress(i)%at(3, j)
+                        s23 = 0.0
+                        s31 = 0.0
+                        s12 = stress(i)%at(4, j)
+                    ! general case
+                    case (6)
+                        s11 = stress(i)%at(1, j)
+                        s22 = stress(i)%at(2, j)
+                        s33 = stress(i)%at(3, j)
+                        s23 = stress(i)%at(4, j)
+                        s31 = stress(i)%at(5, j)
+                        s12 = stress(i)%at(6, j)
+                    ! otherwise
+                    case default
+                        error stop ERROR_UNDEFINED_SECTION_TYPE
+                end select
+                
+                ! build matrix
+                matrix = new_matrix(3, 3)
+                matrix%at(1, :) = [s11, s12, s31]
+                matrix%at(2, :) = [s12, s22, s23]
+                matrix%at(3, :) = [s31, s23, s33]
+                
+                ! compute principal stresses
+                eigenvalues = eigen(matrix)
+                s1          = eigenvalues%at(3)
+                s2          = eigenvalues%at(2)
+                s3          = eigenvalues%at(1)
+                sMajor      = eigenvalues%at(maxloc(abs(eigenvalues%at(:)), dim=1))
+                
+                ! compute equivalent stresses
+                sTresca = s1 - s3
+                sMises  = sqrt(((s1 - s2)**2 + (s2 - s3)**2 + (s3 - s1)**2)/2.0)
+                
+                ! store results
+                extra(i)%at(:, j) = [s11, s22, s33, s23, s31, s12, s1, s2, s3, sMajor, sTresca, sMises]
             end do
         end do
     end subroutine

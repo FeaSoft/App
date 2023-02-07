@@ -18,19 +18,23 @@ module m_sproc
         type(t_mdb), intent(in) :: mdb ! model database
         
         ! additional variables
-        type(t_sparse)              :: Kaa, Kab      ! global stiffness matrix
-        type(t_vector)              :: Pa            ! equivalent nodal loads vector
-        type(t_vector)              :: Fe            ! external nodal forces
-        type(t_vector)              :: Ua            ! unknown displacements
-        type(t_vector)              :: Ub            ! prescribed nodal displacements
-        type(t_vector)              :: R             ! reaction forces
-        type(t_vector)              :: Fa, Fb        ! internal nodal forces
-        type(t_matrix), allocatable :: strain_ips(:) ! strain at the integration points
-        type(t_matrix), allocatable :: stress_ips(:) ! stress at the integration points
+        type(t_sparse)              :: Kaa, Kab            ! global stiffness matrix
+        type(t_vector)              :: Pa                  ! equivalent nodal loads vector
+        type(t_vector)              :: Fe                  ! external nodal forces
+        type(t_vector)              :: Ua                  ! unknown displacements
+        type(t_vector)              :: Ub                  ! prescribed nodal displacements
+        type(t_vector)              :: R                   ! reaction forces
+        type(t_vector)              :: Fa, Fb              ! internal nodal forces
+        type(t_matrix), allocatable :: strain_ips(:)       ! strain at the integration points (basic components)
+        type(t_matrix), allocatable :: stress_ips(:)       ! stress at the integration points (basic components)
+        type(t_matrix), allocatable :: strain_extra_ips(:) ! strain at the integration points (with extra components)
+        type(t_matrix), allocatable :: stress_extra_ips(:) ! stress at the integration points (with extra components)
         
         ! allocate storage
         allocate(strain_ips(mdb%mesh%n_elements))
         allocate(stress_ips(mdb%mesh%n_elements))
+        allocate(strain_extra_ips(mdb%mesh%n_elements))
+        allocate(stress_extra_ips(mdb%mesh%n_elements))
         
         ! compute global stiffness matrix
         call g_get_K(mdb%n_adofs, mdb%n_idofs, mdb%mesh, mdb%sections, mdb%materials, Kaa, Kab)
@@ -56,6 +60,14 @@ module m_sproc
         ! compute residual (infinity norm of the out-of-balance forces vector)
         print '("Infinity norm of the out-of-balance forces vector (residual): ",E10.4)', maxval(abs(Fe%at(:) - Fa%at(:)))
         
+        ! compute additional strain and stress measures (principal strains, principal stresses, and equivalent stresses)
+        ! deallocate unused storage
+        call extra_strain(strain_ips, strain_extra_ips); if (allocated(strain_ips)) deallocate(strain_ips)
+        call extra_stress(stress_ips, stress_extra_ips); if (allocated(stress_ips)) deallocate(stress_ips)
+        
+        
+        
+
         
         
         
@@ -65,19 +77,6 @@ module m_sproc
         
         
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        print *, stress_ips(1)%at(1,:)
         
         
         
