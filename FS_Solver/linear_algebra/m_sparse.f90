@@ -153,8 +153,8 @@ module m_sparse
         if (status /= SPARSE_STATUS_SUCCESS) error stop 'Error: failure to export MKL handle'
         
         ! convert C pointers to Fortran pointers
-        call c_f_pointer(row_start_c, row_start_f, [n_rows])
-        call c_f_pointer(row_end_c,   row_end_f,   [n_rows])
+        call c_f_pointer(row_start_c, row_start_f, [n_rows]               )
+        call c_f_pointer(row_end_c,   row_end_f,   [n_rows]               )
         call c_f_pointer(col_c,       col_f,       [row_end_f(n_rows) - 1])
         call c_f_pointer(val_c,       val_f,       [row_end_f(n_rows) - 1])
         

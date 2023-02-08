@@ -88,6 +88,37 @@ class MainWindowShell(QMainWindow):
         self._menuBarFileExit.setIcon(self._icons['file-exit'])
         self._menuBarFile.addAction(self._menuBarFileExit) # type: ignore
 
+        # menu bar > module
+        self._menuBarModule: QMenu = QMenu(self._menuBar)
+        self._menuBarModule.setTitle('Module')
+        self._menuBar.addAction(self._menuBarModule.menuAction())
+
+        # menu bar > module > preprocessor
+        self._menuBarModulePreprocessor: QAction = QAction(self._menuBarModule)
+        self._menuBarModulePreprocessor.setCheckable(True)
+        self._menuBarModulePreprocessor.setChecked(True)
+        self._menuBarModulePreprocessor.setText('Preprocessor')
+        self._menuBarModule.addAction(self._menuBarModulePreprocessor) # type: ignore
+
+        # menu bar > module > visualization
+        self._menuBarModuleVisualization: QAction = QAction(self._menuBarModule)
+        self._menuBarModuleVisualization.setCheckable(True)
+        self._menuBarModuleVisualization.setChecked(False)
+        self._menuBarModuleVisualization.setText('Visualization')
+        self._menuBarModule.addAction(self._menuBarModuleVisualization) # type: ignore
+        
+        
+        
+
+
+
+
+
+
+
+
+
+
         # menu bar > solver
         self._menuBarSolver: QMenu = QMenu(self._menuBar)
         self._menuBarSolver.setTitle('Solver')
