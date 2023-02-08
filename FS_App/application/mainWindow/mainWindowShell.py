@@ -281,7 +281,7 @@ class MainWindowShell(QMainWindow):
 
         # viewport frame
         self._viewportFrame: QFrame = QFrame(self._horizontalSplitter)
-        self._viewportFrame.setStyleSheet('border: 1px solid rgb(185,185,185);')
+        self._viewportFrame.setStyleSheet('background: rgb(90,115,140); border: 1px solid rgb(185,185,185);')
         sizePolicy1: QSizePolicy = self._viewportFrame.sizePolicy()
         sizePolicy1.setHorizontalStretch(1)
         self._viewportFrame.setSizePolicy(sizePolicy1)
@@ -290,11 +290,17 @@ class MainWindowShell(QMainWindow):
         # viewport frame layout
         self._viewportFrameLayout: QVBoxLayout = QVBoxLayout(self._viewportFrame)
         self._viewportFrameLayout.setContentsMargins(0, 0, 0, 0)
+        self._viewportFrameLayout.setSpacing(0)
         self._viewportFrame.setLayout(self._viewportFrameLayout)
 
-        # viewport
-        self._viewport: Viewport = Viewport(self._viewportFrame)
-        self._viewportFrameLayout.addWidget(self._viewport)
+        # model viewport
+        self._modelViewport: Viewport = Viewport(self._viewportFrame)
+        self._viewportFrameLayout.addWidget(self._modelViewport)
+
+        # output viewport
+        self._outputViewport: Viewport = Viewport(self._viewportFrame)
+        self._outputViewport.setVisible(False)
+        self._viewportFrameLayout.addWidget(self._outputViewport)
 
         # solver dialog
         self._solverDialog: SolverDialog = SolverDialog(self)

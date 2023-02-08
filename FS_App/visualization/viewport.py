@@ -10,11 +10,12 @@ from visualization.interaction import (
     Views, InteractionStyles, InteractionStyle, RotateInteractionStyle, PanInteractionStyle, ZoomInteractionStyle,
     PickSingleInteractionStyle, PickMultipleInteractionStyle, ProbeInteractionStyle, RulerInteractionStyle
 )
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor # type: ignore
+from vtkmodules.vtkCommonCore import vtkObject
 from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkRenderWindowInteractor
 
-class Viewport(QVTKRenderWindowInteractor):
+class Viewport(QWidget):
     '''
     Visualization viewport based on VTK.
     '''
@@ -22,15 +23,6 @@ class Viewport(QVTKRenderWindowInteractor):
     # class variables
     _callbacks: dict[int, Callable[[str, Any], None]] = {}
     _viewports: list['Viewport'] = []
-    _interactionStyles: dict[InteractionStyles, InteractionStyle] = {
-        InteractionStyles.Rotate       : RotateInteractionStyle(),
-        InteractionStyles.Pan          : PanInteractionStyle(),
-        InteractionStyles.Zoom         : ZoomInteractionStyle(),
-        InteractionStyles.PickSingle   : PickSingleInteractionStyle(),
-        InteractionStyles.PickMultiple : PickMultipleInteractionStyle(),
-        InteractionStyles.Probe        : ProbeInteractionStyle(),
-        InteractionStyles.Ruler        : RulerInteractionStyle()
-    }
     _currentInteractionStyle: InteractionStyles = InteractionStyles.Rotate
 
     @classmethod
@@ -59,9 +51,19 @@ class Viewport(QVTKRenderWindowInteractor):
         '''Sets the viewport interaction style for all viewports.'''
         cls._currentInteractionStyle = interactionStyle
         for viewport in cls._viewports:
-            viewport._interactor.SetInteractorStyle(cls._interactionStyles[cls._currentInteractionStyle].base)
+            viewport._interactor.SetInteractorStyle(viewport._interactionStyles[cls._currentInteractionStyle].base)
             viewport._interactor.RemoveObservers('CharEvent')
         cls.notifyOptionChanged(InteractionStyles.__name__, interactionStyle)
+
+    @classmethod
+    def setPickAction(
+        cls,
+        onPicked: Callable[[Sequence[int], bool], None] | None,
+        pickTarget: Literal['Points', 'Cells'] | None
+    ) -> None:
+        '''Sets the pick action on the current interaction style.'''
+        for viewport in cls._viewports:
+            viewport._interactionStyles[cls._currentInteractionStyle].setPickAction(onPicked, pickTarget)
 
     @property
     def info(self) -> Info:
@@ -70,12 +72,22 @@ class Viewport(QVTKRenderWindowInteractor):
 
     # attribute slots
     __slots__ = (
-        '_renderer', '_renderWindow', '_interactor', '_triad', '_info', '_meshRenderObject', '_selectionRenderObject'
+        '_layout', '_vtkWidget', '_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad', '_info',
+        '_meshRenderObject', '_selectionRenderObject'
     )
 
     def __init__(self, parent: QWidget | None = None) -> None:
         '''Viewport constructor.'''
-        super().__init__(parent) # type: ignore
+        super().__init__(parent)
+        vtkObject.GlobalWarningDisplayOn()
+        # layout
+        self._layout: QVBoxLayout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+        self.setLayout(self._layout)
+        # VTK widget
+        self._vtkWidget: QVTKRenderWindowInteractor = QVTKRenderWindowInteractor(self)
+        self._layout.addWidget(self._vtkWidget)
         # register viewport
         self._viewports.append(self)
         # renderer
@@ -84,10 +96,20 @@ class Viewport(QVTKRenderWindowInteractor):
         self._renderer.SetBackground(0.6, 0.7, 0.8)
         self._renderer.SetBackground2(0.1, 0.2, 0.3)
         # render window
-        self._renderWindow: vtkRenderWindow = cast(vtkRenderWindow, self.GetRenderWindow())
+        self._renderWindow: vtkRenderWindow = cast(vtkRenderWindow, self._vtkWidget.GetRenderWindow())
         self._renderWindow.AddRenderer(self._renderer)
         # interactor
         self._interactor: vtkRenderWindowInteractor = self._renderWindow.GetInteractor()
+        # interactor styles
+        self._interactionStyles: dict[InteractionStyles, InteractionStyle] = {
+            InteractionStyles.Rotate       : RotateInteractionStyle(),
+            InteractionStyles.Pan          : PanInteractionStyle(),
+            InteractionStyles.Zoom         : ZoomInteractionStyle(),
+            InteractionStyles.PickSingle   : PickSingleInteractionStyle(),
+            InteractionStyles.PickMultiple : PickMultipleInteractionStyle(),
+            InteractionStyles.Probe        : ProbeInteractionStyle(),
+            InteractionStyles.Ruler        : RulerInteractionStyle()
+        }
         # triad & info
         self._triad: Triad = Triad()
         self._info: Info = Info()
@@ -101,6 +123,10 @@ class Viewport(QVTKRenderWindowInteractor):
         self._triad.initialize(self._interactor)
         self._info.initialize(self._renderer)
         self.setInteractionStyle(self._currentInteractionStyle)
+
+    def finalize(self) -> None:
+        '''Finalizes the viewport.'''
+        self._vtkWidget.Finalize()
 
     def render(self) -> None:
         '''Renders the current scene.'''
@@ -117,14 +143,6 @@ class Viewport(QVTKRenderWindowInteractor):
         '''Removes the renderable visualization object from the scene.'''
         for actor in renderObject.actors(): self._renderer.RemoveActor(actor)
         if render: self.render()
-
-    def setPickAction(
-        self,
-        onPicked: Callable[[Sequence[int], bool], None] | None,
-        pickTarget: Literal['Points', 'Cells'] | None
-    ) -> None:
-        '''Sets the pick action on the current interaction style.'''
-        self._interactionStyles[self._currentInteractionStyle].setPickAction(onPicked, pickTarget)
 
     def setView(self, view: Views, render: bool = True) -> None:
         '''Sets the camera view.'''

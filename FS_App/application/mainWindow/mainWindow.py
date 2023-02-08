@@ -9,6 +9,7 @@ from visualization import Viewport, Views, InteractionStyles
 from application.terminal import Terminal
 from application.mainWindow.mainWindowShell import MainWindowShell
 from PySide6.QtWidgets import QFileDialog, QMessageBox
+from PySide6.QtGui import QCloseEvent
 
 class MainWindow(MainWindowShell):
     '''
@@ -21,16 +22,20 @@ class MainWindow(MainWindowShell):
         return self._terminal
 
     @property
-    def viewport(self) -> Viewport:
-        '''The visualization viewport.'''
-        return self._viewport
+    def currentViewport(self) -> Viewport:
+        '''The current visualization viewport.'''
+        match self._module:
+            case 'Preprocessor': return self._modelViewport
+            case 'Visualization': return self._outputViewport
 
     # attribute slots
-    __slots__ = ('_modelDatabase',)
+    __slots__ = ('_module', '_modelDatabase')
 
     def __init__(self) -> None:
         '''Main window constructor.'''
         super().__init__()
+        # module
+        self._module: Literal['Preprocessor', 'Visualization'] = 'Preprocessor'
         # model database
         self._modelDatabase: ModelDatabase | None = None
         # setup connections
@@ -69,7 +74,14 @@ class MainWindow(MainWindowShell):
         Initializes the viewport.
         '''
         super().show()
-        self._viewport.initialize()
+        self._modelViewport.initialize()
+        self._outputViewport.initialize()
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        '''Window close event.'''
+        super().closeEvent(event)
+        self._modelViewport.finalize()
+        self._outputViewport.finalize()
 
     def enablePicking(
         self,
@@ -79,13 +91,13 @@ class MainWindow(MainWindowShell):
         onPicked: Callable[[Sequence[int], bool], None] | None
     ) -> None:
         '''Enables picking.'''
-        self._viewport.setPickAction(onPicked, pickTarget)
+        Viewport.setPickAction(onPicked, pickTarget)
         if pickSingle: self._toolBarInteractionPickSingle.setEnabled(True)
         if pickMultiple: self._toolBarInteractionPickMultiple.setEnabled(True)
 
     def disablePicking(self) -> None:
         '''Disables picking.'''
-        self._viewport.setPickAction(None, None)
+        Viewport.setPickAction(None, None)
         if self._toolBarInteractionPickSingle.isChecked() or self._toolBarInteractionPickMultiple.isChecked():
             self._toolBarInteractionRotate.trigger()
         self._toolBarInteractionPickSingle.setEnabled(False)
@@ -108,19 +120,31 @@ class MainWindow(MainWindowShell):
                 case _: raise ValueError(f"invalid file extension: '{extension}'")
         # update model tree and viewport
         self._modelTree.setModelDatabase(self._modelDatabase)
-        self._viewport.setMeshRenderObject(self._modelDatabase.mesh if self._modelDatabase else None, render=False)
+        self._modelViewport.setMeshRenderObject(self._modelDatabase.mesh if self._modelDatabase else None, render=False)
         # set correct camera view
         if self._modelDatabase and self._modelDatabase.mesh.modelingSpace == ModelingSpaces.ThreeDimensional:
-            self._viewport.setView(Views.Isometric)
+            self._modelViewport.setView(Views.Isometric)
         else:
-            self._viewport.setView(Views.Front)
+            self._modelViewport.setView(Views.Front)
+        # open preprocessor module
+        self.setModule('Preprocessor')
 
     def setModule(self, module: Literal['Preprocessor', 'Visualization']) -> None:
         '''Updates the view based on the given module.'''
-        isPreprocessor: bool = module == 'Preprocessor'
-        isVisualization: bool = module == 'Visualization'
+        self._module = module
+        isPreprocessor: bool = self._module == 'Preprocessor'
+        isVisualization: bool = self._module == 'Visualization'
+        # change viewport (avoid showing two viewports at the same time or they will flicker)
+        if isPreprocessor:
+            self._outputViewport.setVisible(False)
+            self._modelViewport.setVisible(True)
+        elif isVisualization:
+            self._modelViewport.setVisible(False)
+            self._outputViewport.setVisible(True)
         # preprocessor module
         self._menuBarModulePreprocessor.setChecked(isPreprocessor)
+        self._menuBarSolver.menuAction().setVisible(isPreprocessor)
+        if self._solverDialog.isVisible() and not isPreprocessor: self._solverDialog.close()
         # visualization module
         self._menuBarModuleVisualization.setChecked(isVisualization)
 
@@ -131,15 +155,15 @@ class MainWindow(MainWindowShell):
     def onModelTreeSelection(self) -> None:
         '''On model tree current item changed.'''
         # clear viewport info and current selection
-        self._viewport.info.clear()
-        self._viewport.setSelectionRenderObject(None, render=False)
+        self._modelViewport.info.clear()
+        self._modelViewport.setSelectionRenderObject(None, render=False)
 
         # if no data object is selected or no model database is loaded:
         # disable picking, render scene, and return
         dataObject: DataObject | None = self._modelTree.currentDataObject()
         if not dataObject or not self._modelDatabase:
             self.disablePicking()
-            self._viewport.render()
+            self._modelViewport.render()
             return
 
         # render viewport selection based on currently selected data object
@@ -148,33 +172,33 @@ class MainWindow(MainWindowShell):
             case NodeSet():
                 stopPicking = False
                 self.enablePicking(True, True, 'Points', lambda x, y: self.onViewportPick(dataObject, x, y))
-                self._viewport.info.setText(1, 'Edit Node Set')
-                self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Nodes')
-                self._viewport.setSelectionRenderObject(dataObject, (1.0, 0.0, 0.0), render=False)
+                self._modelViewport.info.setText(1, 'Edit Node Set')
+                self._modelViewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Nodes')
+                self._modelViewport.setSelectionRenderObject(dataObject, (1.0, 0.0, 0.0), render=False)
             case ElementSet():
                 stopPicking = False
                 self.enablePicking(True, True, 'Cells', lambda x, y: self.onViewportPick(dataObject, x, y))
-                self._viewport.info.setText(1, 'Edit Element Set')
-                self._viewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Elements')
-                self._viewport.setSelectionRenderObject(dataObject, (1.0, 0.0, 0.0), render=False)
+                self._modelViewport.info.setText(1, 'Edit Element Set')
+                self._modelViewport.info.setText(0, 'Use Viewport Pickers to Add/Remove Elements')
+                self._modelViewport.setSelectionRenderObject(dataObject, (1.0, 0.0, 0.0), render=False)
             case Section():
                 if dataObject.elementSetName != '<Undefined>':
                     dataObject = cast(ElementSet, self._modelDatabase.elementSets[dataObject.elementSetName])
-                    self._viewport.setSelectionRenderObject(dataObject, (0.0, 0.75, 0.0), render=False)
+                    self._modelViewport.setSelectionRenderObject(dataObject, (0.0, 0.75, 0.0), render=False)
             case ConcentratedLoad():
                 if dataObject.nodeSetName != '<Undefined>':
-                    self._viewport.setSelectionRenderObject(
+                    self._modelViewport.setSelectionRenderObject(
                         dataObject, (1.0, 1.0, 0.0), self._modelDatabase, render=False
                     )
             case BoundaryCondition():
                 if dataObject.nodeSetName != '<Undefined>':
-                    self._viewport.setSelectionRenderObject(
+                    self._modelViewport.setSelectionRenderObject(
                         dataObject, (1.0, 0.5, 0.0), self._modelDatabase, render=False
                     )
             case _:
                 pass
         if stopPicking: self.disablePicking()
-        self._viewport.render()
+        self._modelViewport.render()
 
     def onViewportPick(self, dataObject: NodeSet | ElementSet, indices: Sequence[int], remove: bool) -> None:
         '''On viewport picking action performed.'''
@@ -313,31 +337,31 @@ class MainWindow(MainWindowShell):
 
     def onToolBarViewFront(self) -> None:
         '''On Tool Bar > View > Front.'''
-        self._viewport.setView(Views.Front)
+        self.currentViewport.setView(Views.Front)
 
     def onToolBarViewBack(self) -> None:
         '''On Tool Bar > View > Back.'''
-        self._viewport.setView(Views.Back)
+        self.currentViewport.setView(Views.Back)
 
     def onToolBarViewTop(self) -> None:
         '''On Tool Bar > View > Top.'''
-        self._viewport.setView(Views.Top)
+        self.currentViewport.setView(Views.Top)
 
     def onToolBarViewBottom(self) -> None:
         '''On Tool Bar > View > Bottom.'''
-        self._viewport.setView(Views.Bottom)
+        self.currentViewport.setView(Views.Bottom)
 
     def onToolBarViewLeft(self) -> None:
         '''On Tool Bar > View > Left.'''
-        self._viewport.setView(Views.Left)
+        self.currentViewport.setView(Views.Left)
 
     def onToolBarViewRight(self) -> None:
         '''On Tool Bar > View > Right.'''
-        self._viewport.setView(Views.Right)
+        self.currentViewport.setView(Views.Right)
 
     def onToolBarViewIsometric(self) -> None:
         '''On Tool Bar > View > Isometric.'''
-        self._viewport.setView(Views.Isometric)
+        self.currentViewport.setView(Views.Isometric)
 
     def onToolBarInteractionRotate(self) -> None:
         '''On Tool Bar > Interaction > Rotate.'''
