@@ -106,18 +106,6 @@ class MainWindowShell(QMainWindow):
         self._menuBarModuleVisualization.setChecked(False)
         self._menuBarModuleVisualization.setText('Visualization')
         self._menuBarModule.addAction(self._menuBarModuleVisualization) # type: ignore
-        
-        
-        
-
-
-
-
-
-
-
-
-
 
         # menu bar > solver
         self._menuBarSolver: QMenu = QMenu(self._menuBar)

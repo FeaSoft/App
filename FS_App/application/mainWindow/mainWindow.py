@@ -42,6 +42,8 @@ class MainWindow(MainWindowShell):
         self._menuBarFileSaveAs.triggered.connect(self.onMenuBarFileSaveAs)                           # type: ignore
         self._menuBarFileClose.triggered.connect(self.onMenuBarFileClose)                             # type: ignore
         self._menuBarFileExit.triggered.connect(self.onMenuBarFileExit)                               # type: ignore
+        self._menuBarModulePreprocessor.triggered.connect(self.onMenuBarModulePreprocessor)           # type: ignore
+        self._menuBarModuleVisualization.triggered.connect(self.onMenuBarModuleVisualization)         # type: ignore
         self._menuBarSolverDialog.triggered.connect(self.onMenuBarSolverDialog)                       # type: ignore
         self._toolBarFileNew.triggered.connect(self.onToolBarFileNew)                                 # type: ignore
         self._toolBarFileOpen.triggered.connect(self.onToolBarFileOpen)                               # type: ignore
@@ -112,6 +114,15 @@ class MainWindow(MainWindowShell):
             self._viewport.setView(Views.Isometric)
         else:
             self._viewport.setView(Views.Front)
+
+    def setModule(self, module: Literal['Preprocessor', 'Visualization']) -> None:
+        '''Updates the view based on the given module.'''
+        isPreprocessor: bool = module == 'Preprocessor'
+        isVisualization: bool = module == 'Visualization'
+        # preprocessor module
+        self._menuBarModulePreprocessor.setChecked(isPreprocessor)
+        # visualization module
+        self._menuBarModuleVisualization.setChecked(isVisualization)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tree -> Viewport
@@ -271,6 +282,14 @@ class MainWindow(MainWindowShell):
     def onMenuBarFileExit(self) -> None:
         '''On Menu Bar > File > Exit.'''
         self.close()
+
+    def onMenuBarModulePreprocessor(self) -> None:
+        '''On Menu Bar > Module > Preprocessor.'''
+        self.setModule('Preprocessor')
+
+    def onMenuBarModuleVisualization(self) -> None:
+        '''On Menu Bar > Module > Visualization.'''
+        self.setModule('Visualization')
 
     def onMenuBarSolverDialog(self) -> None:
         '''On Menu Bar > Solver > Dialog.'''
