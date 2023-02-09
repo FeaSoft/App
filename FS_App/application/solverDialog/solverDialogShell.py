@@ -1,4 +1,4 @@
-from PySide6.QtGui import Qt, QIcon
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QWidget, QDialog, QGridLayout, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QLineEdit, QRadioButton, QFrame, QSizePolicy,
     QPushButton, QPlainTextEdit
@@ -46,7 +46,6 @@ class SolverDialogShell(QDialog):
         # model database label
         self._modelDatabaseLabel: QLabel = QLabel(self._currentJobGroupBox)
         self._modelDatabaseLabel.setText('Model Database:')
-        self._modelDatabaseLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self._currentJobGroupBoxLayout.addWidget(self._modelDatabaseLabel, 0, 0)
 
         # model database box
@@ -60,34 +59,31 @@ class SolverDialogShell(QDialog):
         self._openModelDatabaseButton.setIcon(QIcon('./resources/images/file-open.svg'))
         self._currentJobGroupBoxLayout.addWidget(self._openModelDatabaseButton, 0, 2)
 
-        # solver job input label
-        self._solverJobInputLabel: QLabel = QLabel(self._currentJobGroupBox)
-        self._solverJobInputLabel.setText('Solver Job Input:')
-        self._solverJobInputLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self._currentJobGroupBoxLayout.addWidget(self._solverJobInputLabel, 1, 0)
-
-        # solver job input box
-        self._solverJobInputBox: QLineEdit = QLineEdit(self._currentJobGroupBox)
-        self._solverJobInputBox.setReadOnly(True)
-        self._solverJobInputBox.setText('...')
-        self._currentJobGroupBoxLayout.addWidget(self._solverJobInputBox, 1, 1)
-
         # output database label
         self._outputDatabaseLabel: QLabel = QLabel(self._currentJobGroupBox)
         self._outputDatabaseLabel.setText('Output Database:')
-        self._outputDatabaseLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self._currentJobGroupBoxLayout.addWidget(self._outputDatabaseLabel, 2, 0)
+        self._currentJobGroupBoxLayout.addWidget(self._outputDatabaseLabel, 1, 0)
 
         # output database box
         self._outputDatabaseBox: QLineEdit = QLineEdit(self._currentJobGroupBox)
         self._outputDatabaseBox.setReadOnly(True)
         self._outputDatabaseBox.setText('...')
-        self._currentJobGroupBoxLayout.addWidget(self._outputDatabaseBox, 2, 1)
+        self._currentJobGroupBoxLayout.addWidget(self._outputDatabaseBox, 1, 1)
+
+        # solver job input label
+        self._solverJobInputLabel: QLabel = QLabel(self._currentJobGroupBox)
+        self._solverJobInputLabel.setText('Solver Job Input:')
+        self._currentJobGroupBoxLayout.addWidget(self._solverJobInputLabel, 2, 0)
+
+        # solver job input box
+        self._solverJobInputBox: QLineEdit = QLineEdit(self._currentJobGroupBox)
+        self._solverJobInputBox.setReadOnly(True)
+        self._solverJobInputBox.setText('...')
+        self._currentJobGroupBoxLayout.addWidget(self._solverJobInputBox, 2, 1)
 
         # log file label
         self._logFileLabel: QLabel = QLabel(self._currentJobGroupBox)
         self._logFileLabel.setText('Log File:')
-        self._logFileLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self._currentJobGroupBoxLayout.addWidget(self._logFileLabel, 3, 0)
 
         # log file box
@@ -172,7 +168,6 @@ class SolverDialogShell(QDialog):
 
         # status label
         self._statusLabel: QLabel = QLabel(self._processGroupBox)
-        self._statusLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self._statusLabel.setText('Process Status:')
         self._processGroupBoxLayout.addWidget(self._statusLabel, 0, 0)
 
@@ -184,7 +179,6 @@ class SolverDialogShell(QDialog):
 
         # cpu label
         self._cpuLabel: QLabel = QLabel(self._processGroupBox)
-        self._cpuLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self._cpuLabel.setText('CPU Usage:')
         self._processGroupBoxLayout.addWidget(self._cpuLabel, 1, 0)
 
@@ -196,7 +190,6 @@ class SolverDialogShell(QDialog):
 
         # time label
         self._timeLabel: QLabel = QLabel(self._processGroupBox)
-        self._timeLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self._timeLabel.setText('CPU Time:')
         self._processGroupBoxLayout.addWidget(self._timeLabel, 2, 0)
 
@@ -208,7 +201,6 @@ class SolverDialogShell(QDialog):
 
         # memory label
         self._memoryLabel: QLabel = QLabel(self._processGroupBox)
-        self._memoryLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self._memoryLabel.setText('Memory:')
         self._processGroupBoxLayout.addWidget(self._memoryLabel, 3, 0)
 
