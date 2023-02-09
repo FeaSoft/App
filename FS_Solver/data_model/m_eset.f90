@@ -21,17 +21,17 @@ module m_eset
     
     ! Description:
     ! Element index set constructor.
-    type(t_eset) function constructor(n_elements) result(this)
+    type(t_eset) function constructor(n_elements) result(self)
         integer, intent(in) :: n_elements ! number of element indices
-        this%n_elements = n_elements
-        allocate(this%i_elements(this%n_elements))
+        self%n_elements = n_elements
+        allocate(self%i_elements(self%n_elements))
     end function
     
     ! Description:
     ! Element index set destructor.
-    subroutine destructor(this)
-        type(t_eset), intent(inout) :: this
-        if (allocated(this%i_elements)) deallocate(this%i_elements)
+    subroutine destructor(self)
+        type(t_eset), intent(inout) :: self
+        if (allocated(self%i_elements)) deallocate(self%i_elements)
     end subroutine
     
 end module

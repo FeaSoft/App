@@ -21,9 +21,9 @@ module m_writer
         type(t_odb),  intent(in) :: odb  ! output database
         
         ! writer helper variables
-        character(8)  :: date ! current date
-        character(10) :: time ! current time
-        integer       :: i, j ! loop counters
+        character(8)  :: date    ! current date
+        character(10) :: time    ! current time
+        integer       :: i, j, k ! loop counters
         
         ! open output database file for writing
         open(unit=1, action='write', file=file)
@@ -74,33 +74,22 @@ module m_writer
         write(unit=1, fmt='(A,I0,A)'), 'mesh = Mesh(', mesh%m_space, ', nodeData, elementData)'
         write(unit=1, fmt='(A)'), ''
         
-        ! frame descriptions
+        ! history output
         write(unit=1, fmt='(A)'), separator
-        write(unit=1, fmt='(A,A)'), comment, 'FRAME DESCRIPTIONS'
+        write(unit=1, fmt='(A,A)'), comment, 'HISTORY OUTPUT'
         write(unit=1, fmt='(A)'), separator
-        write(unit=1, fmt='(A)'), 'frameDescr = ('
+        write(unit=1, fmt='(A)'), 'historyOutputDescriptions = ('
+        do i = 1, odb%n_hout
+            write(unit=1, fmt='(A,"''",A,"'',")'), indentation, trim(odb%d_hout(i))
+        end do
+        write(unit=1, fmt='(A)'), ')'
+        write(unit=1, fmt='(A)'), ''
+        write(unit=1, fmt='(A)'), 'historyOutput = ('
         do i = 1, odb%n_frames
-            write(unit=1, fmt='(A,"''",A,"'',")'), indentation, trim(odb%frame_descr(i))
-        end do
-        write(unit=1, fmt='(A)'), ')'
-        write(unit=1, fmt='(A)'), ''
-        
-        ! nodal scalar fields
-        write(unit=1, fmt='(A)'), separator
-        write(unit=1, fmt='(A,A)'), comment, 'NODAL SCALAR FIELDS'
-        write(unit=1, fmt='(A)'), separator
-        write(unit=1, fmt='(A)'), 'specs = ('
-        do i = 1, odb%n_nsfields
-            write(unit=1, fmt='(A,"''",A,"'',")'), indentation, trim(odb%specs(i))
-        end do
-        write(unit=1, fmt='(A)'), ')'
-        write(unit=1, fmt='(A)'), ''
-        write(unit=1, fmt='(A)'), 'values = ('
-        do i = 1, mesh%n_nodes
             write(unit=1, fmt='(A,"(")', advance='no'), indentation
-            do j = 1, odb%n_nsfields
-                write(unit=1, fmt='(SP,E15.8)', advance='no'), odb%values(i, j)
-                if (j < odb%n_nsfields) then
+            do j = 1, odb%n_hout
+                write(unit=1, fmt='(SP,E15.8)', advance='no'), odb%v_hout(i, j)
+                if (j < odb%n_hout) then
                     write(unit=1, fmt='(A)', advance='no'), ', '
                 else
                     write(unit=1, fmt='(A)', advance='yes'), '),'
@@ -110,11 +99,56 @@ module m_writer
         write(unit=1, fmt='(A)'), ')'
         write(unit=1, fmt='(A)'), ''
         
+        ! field output
+        write(unit=1, fmt='(A)'), separator
+        write(unit=1, fmt='(A,A)'), comment, 'FIELD OUTPUT'
+        write(unit=1, fmt='(A)'), separator
+        write(unit=1, fmt='(A)'), 'fieldOutputDescriptions = ('
+        do i = 1, odb%n_nsfout
+            write(unit=1, fmt='(A,"''",A,"'',")'), indentation, trim(odb%d_nsfout(i))
+        end do
+        write(unit=1, fmt='(A)'), ')'
+        write(unit=1, fmt='(A)'), ''
+        write(unit=1, fmt='(A)'), 'fieldOutput = ('
+        do i = 1, odb%n_frames
+            write(unit=1, fmt='(A,"(")'), indentation
+            do j = 1, mesh%n_nodes
+                write(unit=1, fmt='(A,A,"(")', advance='no'), indentation, indentation
+                do k = 1, odb%n_nsfout
+                    write(unit=1, fmt='(SP,E15.8)', advance='no'), odb%v_nsfout(i, k, j)
+                    if (k < odb%n_nsfout) then
+                        write(unit=1, fmt='(A)', advance='no'), ', '
+                    else
+                        write(unit=1, fmt='(A)', advance='yes'), '),'
+                    end if
+                end do
+            end do
+            write(unit=1, fmt='(A,"),")'), indentation
+        end do
+        write(unit=1, fmt='(A)'), ')'
+        write(unit=1, fmt='(A)'), ''
+        
         ! output database
         write(unit=1, fmt='(A)'), separator
         write(unit=1, fmt='(A,A)'), comment, 'OUTPUT DATABASE'
         write(unit=1, fmt='(A)'), separator
-        write(unit=1, fmt='(A)'), 'outputDatabase = OutputDatabase(mesh, frameDescr, specs, values)'
+        write(unit=1, fmt='(A,I0)'), 'numberOfFrames = ', odb%n_frames
+        write(unit=1, fmt='(A)'), ''
+        write(unit=1, fmt='(A)'), 'frameDescriptions = ('
+        do i = 1, odb%n_frames
+            write(unit=1, fmt='(A,"''",A,"'',")'), indentation, trim(odb%d_frames(i))
+        end do
+        write(unit=1, fmt='(A)'), ')'
+        write(unit=1, fmt='(A)'), ''
+        write(unit=1, fmt='(A)'), 'outputDatabase = OutputDatabase('
+        write(unit=1, fmt='(A,A,",")'), indentation, 'mesh'
+        write(unit=1, fmt='(A,A,",")'), indentation, 'numberOfFrames'
+        write(unit=1, fmt='(A,A,",")'), indentation, 'frameDescriptions'
+        write(unit=1, fmt='(A,A,",")'), indentation, 'historyOutputDescriptions'
+        write(unit=1, fmt='(A,A,",")'), indentation, 'fieldOutputDescriptions'
+        write(unit=1, fmt='(A,A,",")'), indentation, 'historyOutput'
+        write(unit=1, fmt='(A,A,",")'), indentation, 'fieldOutput'
+        write(unit=1, fmt='(A)'), ')'
         write(unit=1, fmt='(A)'), ''
         
         ! close file

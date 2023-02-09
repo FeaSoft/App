@@ -39,70 +39,70 @@ module m_element
     
     ! Description:
     ! Finite element constructor.
-    type(t_element) function constructor(t_element, i_section) result(this)
+    type(t_element) function constructor(t_element, i_section) result(self)
         integer, intent(in) :: t_element ! type of element
         integer, intent(in) :: i_section ! index of section
-        this%t_element = t_element
-        this%i_section = i_section
+        self%t_element = t_element
+        self%i_section = i_section
         
         ! name of element type based on element type
-        select case (this%t_element)
-            case (E2D3); this%t_name = 'E2D3'
-            case (E2D4); this%t_name = 'E2D4'
-            case (E3D4); this%t_name = 'E3D4'
-            case (E3D5); this%t_name = 'E3D5'
-            case (E3D6); this%t_name = 'E3D6'
-            case (E3D8); this%t_name = 'E3D8'
+        select case (self%t_element)
+            case (E2D3); self%t_name = 'E2D3'
+            case (E2D4); self%t_name = 'E2D4'
+            case (E3D4); self%t_name = 'E3D4'
+            case (E3D5); self%t_name = 'E3D5'
+            case (E3D6); self%t_name = 'E3D6'
+            case (E3D8); self%t_name = 'E3D8'
             case default; error stop ERROR_UNDEFINED_ELEMENT_TYPE
         end select
         
         ! number of element nodes based on element type
-        select case (this%t_element)
-            case (E2D3); this%n_nodes = 3
-            case (E2D4); this%n_nodes = 4
-            case (E3D4); this%n_nodes = 4
-            case (E3D5); this%n_nodes = 5
-            case (E3D6); this%n_nodes = 6
-            case (E3D8); this%n_nodes = 8
+        select case (self%t_element)
+            case (E2D3); self%n_nodes = 3
+            case (E2D4); self%n_nodes = 4
+            case (E3D4); self%n_nodes = 4
+            case (E3D5); self%n_nodes = 5
+            case (E3D6); self%n_nodes = 6
+            case (E3D8); self%n_nodes = 8
             case default; error stop ERROR_UNDEFINED_ELEMENT_TYPE
         end select
         
         ! number of nodal DOFs based on element type
-        select case (this%t_element)
-            case (E2D3); this%n_ndofs = 2 ! UX, UY
-            case (E2D4); this%n_ndofs = 2 ! UX, UY
-            case (E3D4); this%n_ndofs = 3 ! UX, UY, UZ
-            case (E3D5); this%n_ndofs = 3 ! UX, UY, UZ
-            case (E3D6); this%n_ndofs = 3 ! UX, UY, UZ
-            case (E3D8); this%n_ndofs = 3 ! UX, UY, UZ
+        select case (self%t_element)
+            case (E2D3); self%n_ndofs = 2 ! UX, UY
+            case (E2D4); self%n_ndofs = 2 ! UX, UY
+            case (E3D4); self%n_ndofs = 3 ! UX, UY, UZ
+            case (E3D5); self%n_ndofs = 3 ! UX, UY, UZ
+            case (E3D6); self%n_ndofs = 3 ! UX, UY, UZ
+            case (E3D8); self%n_ndofs = 3 ! UX, UY, UZ
             case default; error stop ERROR_UNDEFINED_ELEMENT_TYPE
         end select
         
         ! number of element DOFs
-        this%n_edofs = this%n_nodes * this%n_ndofs
+        self%n_edofs = self%n_nodes * self%n_ndofs
         
         ! number of integration points based on element type
-        select case (this%t_element)
-            case (E2D3); this%n_ips = 1
-            case (E2D4); this%n_ips = 4
-            case (E3D4); this%n_ips = 1
-            case (E3D5); this%n_ips = 5
-            case (E3D6); this%n_ips = 6
-            case (E3D8); this%n_ips = 8
+        select case (self%t_element)
+            case (E2D3); self%n_ips = 1
+            case (E2D4); self%n_ips = 4
+            case (E3D4); self%n_ips = 1
+            case (E3D5); self%n_ips = 5
+            case (E3D6); self%n_ips = 6
+            case (E3D8); self%n_ips = 8
             case default; error stop ERROR_UNDEFINED_ELEMENT_TYPE
         end select
         
         ! allocate arrays
-        allocate(this%i_nodes(this%n_nodes))
-        allocate(this%dofs(this%n_edofs))
+        allocate(self%i_nodes(self%n_nodes))
+        allocate(self%dofs(self%n_edofs))
     end function
     
     ! Description:
     ! Finite element destructor.
-    subroutine destructor(this)
-        type(t_element), intent(inout) :: this
-        if (allocated(this%i_nodes)) deallocate(this%i_nodes)
-        if (allocated(this%dofs))    deallocate(this%dofs)
+    subroutine destructor(self)
+        type(t_element), intent(inout) :: self
+        if (allocated(self%i_nodes)) deallocate(self%i_nodes)
+        if (allocated(self%dofs))    deallocate(self%dofs)
     end subroutine
     
 end module

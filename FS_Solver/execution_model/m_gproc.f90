@@ -30,7 +30,7 @@ module m_gproc
         type(t_material)            :: material ! section material
         integer                     :: i        ! loop counter
         
-        ! compute element stiffness matrices first (giving a chance for this loop to be parallelized)
+        ! compute element stiffness matrices first (giving a chance for self loop to be parallelized)
         allocate(Ks(mesh%n_elements))
         do i = 1, mesh%n_elements
             element  = mesh%elements(i)
@@ -68,7 +68,7 @@ module m_gproc
         type(t_material)            :: material ! section material
         integer                     :: i        ! loop counter
         
-        ! compute element internal forces vectors first (giving a chance for this loop to be parallelized)
+        ! compute element internal forces vectors first (giving a chance for self loop to be parallelized)
         allocate(Fs(mesh%n_elements))
         do i = 1, mesh%n_elements
             element  = mesh%elements(i)

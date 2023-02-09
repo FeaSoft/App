@@ -19,11 +19,11 @@ module m_cload
     
     ! Description:
     ! Concentrated load constructor.
-    type(t_cload) function constructor(i_nset, x, y, z) result(this)
+    type(t_cload) function constructor(i_nset, x, y, z) result(self)
         integer, intent(in) :: i_nset  ! index of node set
         real,    intent(in) :: x, y, z ! concentrated load components
-        this%i_nset     = i_nset
-        this%components = [x, y, z]
+        self%i_nset     = i_nset
+        self%components = [x, y, z]
     end function
     
 end module

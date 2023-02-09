@@ -20,13 +20,13 @@ module m_material
     
     ! Description:
     ! Material constructor.
-    type(t_material) function constructor(young, poisson, density) result(this)
+    type(t_material) function constructor(young, poisson, density) result(self)
         real, intent(in) :: young   ! Young's modulus
         real, intent(in) :: poisson ! Poisson's ratio
         real, intent(in) :: density ! mass density
-        this%young   = young
-        this%poisson = poisson
-        this%density = density
+        self%young   = young
+        self%poisson = poisson
+        self%density = density
     end function
     
 end module

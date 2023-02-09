@@ -10,12 +10,12 @@ from visualization.interaction import (
     Views, InteractionStyles, InteractionStyle, RotateInteractionStyle, PanInteractionStyle, ZoomInteractionStyle,
     PickSingleInteractionStyle, PickMultipleInteractionStyle, ProbeInteractionStyle, RulerInteractionStyle
 )
-from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor # type: ignore
 from vtkmodules.vtkCommonCore import vtkObject
 from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkRenderWindowInteractor
 
-class Viewport(QWidget):
+class Viewport(QFrame):
     '''
     Visualization viewport based on VTK.
     '''
@@ -80,6 +80,8 @@ class Viewport(QWidget):
         '''Viewport constructor.'''
         super().__init__(parent)
         vtkObject.GlobalWarningDisplayOn()
+        # self (frame)
+        self.setStyleSheet('border: 1px solid rgb(185,185,185);')
         # layout
         self._layout: QVBoxLayout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)

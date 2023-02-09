@@ -35,6 +35,9 @@ module m_sproc
         type(t_matrix)              :: stress_extra_mesh     ! stress at the mesh nodes (basic components + extra measures)
         type(t_matrix)              :: displacement          ! displacements at the mesh nodes
         type(t_matrix)              :: reaction              ! reaction forces at the mesh nodes
+        real                        :: strain_energy         ! strain energy
+        real                        :: residual              ! residual (infinity norm of the out-of-balance forces vector)
+        integer                     :: frame                 ! current output frame
         
         ! allocate storage
         allocate(strain_ips(mdb%mesh%n_elements))
@@ -58,6 +61,9 @@ module m_sproc
         ! compute unknown displacements
         Ua = solve(Kaa, Fe)
         
+        ! compute strain energy
+        strain_energy = dot(Ua, Fe)/2.0
+        
         ! compute reaction forces
         R = multiply(Kab, Ua, transposeA=.true.)
         
@@ -65,8 +71,8 @@ module m_sproc
         ! also computes strains and stresses at the integration points
         call g_get_F(mdb%n_adofs, mdb%n_idofs, mdb%mesh, mdb%sections, mdb%materials, Ua, Ub, Fa, Fb, strain_ips, stress_ips)
         
-        ! compute residual (infinity norm of the out-of-balance forces vector)
-        print '("Infinity norm of the out-of-balance forces vector (residual): ",SP,E11.4)', maxval(abs(Fe%at(:) - Fa%at(:)))
+        ! compute residual
+        residual = maxabs(subtract(Fe, Fa))
         
         ! perform extrapolation from element integration points to element nodes
         ! deallocate unused storage
@@ -87,40 +93,89 @@ module m_sproc
         reaction     = convert_vector(mdb%mesh%m_space, mdb%mesh%n_nodes, mdb%mesh%nodes, new_vector(mdb%n_adofs), R)
         
         ! create output database
-        ! <frame_number>:<nodal_scalar_group>:<nodal_scalar_name>
-        odb = new_odb(mdb%mesh%n_nodes, 1, 31)
-        call odb%set_frame_descr(1, 'Increment: 1, Time: 1.0')
-        call odb%set_nsfield( 1, '1:Displacement:Displacement in X',              displacement%at(:,  1))
-        call odb%set_nsfield( 2, '1:Displacement:Displacement in Y',              displacement%at(:,  2))
-        call odb%set_nsfield( 3, '1:Displacement:Displacement in Z',              displacement%at(:,  3))
-        call odb%set_nsfield( 4, '1:Displacement:Magnitude of Displacement',      displacement%at(:,  4))
-        call odb%set_nsfield( 5, '1:Reaction Force:Reaction Force in X',              reaction%at(:,  1))
-        call odb%set_nsfield( 6, '1:Reaction Force:Reaction Force in Y',              reaction%at(:,  2))
-        call odb%set_nsfield( 7, '1:Reaction Force:Reaction Force in Z',              reaction%at(:,  3))
-        call odb%set_nsfield( 8, '1:Reaction Force:Magnitude of Reaction Force',      reaction%at(:,  4))
-        call odb%set_nsfield( 9, '1:Strain:Component XX of Strain',          strain_extra_mesh%at(:,  1))
-        call odb%set_nsfield(10, '1:Strain:Component YY of Strain',          strain_extra_mesh%at(:,  2))
-        call odb%set_nsfield(11, '1:Strain:Component ZZ of Strain',          strain_extra_mesh%at(:,  3))
-        call odb%set_nsfield(12, '1:Strain:Component YZ of Strain',          strain_extra_mesh%at(:,  4))
-        call odb%set_nsfield(13, '1:Strain:Component ZX of Strain',          strain_extra_mesh%at(:,  5))
-        call odb%set_nsfield(14, '1:Strain:Component XY of Strain',          strain_extra_mesh%at(:,  6))
-        call odb%set_nsfield(15, '1:Strain:Max. Principal Value of Strain',  strain_extra_mesh%at(:,  7))
-        call odb%set_nsfield(16, '1:Strain:Mid. Principal Value of Strain',  strain_extra_mesh%at(:,  8))
-        call odb%set_nsfield(17, '1:Strain:Min. Principal Value of Strain',  strain_extra_mesh%at(:,  9))
-        call odb%set_nsfield(18, '1:Strain:Major Principal Value of Strain', strain_extra_mesh%at(:, 10))
-        call odb%set_nsfield(19, '1:Stress:Component XX of Stress',          stress_extra_mesh%at(:,  1))
-        call odb%set_nsfield(20, '1:Stress:Component YY of Stress',          stress_extra_mesh%at(:,  2))
-        call odb%set_nsfield(21, '1:Stress:Component ZZ of Stress',          stress_extra_mesh%at(:,  3))
-        call odb%set_nsfield(22, '1:Stress:Component YZ of Stress',          stress_extra_mesh%at(:,  4))
-        call odb%set_nsfield(23, '1:Stress:Component ZX of Stress',          stress_extra_mesh%at(:,  5))
-        call odb%set_nsfield(24, '1:Stress:Component XY of Stress',          stress_extra_mesh%at(:,  6))
-        call odb%set_nsfield(25, '1:Stress:Max. Principal Value of Stress',  stress_extra_mesh%at(:,  7))
-        call odb%set_nsfield(26, '1:Stress:Mid. Principal Value of Stress',  stress_extra_mesh%at(:,  8))
-        call odb%set_nsfield(27, '1:Stress:Min. Principal Value of Stress',  stress_extra_mesh%at(:,  9))
-        call odb%set_nsfield(28, '1:Stress:Major Principal Value of Stress', stress_extra_mesh%at(:, 10))
-        call odb%set_nsfield(29, '1:Stress:Tresca Equivalent Stress',        stress_extra_mesh%at(:, 11))
-        call odb%set_nsfield(30, '1:Stress:Mises Equivalent Stress',         stress_extra_mesh%at(:, 12))
-        call odb%set_nsfield(31, '1:Stress:Equivalent Pressure Stress',      stress_extra_mesh%at(:, 13))
+        odb = new_odb(mdb%mesh%n_nodes, 3, 31)
+        
+        ! history output descriptions
+        call odb%set_hout_descr(1, 'Time')
+        call odb%set_hout_descr(2, 'Residual')
+        call odb%set_hout_descr(3, 'Strain Energy')
+        
+        ! nodal scalar field output descriptions
+        call odb%set_nsfout_descr( 1, 'Displacement:Displacement in X'            )
+        call odb%set_nsfout_descr( 2, 'Displacement:Displacement in Y'            )
+        call odb%set_nsfout_descr( 3, 'Displacement:Displacement in Z'            )
+        call odb%set_nsfout_descr( 4, 'Displacement:Magnitude of Displacement'    )
+        call odb%set_nsfout_descr( 5, 'Reaction Force:Reaction Force in X'        )
+        call odb%set_nsfout_descr( 6, 'Reaction Force:Reaction Force in Y'        )
+        call odb%set_nsfout_descr( 7, 'Reaction Force:Reaction Force in Z'        )
+        call odb%set_nsfout_descr( 8, 'Reaction Force:Magnitude of Reaction Force')
+        call odb%set_nsfout_descr( 9, 'Strain:Component XX of Strain'             )
+        call odb%set_nsfout_descr(10, 'Strain:Component YY of Strain'             )
+        call odb%set_nsfout_descr(11, 'Strain:Component ZZ of Strain'             )
+        call odb%set_nsfout_descr(12, 'Strain:Component YZ of Strain'             )
+        call odb%set_nsfout_descr(13, 'Strain:Component ZX of Strain'             )
+        call odb%set_nsfout_descr(14, 'Strain:Component XY of Strain'             )
+        call odb%set_nsfout_descr(15, 'Strain:Max. Principal Value of Strain'     )
+        call odb%set_nsfout_descr(16, 'Strain:Mid. Principal Value of Strain'     )
+        call odb%set_nsfout_descr(17, 'Strain:Min. Principal Value of Strain'     )
+        call odb%set_nsfout_descr(18, 'Strain:Major Principal Value of Strain'    )
+        call odb%set_nsfout_descr(19, 'Stress:Component XX of Stress'             )
+        call odb%set_nsfout_descr(20, 'Stress:Component YY of Stress'             )
+        call odb%set_nsfout_descr(21, 'Stress:Component ZZ of Stress'             )
+        call odb%set_nsfout_descr(22, 'Stress:Component YZ of Stress'             )
+        call odb%set_nsfout_descr(23, 'Stress:Component ZX of Stress'             )
+        call odb%set_nsfout_descr(24, 'Stress:Component XY of Stress'             )
+        call odb%set_nsfout_descr(25, 'Stress:Max. Principal Value of Stress'     )
+        call odb%set_nsfout_descr(26, 'Stress:Mid. Principal Value of Stress'     )
+        call odb%set_nsfout_descr(27, 'Stress:Min. Principal Value of Stress'     )
+        call odb%set_nsfout_descr(28, 'Stress:Major Principal Value of Stress'    )
+        call odb%set_nsfout_descr(29, 'Stress:Tresca Equivalent Stress'           )
+        call odb%set_nsfout_descr(30, 'Stress:Mises Equivalent Stress'            )
+        call odb%set_nsfout_descr(31, 'Stress:Equivalent Pressure Stress'         )
+        
+        ! create output frame
+        frame = odb%new_frame('Increment: 1, Time: 1.0')
+        
+        ! history output
+        call odb%set_hout(frame, 1, 1.0)
+        call odb%set_hout(frame, 2, residual)
+        call odb%set_hout(frame, 3, strain_energy)
+        
+        ! nodal scalar field output
+        call odb%set_nsfout(frame,  1,      displacement%at(:,  1))
+        call odb%set_nsfout(frame,  2,      displacement%at(:,  2))
+        call odb%set_nsfout(frame,  3,      displacement%at(:,  3))
+        call odb%set_nsfout(frame,  4,      displacement%at(:,  4))
+        call odb%set_nsfout(frame,  5,          reaction%at(:,  1))
+        call odb%set_nsfout(frame,  6,          reaction%at(:,  2))
+        call odb%set_nsfout(frame,  7,          reaction%at(:,  3))
+        call odb%set_nsfout(frame,  8,          reaction%at(:,  4))
+        call odb%set_nsfout(frame,  9, strain_extra_mesh%at(:,  1))
+        call odb%set_nsfout(frame, 10, strain_extra_mesh%at(:,  2))
+        call odb%set_nsfout(frame, 11, strain_extra_mesh%at(:,  3))
+        call odb%set_nsfout(frame, 12, strain_extra_mesh%at(:,  4))
+        call odb%set_nsfout(frame, 13, strain_extra_mesh%at(:,  5))
+        call odb%set_nsfout(frame, 14, strain_extra_mesh%at(:,  6))
+        call odb%set_nsfout(frame, 15, strain_extra_mesh%at(:,  7))
+        call odb%set_nsfout(frame, 16, strain_extra_mesh%at(:,  8))
+        call odb%set_nsfout(frame, 17, strain_extra_mesh%at(:,  9))
+        call odb%set_nsfout(frame, 18, strain_extra_mesh%at(:, 10))
+        call odb%set_nsfout(frame, 19, stress_extra_mesh%at(:,  1))
+        call odb%set_nsfout(frame, 20, stress_extra_mesh%at(:,  2))
+        call odb%set_nsfout(frame, 21, stress_extra_mesh%at(:,  3))
+        call odb%set_nsfout(frame, 22, stress_extra_mesh%at(:,  4))
+        call odb%set_nsfout(frame, 23, stress_extra_mesh%at(:,  5))
+        call odb%set_nsfout(frame, 24, stress_extra_mesh%at(:,  6))
+        call odb%set_nsfout(frame, 25, stress_extra_mesh%at(:,  7))
+        call odb%set_nsfout(frame, 26, stress_extra_mesh%at(:,  8))
+        call odb%set_nsfout(frame, 27, stress_extra_mesh%at(:,  9))
+        call odb%set_nsfout(frame, 28, stress_extra_mesh%at(:, 10))
+        call odb%set_nsfout(frame, 29, stress_extra_mesh%at(:, 11))
+        call odb%set_nsfout(frame, 30, stress_extra_mesh%at(:, 12))
+        call odb%set_nsfout(frame, 31, stress_extra_mesh%at(:, 13))
+        
+        ! squeeze storage
+        call odb%squeeze()
     end function
     
 end module

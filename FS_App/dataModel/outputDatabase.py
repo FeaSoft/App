@@ -21,45 +21,62 @@ class OutputDatabase:
         '''Output database finite element mesh.'''
         return self._mesh
 
+    @property
+    def frameCount(self) -> int:
+        '''Number of output frames.'''
+        return self._frameCount
+
     # attribute slots
-    __slots__ = ('_filePath', '_mesh', '_frameDescriptions', '_data')
+    __slots__ = ('_filePath', '_mesh', '_frameCount', '_frameDescriptions', '_historyData', '_fieldData')
 
     def __init__(
         self,
         mesh: Mesh,
+        frameCount: int,
         frameDescriptions: Sequence[str],
-        specs: Sequence[str],
-        values: Sequence[Sequence[float]]
+        historyOutputDescriptions: Sequence[str],
+        fieldOutputDescriptions: Sequence[str],
+        historyOutput: Sequence[Sequence[float]],
+        fieldOutput: Sequence[Sequence[Sequence[float]]]
     ) -> None:
         '''Output database constructor.'''
         self._filePath: str = ''
         self._mesh: Mesh = mesh
-        self._frameDescriptions: tuple[str, ...] = tuple(frameDescriptions)
-        self._data: dict[int, dict[str, dict[str, tuple[float, ...]]]] = {}
+        self._frameCount: int = frameCount
+        self._frameDescriptions: tuple[str, ...] = tuple(frameDescriptions[0:frameCount])
+        self._historyData: tuple[dict[str, float], ...] = tuple({} for _ in range(frameCount))
+        self._fieldData: tuple[dict[str, dict[str, tuple[float, ...]]], ...] = tuple({} for _ in range(frameCount))
         # convert input data
-        for i, spec in enumerate(specs):
-            frameString, groupName, fieldName = spec.split(':')
-            frame: int = int(frameString)
-            if frame not in self._data: self._data[frame] = {}
-            if groupName not in self._data[frame]: self._data[frame][groupName] = {}
-            self._data[frame][groupName][fieldName] = tuple(x[i] for x in values)
+        for frame in range(frameCount):
+            # convert history output data
+            for i, description in enumerate(historyOutputDescriptions):
+                self._historyData[frame][description] = historyOutput[frame][i]
+            # convert field output data
+            for i, description in enumerate(fieldOutputDescriptions):
+                groupName, fieldName = description.split(':')
+                if groupName not in self._fieldData[frame]: self._fieldData[frame][groupName] = {}
+                self._fieldData[frame][groupName][fieldName] = tuple(x[i] for x in fieldOutput[frame])
 
     def frameDescription(self, frame: int) -> str:
         '''Returns the frame description.'''
-        return self._frameDescriptions[frame - 1]
-
-    def frameNumbers(self) -> tuple[int, ...]:
-        '''Returns the ordered frame numbers.'''
-        return tuple(sorted(self._data.keys()))
+        return self._frameDescriptions[frame]
 
     def nodalScalarFieldGroupNames(self, frame: int) -> tuple[str, ...]:
         '''Returns the nodal scalar field group names in the specified frame.'''
-        return tuple(self._data[frame].keys())
+        return tuple(self._fieldData[frame].keys())
 
     def nodalScalarFieldNames(self, frame: int, groupName: str) -> tuple[str, ...]:
         '''Returns the nodal scalar field names in the specified group.'''
-        return tuple(self._data[frame][groupName].keys())
+        return tuple(self._fieldData[frame][groupName].keys())
 
     def nodalScalarField(self, frame: int, groupName: str, fieldName: str) -> tuple[float, ...]:
         '''Returns the nodal scalar field values.'''
-        return self._data[frame][groupName][fieldName]
+        return self._fieldData[frame][groupName][fieldName]
+
+    def historyNames(self, frame: int) -> tuple[str, ...]:
+        '''Returns the history names in the specified frame.'''
+        return tuple(self._historyData[frame].keys())
+
+    def history(self, frame: int, historyName: str) -> float:
+        '''Returns the history value.'''
+        return self._historyData[frame][historyName]

@@ -42,7 +42,7 @@ module m_mdb
     
     ! Description:
     ! Finite element model database constructor.
-    type(t_mdb) function constructor(n_nsets, n_esets, n_materials, n_sections, n_cloads, n_boundaries, mesh) result(this)
+    type(t_mdb) function constructor(n_nsets, n_esets, n_materials, n_sections, n_cloads, n_boundaries, mesh) result(self)
         integer,      intent(in) :: n_nsets      ! number of node sets
         integer,      intent(in) :: n_esets      ! number of element sets
         integer,      intent(in) :: n_materials  ! number of materials
@@ -50,46 +50,46 @@ module m_mdb
         integer,      intent(in) :: n_cloads     ! number of concentrated loads
         integer,      intent(in) :: n_boundaries ! number of boundary conditions
         type(t_mesh), intent(in) :: mesh         ! finite element mesh
-        this%n_nsets      = n_nsets
-        this%n_esets      = n_esets
-        this%n_materials  = n_materials
-        this%n_sections   = n_sections
-        this%n_cloads     = n_cloads
-        this%n_boundaries = n_boundaries
-        this%mesh         = mesh
-        allocate(this%nsets(this%n_nsets))
-        allocate(this%esets(this%n_esets))
-        allocate(this%materials(this%n_materials))
-        allocate(this%sections(this%n_sections))
-        allocate(this%cloads(this%n_cloads))
-        allocate(this%boundaries(this%n_boundaries))
+        self%n_nsets      = n_nsets
+        self%n_esets      = n_esets
+        self%n_materials  = n_materials
+        self%n_sections   = n_sections
+        self%n_cloads     = n_cloads
+        self%n_boundaries = n_boundaries
+        self%mesh         = mesh
+        allocate(self%nsets(self%n_nsets))
+        allocate(self%esets(self%n_esets))
+        allocate(self%materials(self%n_materials))
+        allocate(self%sections(self%n_sections))
+        allocate(self%cloads(self%n_cloads))
+        allocate(self%boundaries(self%n_boundaries))
     end function
     
     ! Description:
     ! Finite element model database destructor.
-    subroutine destructor(this)
-        type(t_mdb), intent(inout) :: this
-        if (allocated(this%nsets))      deallocate(this%nsets)
-        if (allocated(this%esets))      deallocate(this%esets)
-        if (allocated(this%materials))  deallocate(this%materials)
-        if (allocated(this%sections))   deallocate(this%sections)
-        if (allocated(this%cloads))     deallocate(this%cloads)
-        if (allocated(this%boundaries)) deallocate(this%boundaries)
+    subroutine destructor(self)
+        type(t_mdb), intent(inout) :: self
+        if (allocated(self%nsets))      deallocate(self%nsets)
+        if (allocated(self%esets))      deallocate(self%esets)
+        if (allocated(self%materials))  deallocate(self%materials)
+        if (allocated(self%sections))   deallocate(self%sections)
+        if (allocated(self%cloads))     deallocate(self%cloads)
+        if (allocated(self%boundaries)) deallocate(self%boundaries)
     end subroutine
     
     ! Description:
     ! Build element DOFs (algebraic connectivity).
-    subroutine build_dofs(this)
-        class(t_mdb), intent(inout) :: this
+    subroutine build_dofs(self)
+        class(t_mdb), intent(inout) :: self
         integer :: i, j, k, l
         
         ! identify inactive DOFs
-        do i = 1, this%mesh%n_nodes
-            do j = 1, this%mesh%m_space
-                do k = 1, this%n_boundaries
-                    do l = 1, this%nsets(this%boundaries(k)%i_nset)%n_nodes
-                        if (this%nsets(this%boundaries(k)%i_nset)%i_nodes(l) == i .AND. this%boundaries(k)%active(j)) then
-                            this%mesh%nodes(i)%dofs(j) = -1
+        do i = 1, self%mesh%n_nodes
+            do j = 1, self%mesh%m_space
+                do k = 1, self%n_boundaries
+                    do l = 1, self%nsets(self%boundaries(k)%i_nset)%n_nodes
+                        if (self%nsets(self%boundaries(k)%i_nset)%i_nodes(l) == i .AND. self%boundaries(k)%active(j)) then
+                            self%mesh%nodes(i)%dofs(j) = -1
                         end if
                     end do
                 end do
@@ -97,27 +97,27 @@ module m_mdb
         end do
         
         ! count DOFs
-        this%n_adofs = 0
-        this%n_idofs = 0
-        do i = 1, this%mesh%n_nodes
-            do j = 1, this%mesh%m_space
-                if (this%mesh%nodes(i)%dofs(j) == -1) then
-                    this%n_idofs = this%n_idofs + 1
-                    this%mesh%nodes(i)%dofs(j) = -this%n_idofs
+        self%n_adofs = 0
+        self%n_idofs = 0
+        do i = 1, self%mesh%n_nodes
+            do j = 1, self%mesh%m_space
+                if (self%mesh%nodes(i)%dofs(j) == -1) then
+                    self%n_idofs = self%n_idofs + 1
+                    self%mesh%nodes(i)%dofs(j) = -self%n_idofs
                 else
-                    this%n_adofs = this%n_adofs + 1
-                    this%mesh%nodes(i)%dofs(j) = +this%n_adofs
+                    self%n_adofs = self%n_adofs + 1
+                    self%mesh%nodes(i)%dofs(j) = +self%n_adofs
                 end if
             end do
         end do
         
         ! assign to elements
-        do i = 1, this%mesh%n_elements
+        do i = 1, self%mesh%n_elements
             j = 0
-            do k = 1, this%mesh%elements(i)%n_nodes
-                do l = 1, this%mesh%elements(i)%n_ndofs
+            do k = 1, self%mesh%elements(i)%n_nodes
+                do l = 1, self%mesh%elements(i)%n_ndofs
                     j = j + 1
-                    this%mesh%elements(i)%dofs(j) = this%mesh%nodes(this%mesh%elements(i)%i_nodes(k))%dofs(l)
+                    self%mesh%elements(i)%dofs(j) = self%mesh%nodes(self%mesh%elements(i)%i_nodes(k))%dofs(l)
                 end do
             end do
         end do

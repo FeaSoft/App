@@ -28,37 +28,37 @@ module m_mesh
     
     ! Description:
     ! Finite element mesh constructor.
-    type(t_mesh) function constructor(n_nodes, n_elements, m_space) result(this)
+    type(t_mesh) function constructor(n_nodes, n_elements, m_space) result(self)
         integer, intent(in) :: n_nodes    ! number of nodes
         integer, intent(in) :: n_elements ! number of elements
         integer, intent(in) :: m_space    ! modeling space
-        this%n_nodes    = n_nodes
-        this%n_elements = n_elements
-        this%m_space    = m_space
-        allocate(this%nodes(this%n_nodes))
-        allocate(this%elements(this%n_elements))
-        allocate(this%e_counts(this%n_nodes))
+        self%n_nodes    = n_nodes
+        self%n_elements = n_elements
+        self%m_space    = m_space
+        allocate(self%nodes(self%n_nodes))
+        allocate(self%elements(self%n_elements))
+        allocate(self%e_counts(self%n_nodes))
     end function
     
     ! Description:
     ! Finite element mesh destructor.
-    subroutine destructor(this)
-        type(t_mesh), intent(inout) :: this
-        if (allocated(this%nodes))    deallocate(this%nodes)
-        if (allocated(this%elements)) deallocate(this%elements)
-        if (allocated(this%e_counts)) deallocate(this%e_counts)
+    subroutine destructor(self)
+        type(t_mesh), intent(inout) :: self
+        if (allocated(self%nodes))    deallocate(self%nodes)
+        if (allocated(self%elements)) deallocate(self%elements)
+        if (allocated(self%e_counts)) deallocate(self%e_counts)
     end subroutine
     
     ! Description:
     ! Counts the number of elements connected to each node.
-    subroutine count_elements_per_node(this)
-        class(t_mesh), intent(inout) :: this
+    subroutine count_elements_per_node(self)
+        class(t_mesh), intent(inout) :: self
         integer :: i, j
         
         ! count elements per node
-        do i = 1, this%n_elements
-            do j = 1, this%elements(i)%n_nodes
-                this%e_counts(this%elements(i)%i_nodes(j)) = this%e_counts(this%elements(i)%i_nodes(j)) + 1
+        do i = 1, self%n_elements
+            do j = 1, self%elements(i)%n_nodes
+                self%e_counts(self%elements(i)%i_nodes(j)) = self%e_counts(self%elements(i)%i_nodes(j)) + 1
             end do
         end do
     end subroutine

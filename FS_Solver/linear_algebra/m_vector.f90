@@ -21,17 +21,17 @@ module m_vector
     
     ! Description:
     ! Vector constructor.
-    type(t_vector) function constructor(n_vals) result(this)
+    type(t_vector) function constructor(n_vals) result(self)
         integer, intent(in) :: n_vals ! number of values (size)
-        this%n_vals = n_vals
-        allocate(this%at(this%n_vals), source=0.0)
+        self%n_vals = n_vals
+        allocate(self%at(self%n_vals), source=0.0)
     end function
     
     ! Description:
     ! Vector destructor.
-    subroutine destructor(this)
-        type(t_vector), intent(inout) :: this
-        if (allocated(this%at)) deallocate(this%at)
+    subroutine destructor(self)
+        type(t_vector), intent(inout) :: self
+        if (allocated(self%at)) deallocate(self%at)
     end subroutine
     
 end module

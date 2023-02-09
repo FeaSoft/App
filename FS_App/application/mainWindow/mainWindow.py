@@ -172,12 +172,11 @@ class MainWindow(MainWindowShell):
 
     def setModule(self, module: Literal['Preprocessor', 'Visualization']) -> None:
         '''Updates the view based on the given module.'''
-        # convenient flags
-        moduleChanged: bool = module != self._module
-        isPreprocessor: bool = module == 'Preprocessor'
-        isVisualization: bool = module == 'Visualization'
         # update global flag
         self._module = module
+        # convenient flags
+        isPreprocessor: bool = self._module == 'Preprocessor'
+        isVisualization: bool = self._module == 'Visualization'
         # change viewport (avoid showing two viewports at the same time or they will flicker)
         if isPreprocessor:
             self._outputViewport.setVisible(False)
@@ -185,9 +184,6 @@ class MainWindow(MainWindowShell):
         elif isVisualization:
             self._modelViewport.setVisible(False)
             self._outputViewport.setVisible(True)
-        # save horizontal splitter sizes
-        splitterSizes: list[int] = self._horizontalSplitter.sizes()
-        splitterSizes[0], splitterSizes[1] = splitterSizes[1], splitterSizes[0]
         # preprocessor module
         self._menuBarModulePreprocessor.setChecked(isPreprocessor)
         self._menuBarSolver.menuAction().setVisible(isPreprocessor)
@@ -196,8 +192,6 @@ class MainWindow(MainWindowShell):
         # visualization module
         self._menuBarModuleVisualization.setChecked(isVisualization)
         self._outputTree.setVisible(isVisualization)
-        # set previous horizontal splitter sizes
-        if moduleChanged: self._horizontalSplitter.setSizes(splitterSizes)
         # update window title
         self.updateWindowTitle()
 
@@ -259,19 +253,28 @@ class MainWindow(MainWindowShell):
         self._outputViewport.info.clear()
         self._outputViewport.plotNodalScalarField(None, render=False)
 
-        # if no nodal scalar field is selected or no output database is loaded:
+        # if nothing is selected or no output database is loaded:
         # render scene and return
         selection = self._outputTree.currentSelection()
         if not selection or not self._outputDatabase:
             self._outputViewport.render()
             return
 
-        # plot selected nodal scalar field
-        frame, groupName, fieldName = selection
-        self._outputViewport.info.setText(2, fieldName)
-        self._outputViewport.info.setText(1, self._outputDatabase.frameDescription(frame))
-        self._outputViewport.info.setText(0, 'Deformation Scale Factor: 0.0')
-        self._outputViewport.plotNodalScalarField(self._outputDatabase.nodalScalarField(frame, groupName, fieldName))
+        # match selection type
+        match selection[0]:
+            case 'History':
+                frame, historyName = cast(tuple[int, str], selection[1])
+                print(f'{historyName} at frame {frame + 1}: {self._outputDatabase.history(frame, historyName)}')
+            case 'Field':
+                frame, groupName, fieldName = cast(tuple[int, str, str], selection[1])
+                self._outputViewport.info.setText(2, fieldName)
+                self._outputViewport.info.setText(1, self._outputDatabase.frameDescription(frame))
+                self._outputViewport.info.setText(0, 'Deformation Scale Factor: 0.0')
+                self._outputViewport.plotNodalScalarField(
+                    self._outputDatabase.nodalScalarField(frame, groupName, fieldName),
+                    render=False
+                )
+        self._outputViewport.render()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Viewport -> Tree

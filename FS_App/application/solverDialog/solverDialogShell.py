@@ -9,8 +9,18 @@ class SolverDialogShell(QDialog):
     The solver dialog shell (basic UI).
     '''
 
-    # attribute slots (not allowed, QT crashes)
-    # __slots__ = ...
+#   # attribute slots (crashes QT)
+#   __slots__ = (
+#       '_layout', '_currentJobGroupBox', '_currentJobGroupBoxLayout', '_modelDatabaseLabel', '_modelDatabaseBox',
+#       '_openModelDatabaseButton', '_solverJobInputLabel', '_solverJobInputBox', '_outputDatabaseLabel',
+#       '_outputDatabaseBox', '_logFileLabel', '_logFileBox', '_analysisTypeGroupBox', '_analysisTypeGroupBoxLayout',
+#       '_staticButton', '_frequencyButton', '_buckleButton', '_eigenvaluesGroupBox', '_eigenvaluesGroupBoxLayout',
+#       '_eigenvaluesLabel', '_eigenvaluesBox', '_space', '_processGroupBox', '_processGroupBoxLayout', '_statusLabel',
+#       '_statusBox', '_cpuLabel', '_cpuBox', '_timeLabel', '_timeBox', '_memoryLabel', '_memoryBox',
+#       '_actionsGroupBox', '_actionsGroupBoxLayout', '_startSolverButton', '_terminateSolverButton',
+#       '_writeSolverJobInputButton', '_openOutputDatabaseButton', '_logFrame', '_logFrameLayout', '_logLabel',
+#       '_logBox'
+#   )
 
     def __init__(self, parent: QWidget | None = None) -> None:
         '''Solver dialog shell constructor.'''

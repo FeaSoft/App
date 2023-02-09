@@ -8,7 +8,7 @@ module m_linalg
     implicit none
     
     private
-    public add, subtract, multiply, solve, eigen, determinant, inverse
+    public maxabs, add, subtract, dot, multiply, solve, eigen, determinant, inverse
     
     ! error messages
     character(*), parameter :: ERROR_SIZE_MISMATCH_FOR_VECTOR_VECTOR_OPERATION = 'Error: size mismatch for vector-vector operation', &
@@ -38,6 +38,13 @@ module m_linalg
     end interface
     
     contains
+    
+    ! Description:
+    ! Returns the maximum absolute value in vector (infinity norm).
+    real function maxabs(a) result(x)
+        type(t_vector), intent(in) :: a
+        x = maxval(abs(a%at(:)))
+    end function
     
     ! Description:
     ! Computes element-wise addition of vectors.
@@ -75,6 +82,19 @@ module m_linalg
         ! call computational routine
         y = new_vector(a%n_vals)
         call vdsub(a%n_vals, a%at, b%at, y%at)
+    end function
+    
+    ! Description:
+    ! Computes the dot product between two vectors.
+    real function dot(a, b) result(x)
+        ! procedure arguments
+        type(t_vector), intent(in) :: a, b
+        
+        ! check for invalid arguments
+        if (a%n_vals /= b%n_vals) error stop ERROR_SIZE_MISMATCH_FOR_VECTOR_VECTOR_OPERATION
+        
+        ! call computational routine
+        x = dot_product(a%at(:), b%at(:))
     end function
     
     ! Description:

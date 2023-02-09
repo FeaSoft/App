@@ -12,8 +12,19 @@ class MainWindowShell(QMainWindow):
     The main window shell (basic UI).
     '''
 
-    # attribute slots (not allowed, QT crashes)
-    # __slots__ = ...
+#   # attribute slots
+#   __slots__ = (
+#       '_icons', '_menuBar', '_menuBarFile', '_menuBarFileNew', '_menuBarFileOpen', '_menuBarFileSave',
+#       '_menuBarFileSaveAs', '_menuBarFileClose', '_menuBarFileExit', '_menuBarModule', '_menuBarModulePreprocessor',
+#       '_menuBarModuleVisualization', '_menuBarSolver', '_menuBarSolverDialog', '_toolBarFile', '_toolBarFileNew',
+#       '_toolBarFileOpen', '_toolBarFileSave', '_toolBarView', '_toolBarViewFront', '_toolBarViewBack',
+#       '_toolBarViewTop', '_toolBarViewBottom', '_toolBarViewLeft', '_toolBarViewRight', '_toolBarViewIsometric',
+#       '_toolBarInteraction', '_toolBarInteractionRotate', '_toolBarInteractionPan', '_toolBarInteractionZoom',
+#       '_toolBarInteractionPickSingle', '_toolBarInteractionPickMultiple', '_toolBarInteractionProbe',
+#       '_toolBarInteractionRuler', '_centralWidget', '_centralWidgetLayout', '_verticalSplitter',
+#       '_horizontalSplitter', '_splitterLeft', '_splitterLeftLayout', '_modelTree', '_outputTree', '_terminal', '_rightSplitter', '_rightSplitterLayout', '_modelViewport', '_outputViewport',
+#       '_solverDialog'
+#   )
 
     def __init__(self) -> None:
         '''Main window shell constructor.'''
@@ -259,54 +270,66 @@ class MainWindowShell(QMainWindow):
         self._verticalSplitter.setOrientation(Qt.Orientation.Vertical)
         self._centralWidgetLayout.addWidget(self._verticalSplitter)
 
+        # size policy
+        sizePolicy0: QSizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy0.setVerticalStretch(1)
+
         # horizontal splitter
         self._horizontalSplitter: QSplitter = QSplitter(self._verticalSplitter)
         self._horizontalSplitter.setHandleWidth(9)
         self._horizontalSplitter.setOrientation(Qt.Orientation.Horizontal)
-        sizePolicy0: QSizePolicy = self._horizontalSplitter.sizePolicy()
-        sizePolicy0.setVerticalStretch(1)
         self._horizontalSplitter.setSizePolicy(sizePolicy0)
         self._verticalSplitter.addWidget(self._horizontalSplitter)
 
+        # splitter left
+        self._splitterLeft: QFrame = QFrame(self._horizontalSplitter)
+        self._splitterLeft.resize(410, 0)
+        self._horizontalSplitter.addWidget(self._splitterLeft)
+
+        # splitter left layout
+        self._splitterLeftLayout: QVBoxLayout = QVBoxLayout(self._splitterLeft)
+        self._splitterLeftLayout.setContentsMargins(0, 0, 0, 0)
+        self._splitterLeftLayout.setSpacing(0)
+        self._splitterLeft.setLayout(self._splitterLeftLayout)
+
         # model tree
-        self._modelTree: ModelDatabaseControl = ModelDatabaseControl(self._horizontalSplitter)
+        self._modelTree: ModelDatabaseControl = ModelDatabaseControl(self._splitterLeft)
         self._modelTree.setColumnWidth(0, 250)
         self._modelTree.setColumnWidth(1, 150)
-        self._modelTree.resize(410, 0)
-        self._horizontalSplitter.addWidget(self._modelTree)
+        self._splitterLeftLayout.addWidget(self._modelTree)
 
         # output tree
-        self._outputTree: OutputDatabaseControl = OutputDatabaseControl(self._horizontalSplitter)
+        self._outputTree: OutputDatabaseControl = OutputDatabaseControl(self._splitterLeft)
         self._outputTree.setVisible(False)
-        self._outputTree.resize(410, 0)
-        self._horizontalSplitter.addWidget(self._outputTree)
+        self._splitterLeftLayout.addWidget(self._outputTree)
 
         # terminal
         self._terminal: Terminal = Terminal(self._verticalSplitter)
         self._verticalSplitter.addWidget(self._terminal)
 
-        # viewport frame
-        self._viewportFrame: QFrame = QFrame(self._horizontalSplitter)
-        self._viewportFrame.setStyleSheet('background: rgb(90,115,140); border: 1px solid rgb(185,185,185);')
-        sizePolicy1: QSizePolicy = self._viewportFrame.sizePolicy()
+        # size policy
+        sizePolicy1: QSizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(1)
-        self._viewportFrame.setSizePolicy(sizePolicy1)
-        self._horizontalSplitter.addWidget(self._viewportFrame)
 
-        # viewport frame layout
-        self._viewportFrameLayout: QVBoxLayout = QVBoxLayout(self._viewportFrame)
-        self._viewportFrameLayout.setContentsMargins(0, 0, 0, 0)
-        self._viewportFrameLayout.setSpacing(0)
-        self._viewportFrame.setLayout(self._viewportFrameLayout)
+        # right splitter
+        self._rightSplitter: QFrame = QFrame(self._horizontalSplitter)
+        self._rightSplitter.setSizePolicy(sizePolicy1)
+        self._horizontalSplitter.addWidget(self._rightSplitter)
+
+        # right splitter layout
+        self._rightSplitterLayout: QVBoxLayout = QVBoxLayout(self._rightSplitter)
+        self._rightSplitterLayout.setContentsMargins(0, 0, 0, 0)
+        self._rightSplitterLayout.setSpacing(0)
+        self._rightSplitter.setLayout(self._rightSplitterLayout)
 
         # model viewport
-        self._modelViewport: Viewport = Viewport(self._viewportFrame)
-        self._viewportFrameLayout.addWidget(self._modelViewport)
+        self._modelViewport: Viewport = Viewport(self._rightSplitter)
+        self._rightSplitterLayout.addWidget(self._modelViewport)
 
         # output viewport
-        self._outputViewport: Viewport = Viewport(self._viewportFrame)
+        self._outputViewport: Viewport = Viewport(self._rightSplitter)
         self._outputViewport.setVisible(False)
-        self._viewportFrameLayout.addWidget(self._outputViewport)
+        self._rightSplitterLayout.addWidget(self._outputViewport)
 
         # solver dialog
         self._solverDialog: SolverDialog = SolverDialog(self)

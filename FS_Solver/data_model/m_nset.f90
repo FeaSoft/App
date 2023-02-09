@@ -21,17 +21,17 @@ module m_nset
     
     ! Description:
     ! Node index set constructor.
-    type(t_nset) function constructor(n_nodes) result(this)
+    type(t_nset) function constructor(n_nodes) result(self)
         integer, intent(in) :: n_nodes ! number of node indices
-        this%n_nodes = n_nodes
-        allocate(this%i_nodes(this%n_nodes))
+        self%n_nodes = n_nodes
+        allocate(self%i_nodes(self%n_nodes))
     end function
     
     ! Description:
     ! Node index set destructor.
-    subroutine destructor(this)
-        type(t_nset), intent(inout) :: this
-        if (allocated(this%i_nodes)) deallocate(this%i_nodes)
+    subroutine destructor(self)
+        type(t_nset), intent(inout) :: self
+        if (allocated(self%i_nodes)) deallocate(self%i_nodes)
     end subroutine
     
 end module

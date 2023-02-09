@@ -49,9 +49,9 @@ program fs_solver
     print '("")'
     
     ! write output database
-    print '("Storing output database to file: ''",A,"''")', trim(argv(2))
+    print '("Saving output database to file: ''",A,"''")', trim(argv(2))
     call write_output(trim(argv(2)), mdb%mesh, odb)
-    print '("Output database stored")'
+    print '("Output database saved")'
     print '("")'
     
     ! done
