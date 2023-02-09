@@ -14,3 +14,4 @@ from dataModel.concentratedLoad    import ConcentratedLoad    as ConcentratedLoa
 from dataModel.boundaryCondition   import BoundaryCondition   as BoundaryCondition
 from dataModel.dataObjectContainer import DataObjectContainer as DataObjectContainer
 from dataModel.modelDatabase       import ModelDatabase       as ModelDatabase
+from dataModel.outputDatabase      import OutputDatabase      as OutputDatabase

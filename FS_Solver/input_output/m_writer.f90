@@ -74,22 +74,33 @@ module m_writer
         write(unit=1, fmt='(A,I0,A)'), 'mesh = Mesh(', mesh%m_space, ', nodeData, elementData)'
         write(unit=1, fmt='(A)'), ''
         
+        ! frame descriptions
+        write(unit=1, fmt='(A)'), separator
+        write(unit=1, fmt='(A,A)'), comment, 'FRAME DESCRIPTIONS'
+        write(unit=1, fmt='(A)'), separator
+        write(unit=1, fmt='(A)'), 'frameDescr = ('
+        do i = 1, odb%n_frames
+            write(unit=1, fmt='(A,"''",A,"'',")'), indentation, trim(odb%frame_descr(i))
+        end do
+        write(unit=1, fmt='(A)'), ')'
+        write(unit=1, fmt='(A)'), ''
+        
         ! nodal scalar fields
         write(unit=1, fmt='(A)'), separator
         write(unit=1, fmt='(A,A)'), comment, 'NODAL SCALAR FIELDS'
         write(unit=1, fmt='(A)'), separator
-        write(unit=1, fmt='(A)'), 'names = ('
-        do i = 1, odb%n_fields
-            write(unit=1, fmt='(A,"''",A,"'',")'), indentation, trim(odb%names(i))
+        write(unit=1, fmt='(A)'), 'specs = ('
+        do i = 1, odb%n_nsfields
+            write(unit=1, fmt='(A,"''",A,"'',")'), indentation, trim(odb%specs(i))
         end do
         write(unit=1, fmt='(A)'), ')'
         write(unit=1, fmt='(A)'), ''
         write(unit=1, fmt='(A)'), 'values = ('
         do i = 1, mesh%n_nodes
             write(unit=1, fmt='(A,"(")', advance='no'), indentation
-            do j = 1, odb%n_fields
+            do j = 1, odb%n_nsfields
                 write(unit=1, fmt='(SP,E15.8)', advance='no'), odb%values(i, j)
-                if (j < odb%n_fields) then
+                if (j < odb%n_nsfields) then
                     write(unit=1, fmt='(A)', advance='no'), ', '
                 else
                     write(unit=1, fmt='(A)', advance='yes'), '),'
@@ -103,7 +114,7 @@ module m_writer
         write(unit=1, fmt='(A)'), separator
         write(unit=1, fmt='(A,A)'), comment, 'OUTPUT DATABASE'
         write(unit=1, fmt='(A)'), separator
-        write(unit=1, fmt='(A)'), 'outputDatabase = OutputDatabase(mesh, names, values)'
+        write(unit=1, fmt='(A)'), 'outputDatabase = OutputDatabase(mesh, frameDescr, specs, values)'
         write(unit=1, fmt='(A)'), ''
         
         ! close file

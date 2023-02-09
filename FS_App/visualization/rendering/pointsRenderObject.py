@@ -8,7 +8,7 @@ from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkActor
 
 class PointsRenderObject(RenderObject):
     '''
-    Renderable points (as spheres).
+    Renderable points.
     '''
 
     # attribute slots

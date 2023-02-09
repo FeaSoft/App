@@ -2,9 +2,9 @@ import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
 from typing import Literal, Any, cast
 from collections.abc import Callable, Sequence
 from dataModel import Mesh, NodeSet, ElementSet, ConcentratedLoad, BoundaryCondition, ModelDatabase
-from visualization.decoration import Triad, Info
+from visualization.decoration import Triad, Info, ScalarBar
 from visualization.rendering import (
-    RenderObject, MeshRenderObject, PointsRenderObject, CellsRenderObject, ArrowsRenderObject, GroupRenderObject
+    RenderObject, GridRenderObject, PointsRenderObject, CellsRenderObject, ArrowsRenderObject, GroupRenderObject
 )
 from visualization.interaction import (
     Views, InteractionStyles, InteractionStyle, RotateInteractionStyle, PanInteractionStyle, ZoomInteractionStyle,
@@ -73,7 +73,7 @@ class Viewport(QWidget):
     # attribute slots
     __slots__ = (
         '_layout', '_vtkWidget', '_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad', '_info',
-        '_meshRenderObject', '_selectionRenderObject'
+        '_scalarBar', '_gridRenderObject', '_selectionRenderObject'
     )
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -110,11 +110,12 @@ class Viewport(QWidget):
             InteractionStyles.Probe        : ProbeInteractionStyle(),
             InteractionStyles.Ruler        : RulerInteractionStyle()
         }
-        # triad & info
+        # triad & info % scalar bar
         self._triad: Triad = Triad()
         self._info: Info = Info()
+        self._scalarBar: ScalarBar = ScalarBar()
         # render objects
-        self._meshRenderObject: MeshRenderObject | None = None
+        self._gridRenderObject: GridRenderObject | None = None
         self._selectionRenderObject: RenderObject | None = None
 
     def initialize(self) -> None:
@@ -122,6 +123,8 @@ class Viewport(QWidget):
         self._interactor.Initialize()
         self._triad.initialize(self._interactor)
         self._info.initialize(self._renderer)
+        self._scalarBar.initialize(self._renderer)
+        self._scalarBar.setVisible(False)
         self.setInteractionStyle(self._currentInteractionStyle)
 
     def finalize(self) -> None:
@@ -185,12 +188,13 @@ class Viewport(QWidget):
         InteractionStyle.recomputeGlyphSize(self._renderer, render=False)
         if render: self.render()
 
-    def setMeshRenderObject(self, mesh: Mesh | None, render: bool = True) -> None:
-        '''Renders the specified mesh.'''
+    def setGridRenderObject(self, mesh: Mesh | None, render: bool = True) -> None:
+        '''Renders the specified grid.'''
+        self._scalarBar.setVisible(False)
         if self._selectionRenderObject: self.remove(self._selectionRenderObject, render=False)
-        if self._meshRenderObject: self.remove(self._meshRenderObject, render=False)
-        self._meshRenderObject = MeshRenderObject(mesh) if mesh else None
-        if self._meshRenderObject: self.add(self._meshRenderObject, render=False)
+        if self._gridRenderObject: self.remove(self._gridRenderObject, render=False)
+        self._gridRenderObject = GridRenderObject(mesh, self._scalarBar.lookupTable) if mesh else None
+        if self._gridRenderObject: self.add(self._gridRenderObject, render=False)
         if render: self.render()
 
     def setSelectionRenderObject(
@@ -202,15 +206,15 @@ class Viewport(QWidget):
     ) -> None:
         '''Renders the specified selection.'''
         if self._selectionRenderObject: self.remove(self._selectionRenderObject, render=False)
-        if not self._meshRenderObject: return
+        if not self._gridRenderObject: return
         match dataObject:
             case NodeSet():
                 self._selectionRenderObject = PointsRenderObject(
-                    self._meshRenderObject.dataSet, dataObject.indices(), color
+                    self._gridRenderObject.dataSet, dataObject.indices(), color
                 )
             case ElementSet():
                 self._selectionRenderObject = CellsRenderObject(
-                    self._meshRenderObject.dataSet, dataObject.indices(), color
+                    self._gridRenderObject.dataSet, dataObject.indices(), color
                 )
             case ConcentratedLoad():
                 if not modelDatabase: raise ValueError("missing optional argument: 'modelDatabase'")
@@ -252,4 +256,13 @@ class Viewport(QWidget):
         if self._selectionRenderObject:
             self.add(self._selectionRenderObject, render=False)
             InteractionStyle.recomputeGlyphSize(self._renderer, render=False)
+        if render: self.render()
+
+    def plotNodalScalarField(self, nodalScalarField: tuple[float, ...] | None, render: bool = True) -> None:
+        '''Plots the given nodal scalar field on the current mesh.'''
+        if not self._gridRenderObject:
+            self._scalarBar.setVisible(False)
+        else:
+            self._gridRenderObject.setNodalScalarField(nodalScalarField)
+            self._scalarBar.setVisible(nodalScalarField is not None)
         if render: self.render()

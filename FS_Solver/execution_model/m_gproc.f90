@@ -231,12 +231,12 @@ module m_gproc
         type(t_vector) :: eigenvalues                  ! eigenvalues in ascending order
         real           :: s11, s22, s33, s23, s31, s12 ! stress components
         real           :: s1, s2, s3, sMajor           ! principal stresses
-        real           :: sTresca, sMises              ! equivalent stresses
+        real           :: sTresca, sMises, sPress      ! equivalent stresses
         integer        :: i, j                         ! loop counters
         
         ! compute extra stress components
         do i = 1, size(stress)                          ! for each element
-            extra(i) = new_matrix(12, stress(i)%n_cols) ! s11, s22, s33, s23, s31, s12, s1, s2, s3, sMajor, sTresca, sMises
+            extra(i) = new_matrix(13, stress(i)%n_cols) ! s11, s22, s33, s23, s31, s12, s1, s2, s3, sMajor, sTresca, sMises, sPress
             do j = 1, stress(i)%n_cols                  ! for each integration point
                 ! get individual components
                 select case (stress(i)%n_rows)
@@ -285,9 +285,10 @@ module m_gproc
                 ! compute equivalent stresses
                 sTresca = s1 - s3
                 sMises  = sqrt(((s1 - s2)**2 + (s2 - s3)**2 + (s3 - s1)**2)/2.0)
+                sPress  = -(s11 + s22 + s33)/3.0
                 
                 ! store results
-                extra(i)%at(:, j) = [s11, s22, s33, s23, s31, s12, s1, s2, s3, sMajor, sTresca, sMises]
+                extra(i)%at(:, j) = [s11, s22, s33, s23, s31, s12, s1, s2, s3, sMajor, sTresca, sMises, sPress]
             end do
         end do
     end subroutine

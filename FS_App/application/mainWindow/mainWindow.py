@@ -1,8 +1,9 @@
-from os import path
+import os.path
 from typing import Literal, Any, cast
 from collections.abc import Callable, Sequence
 from dataModel import (
-    ModelingSpaces, DataObject, NodeSet, ElementSet, Section, ConcentratedLoad, BoundaryCondition, ModelDatabase
+    ModelingSpaces, DataObject, NodeSet, ElementSet, Section, ConcentratedLoad, BoundaryCondition, ModelDatabase,
+    OutputDatabase
 )
 from inputOutput import AbaqusReader, FSWriter, FSReader
 from visualization import Viewport, Views, InteractionStyles
@@ -29,18 +30,22 @@ class MainWindow(MainWindowShell):
             case 'Visualization': return self._outputViewport
 
     # attribute slots
-    __slots__ = ('_module', '_modelDatabase')
+    __slots__ = ('_module', '_modelDatabase', '_outputDatabase')
 
     def __init__(self) -> None:
         '''Main window constructor.'''
         super().__init__()
         # module
         self._module: Literal['Preprocessor', 'Visualization'] = 'Preprocessor'
-        # model database
+        # databases
         self._modelDatabase: ModelDatabase | None = None
+        self._outputDatabase: OutputDatabase | None = None
+        # update window title
+        self.updateWindowTitle()
         # setup connections
         Viewport.registerCallback(self.onViewportOptionChanged)
         self._modelTree.currentItemChanged.connect(self.onModelTreeSelection)                         # type: ignore
+        self._outputTree.currentItemChanged.connect(self.onOutputTreeSelection)                       # type: ignore
         self._menuBarFileNew.triggered.connect(self.onMenuBarFileNew)                                 # type: ignore
         self._menuBarFileOpen.triggered.connect(self.onMenuBarFileOpen)                               # type: ignore
         self._menuBarFileSave.triggered.connect(self.onMenuBarFileSave)                               # type: ignore
@@ -67,6 +72,13 @@ class MainWindow(MainWindowShell):
         self._toolBarInteractionPickMultiple.triggered.connect(self.onToolBarInteractionPickMultiple) # type: ignore
         self._toolBarInteractionProbe.triggered.connect(self.onToolBarInteractionProbe)               # type: ignore
         self._toolBarInteractionRuler.triggered.connect(self.onToolBarInteractionRuler)               # type: ignore
+
+    def updateWindowTitle(self) -> None:
+        '''Sets the current window title.'''
+        title: str = f'FeaSoft - {self._module} Module'
+        if self._module == 'Preprocessor' and self._modelDatabase: title += f' - {self._modelDatabase.filePath}'
+        elif self._module == 'Visualization' and self._outputDatabase: title += f' - {self._outputDatabase.filePath}'
+        self.setWindowTitle(title)
 
     def show(self) -> None:
         '''
@@ -113,27 +125,59 @@ class MainWindow(MainWindowShell):
             self._modelDatabase = None
         else:
             # create model database from file
-            extension: str = path.splitext(filePath)[1]
+            extension: str = os.path.splitext(filePath)[1]
             match extension:
                 case '.inp': self._modelDatabase = AbaqusReader.readModelDatabase(filePath)
                 case '.fs_mdb': self._modelDatabase = FSReader.readModelDatabase(filePath)
                 case _: raise ValueError(f"invalid file extension: '{extension}'")
-        # update model tree and viewport
+        # update model tree and model viewport
         self._modelTree.setModelDatabase(self._modelDatabase)
-        self._modelViewport.setMeshRenderObject(self._modelDatabase.mesh if self._modelDatabase else None, render=False)
+        self._modelViewport.setGridRenderObject(self._modelDatabase.mesh if self._modelDatabase else None, render=False)
         # set correct camera view
         if self._modelDatabase and self._modelDatabase.mesh.modelingSpace == ModelingSpaces.ThreeDimensional:
             self._modelViewport.setView(Views.Isometric)
         else:
             self._modelViewport.setView(Views.Front)
         # open preprocessor module
-        self.setModule('Preprocessor')
+        if self._module != 'Preprocessor': self.setModule('Preprocessor')
+        # update window title
+        self.updateWindowTitle()
+
+    def setOutputDatabase(self, filePath: str | None) -> None:
+        '''
+        Creates an output database from file.
+        Updates the GUI based on the new output database.
+        '''
+        # if a file is not given, dereference the output database
+        if not filePath:
+            self._outputDatabase = None
+        else:
+            # create output database from file
+            extension: str = os.path.splitext(filePath)[1]
+            match extension:
+                case '.fs_odb': self._outputDatabase = FSReader.readOutputDatabase(filePath)
+                case _: raise ValueError(f"invalid file extension: '{extension}'")
+        # update output tree and output viewport
+        self._outputTree.setOutputDatabase(self._outputDatabase)
+        self._outputViewport.setGridRenderObject(self._outputDatabase.mesh if self._outputDatabase else None, False)
+        # set correct camera view
+        if self._outputDatabase and self._outputDatabase.mesh.modelingSpace == ModelingSpaces.ThreeDimensional:
+            self._outputViewport.setView(Views.Isometric)
+        else:
+            self._outputViewport.setView(Views.Front)
+        # open visualization module
+        if self._module != 'Visualization': self.setModule('Visualization')
+        # update window title
+        self.updateWindowTitle()
 
     def setModule(self, module: Literal['Preprocessor', 'Visualization']) -> None:
         '''Updates the view based on the given module.'''
+        # convenient flags
+        moduleChanged: bool = module != self._module
+        isPreprocessor: bool = module == 'Preprocessor'
+        isVisualization: bool = module == 'Visualization'
+        # update global flag
         self._module = module
-        isPreprocessor: bool = self._module == 'Preprocessor'
-        isVisualization: bool = self._module == 'Visualization'
         # change viewport (avoid showing two viewports at the same time or they will flicker)
         if isPreprocessor:
             self._outputViewport.setVisible(False)
@@ -141,12 +185,21 @@ class MainWindow(MainWindowShell):
         elif isVisualization:
             self._modelViewport.setVisible(False)
             self._outputViewport.setVisible(True)
+        # save horizontal splitter sizes
+        splitterSizes: list[int] = self._horizontalSplitter.sizes()
+        splitterSizes[0], splitterSizes[1] = splitterSizes[1], splitterSizes[0]
         # preprocessor module
         self._menuBarModulePreprocessor.setChecked(isPreprocessor)
         self._menuBarSolver.menuAction().setVisible(isPreprocessor)
         if self._solverDialog.isVisible() and not isPreprocessor: self._solverDialog.close()
+        self._modelTree.setVisible(isPreprocessor)
         # visualization module
         self._menuBarModuleVisualization.setChecked(isVisualization)
+        self._outputTree.setVisible(isVisualization)
+        # set previous horizontal splitter sizes
+        if moduleChanged: self._horizontalSplitter.setSizes(splitterSizes)
+        # update window title
+        self.updateWindowTitle()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tree -> Viewport
@@ -200,6 +253,30 @@ class MainWindow(MainWindowShell):
         if stopPicking: self.disablePicking()
         self._modelViewport.render()
 
+    def onOutputTreeSelection(self) -> None:
+        '''On output tree current item changed.'''
+        # clear viewport info and previous plot
+        self._outputViewport.info.clear()
+        self._outputViewport.plotNodalScalarField(None, render=False)
+
+        # if no nodal scalar field is selected or no output database is loaded:
+        # render scene and return
+        selection = self._outputTree.currentSelection()
+        if not selection or not self._outputDatabase:
+            self._outputViewport.render()
+            return
+
+        # plot selected nodal scalar field
+        frame, groupName, fieldName = selection
+        self._outputViewport.info.setText(2, fieldName)
+        self._outputViewport.info.setText(1, self._outputDatabase.frameDescription(frame))
+        self._outputViewport.info.setText(0, 'Deformation Scale Factor: 0.0')
+        self._outputViewport.plotNodalScalarField(self._outputDatabase.nodalScalarField(frame, groupName, fieldName))
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Viewport -> Tree
+#-----------------------------------------------------------------------------------------------------------------------
+
     def onViewportPick(self, dataObject: NodeSet | ElementSet, indices: Sequence[int], remove: bool) -> None:
         '''On viewport picking action performed.'''
         if remove: dataObject.remove(indices)
@@ -247,7 +324,7 @@ class MainWindow(MainWindowShell):
             options=QFileDialog.Option.DontUseNativeDialog
         )[0]
         if filePath != '':
-            if path.isfile(path.splitext(filePath)[0] + '.fs_mdb'):
+            if os.path.isfile(os.path.splitext(filePath)[0] + '.fs_mdb'):
                 result: int = QMessageBox.warning(
                     self,
                     'Save Model Database',
@@ -266,13 +343,22 @@ class MainWindow(MainWindowShell):
         filePath: str = QFileDialog.getOpenFileName( # type: ignore
             parent=self,
             caption='Open Database',
-            filter='FeaSoft Model Database Files (*.fs_mdb);;All Files (*.*)',
+            filter='FeaSoft Model Database Files (*.fs_mdb);;FeaSoft Output Database Files (*.fs_odb);;All Files (*.*)',
             options=QFileDialog.Option.DontUseNativeDialog
         )[0]
         if filePath != '':
-            self.setModelDatabase(filePath)
-            if self._modelDatabase:
-                print(f"Model database opened: '{self._modelDatabase.filePath}'")
+            extension: str = os.path.splitext(filePath)[1]
+            match extension:
+                case '.fs_mdb':
+                    self.setModelDatabase(filePath)
+                    if self._modelDatabase:
+                        print(f"Model database opened: '{self._modelDatabase.filePath}'")
+                case '.fs_odb':
+                    self.setOutputDatabase(filePath)
+                    if self._outputDatabase:
+                        print(f"Output database opened: '{self._outputDatabase.filePath}'")
+                case _:
+                    raise ValueError(f"invalid file extension: '{extension}'")
 
     def onMenuBarFileSave(self) -> None:
         '''On Menu Bar > File > Save.'''
@@ -292,16 +378,25 @@ class MainWindow(MainWindowShell):
             options=QFileDialog.Option.DontUseNativeDialog
         )[0]
         if filePath != '':
-            self._modelDatabase.filePath = path.splitext(filePath)[0] + '.fs_mdb'
+            self._modelDatabase.filePath = os.path.splitext(filePath)[0] + '.fs_mdb'
             FSWriter.writeModelDatabase(self._modelDatabase)
             print(f"Model database saved: '{self._modelDatabase.filePath}'")
+            # update window title
+            self.updateWindowTitle()
 
     def onMenuBarFileClose(self) -> None:
         '''On Menu Bar > File > Close.'''
-        if not self._modelDatabase:
-            raise RuntimeError('a model database must first be opened')
-        self.setModelDatabase(None)
-        print('Model database closed')
+        match self._module:
+            case 'Preprocessor':
+                if not self._modelDatabase:
+                    raise RuntimeError('a model database must first be opened')
+                self.setModelDatabase(None)
+                print('Model database closed')
+            case 'Visualization':
+                if not self._outputDatabase:
+                    raise RuntimeError('an output database must first be opened')
+                self.setOutputDatabase(None)
+                print('Output database closed')
 
     def onMenuBarFileExit(self) -> None:
         '''On Menu Bar > File > Exit.'''

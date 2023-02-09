@@ -41,6 +41,7 @@ class CellsRenderObject(RenderObject):
         self._extractionFilter.Update()                         # type: ignore
         # mapper
         self._mapper: vtkDataSetMapper = vtkDataSetMapper()
+        self._mapper.ScalarVisibilityOff()
         self._mapper.SetInputConnection(self._extractionFilter.GetOutputPort())
         self._mapper.Update() # type: ignore
         # actor

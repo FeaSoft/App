@@ -35,6 +35,7 @@ class SolverDialog(SolverDialogShell):
         self._startSolverButton.clicked.connect(self.onStartSolver)                 # type: ignore
         self._writeSolverJobInputButton.clicked.connect(self.onWriteSolverJobInput) # type: ignore
         self._terminateSolverButton.clicked.connect(self.onTerminateSolver)         # type: ignore
+        self._openOutputDatabaseButton.clicked.connect(self.onOpenOutputDatabase)   # type: ignore
         self._openModelDatabaseButton.clicked.connect(self.onOpenModelDatabase)     # type: ignore
 
     def onTimerTimeout(self) -> None:
@@ -53,6 +54,9 @@ class SolverDialog(SolverDialogShell):
         self._startSolverButton.setEnabled(not self._solverProcess.isAlive())
         self._writeSolverJobInputButton.setEnabled(not self._solverProcess.isAlive())
         self._terminateSolverButton.setEnabled(self._solverProcess.isAlive())
+        self._openOutputDatabaseButton.setEnabled(
+            bool(self._outputDatabaseFile and os.path.isfile(self._outputDatabaseFile))
+        )
 
         # file paths
         self._modelDatabaseBox.setText(self._modelDatabaseFile if self._modelDatabaseFile else '...')
@@ -102,6 +106,11 @@ class SolverDialog(SolverDialogShell):
         self._terminateSolverButton.setEnabled(False)
         # terminate process
         self._solverProcess.terminate()
+
+    def onOpenOutputDatabase(self) -> None:
+        '''On open output database button clicked.'''
+        if self._outputDatabaseFile and os.path.isfile(self._outputDatabaseFile):
+            exec(f"import application; application.current.mainWindow.setOutputDatabase('{self._outputDatabaseFile}')")
 
     def onOpenModelDatabase(self) -> None:
         '''On open model database button clicked.'''

@@ -21,7 +21,7 @@ class ModelDatabaseControl(QTreeWidget):
         self._modelDatabase: ModelDatabase | None = None
 
         # load style sheet from file
-        with open('./resources/style/model-database-control.qss', 'r') as file:
+        with open('./resources/style/tree-control.qss', 'r') as file:
             styleSheet: str = file.read()
 
         # tree widget setup

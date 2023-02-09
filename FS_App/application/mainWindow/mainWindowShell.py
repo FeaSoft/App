@@ -1,6 +1,6 @@
 from application.terminal import Terminal
 from application.solverDialog import SolverDialog
-from control import ModelDatabaseControl
+from control import ModelDatabaseControl, OutputDatabaseControl
 from visualization import Viewport
 from PySide6.QtGui import Qt, QAction, QIcon
 from PySide6.QtWidgets import (
@@ -274,6 +274,12 @@ class MainWindowShell(QMainWindow):
         self._modelTree.setColumnWidth(1, 150)
         self._modelTree.resize(410, 0)
         self._horizontalSplitter.addWidget(self._modelTree)
+
+        # output tree
+        self._outputTree: OutputDatabaseControl = OutputDatabaseControl(self._horizontalSplitter)
+        self._outputTree.setVisible(False)
+        self._outputTree.resize(410, 0)
+        self._horizontalSplitter.addWidget(self._outputTree)
 
         # terminal
         self._terminal: Terminal = Terminal(self._verticalSplitter)

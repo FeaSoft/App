@@ -3,7 +3,7 @@ if __name__ == '__main__':
     import application
 
     # redirect standard streams
-    sys.tracebacklimit = 0
+    sys.tracebacklimit = 1000
     sys.stdout = application.current.mainWindow.terminal.stdout
     sys.stderr = application.current.mainWindow.terminal.stderr
     sys.stdin  = application.current.mainWindow.terminal.stdin
