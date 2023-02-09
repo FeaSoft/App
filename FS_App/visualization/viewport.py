@@ -190,13 +190,27 @@ class Viewport(QFrame):
         InteractionStyle.recomputeGlyphSize(self._renderer, render=False)
         if render: self.render()
 
-    def setGridRenderObject(self, mesh: Mesh | None, render: bool = True) -> None:
+    def setGridRenderObject(self, mesh: Mesh | None, isDeformable: bool, render: bool = True) -> None:
         '''Renders the specified grid.'''
         self._scalarBar.setVisible(False)
         if self._selectionRenderObject: self.remove(self._selectionRenderObject, render=False)
         if self._gridRenderObject: self.remove(self._gridRenderObject, render=False)
-        self._gridRenderObject = GridRenderObject(mesh, self._scalarBar.lookupTable) if mesh else None
+        self._gridRenderObject = GridRenderObject(mesh, isDeformable, self._scalarBar.lookupTable) if mesh else None
         if self._gridRenderObject: self.add(self._gridRenderObject, render=False)
+        if render: self.render()
+
+    def setGridDeformation(
+        self,
+        nodalDisplacements: tuple[tuple[float, float, float], ...] | None,
+        render: bool = True
+    ) -> None:
+        '''Sets the deformation on the currently drawn grid.'''
+        if not self._gridRenderObject: return
+        if not nodalDisplacements:
+            nodalDisplacements = tuple(
+                (0.0, 0.0, 0.0) for _ in range(self._gridRenderObject.dataSet.GetNumberOfPoints())
+            )
+        self._gridRenderObject.setPointDisplacements(nodalDisplacements)
         if render: self.render()
 
     def setSelectionRenderObject(

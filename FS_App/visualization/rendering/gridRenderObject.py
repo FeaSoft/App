@@ -40,9 +40,9 @@ class GridRenderObject(RenderObject):
         return self._dataSet
 
     # attribute slots
-    __slots__ = ('_dataSet', '_mapper', '_actor')
+    __slots__ = ('_dataSet', '_mapper', '_actor', '_isDeformable', '_pointCoordinates', '_pointDisplacements')
 
-    def __init__(self, mesh: Mesh, lookupTable: vtkLookupTable) -> None:
+    def __init__(self, mesh: Mesh, isDeformable: bool, lookupTable: vtkLookupTable) -> None:
         '''Mesh render object constructor.'''
         super().__init__()
         # data set
@@ -60,10 +60,35 @@ class GridRenderObject(RenderObject):
         self._actor.GetProperty().EdgeVisibilityOn()
         self._actor.GetProperty().SetLineWidth(1.5)
         self._actor.GetProperty().SetColor(0.0, 0.5, 1.0)
+        # deformable grid
+        self._isDeformable: bool = isDeformable
+        if self._isDeformable:
+            self._pointDisplacements: tuple[tuple[float, float, float], ...] = tuple(
+                (0.0, 0.0, 0.0) for _ in range(len(mesh.nodes))
+            )
+            self._pointCoordinates: tuple[tuple[float, float, float], ...] = tuple(
+                node.coordinates for node in mesh.nodes
+            )
 
     def actors(self) -> Sequence[vtkActor]:
         '''The renderable VTK actors.'''
         return (self._actor,)
+
+    def setPointDisplacements(
+        self,
+        displacements: tuple[tuple[float, float, float], ...] | None = None,
+        deformationScaleFactor: float = 1.0
+    ) -> None:
+        '''Sets the grid deformation.'''
+        k = deformationScaleFactor
+        # check if the current grid is set up to be deformable
+        if not self._isDeformable: raise ValueError('grid is not deformable')
+        # update point displacements if required
+        if displacements: self._pointDisplacements = displacements
+        # update point coordinates
+        for i, ((x, y, z), (u, v, w)) in enumerate(zip(self._pointCoordinates, self._pointDisplacements)):
+            self._dataSet.GetPoints().SetPoint(i, x + k*u, y + k*v, z + k*w) # type: ignore
+        self._dataSet.Modified()
 
     def setNodalScalarField(self, nodalScalarField: tuple[float, ...] | None) -> None:
         '''Sets the current nodal scalar field to be shown.'''

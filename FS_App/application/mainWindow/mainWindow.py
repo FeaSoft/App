@@ -132,7 +132,11 @@ class MainWindow(MainWindowShell):
                 case _: raise ValueError(f"invalid file extension: '{extension}'")
         # update model tree and model viewport
         self._modelTree.setModelDatabase(self._modelDatabase)
-        self._modelViewport.setGridRenderObject(self._modelDatabase.mesh if self._modelDatabase else None, render=False)
+        self._modelViewport.setGridRenderObject(
+            self._modelDatabase.mesh if self._modelDatabase else None,
+            isDeformable=False,
+            render=False
+        )
         # set correct camera view
         if self._modelDatabase and self._modelDatabase.mesh.modelingSpace == ModelingSpaces.ThreeDimensional:
             self._modelViewport.setView(Views.Isometric)
@@ -159,7 +163,11 @@ class MainWindow(MainWindowShell):
                 case _: raise ValueError(f"invalid file extension: '{extension}'")
         # update output tree and output viewport
         self._outputTree.setOutputDatabase(self._outputDatabase)
-        self._outputViewport.setGridRenderObject(self._outputDatabase.mesh if self._outputDatabase else None, False)
+        self._outputViewport.setGridRenderObject(
+            self._outputDatabase.mesh if self._outputDatabase else None,
+            isDeformable=True,
+            render=False
+        )
         # set correct camera view
         if self._outputDatabase and self._outputDatabase.mesh.modelingSpace == ModelingSpaces.ThreeDimensional:
             self._outputViewport.setView(Views.Isometric)
@@ -249,9 +257,10 @@ class MainWindow(MainWindowShell):
 
     def onOutputTreeSelection(self) -> None:
         '''On output tree current item changed.'''
-        # clear viewport info and previous plot
+        # clear viewport info, previous plot, and reset deformation
         self._outputViewport.info.clear()
         self._outputViewport.plotNodalScalarField(None, render=False)
+        self._outputViewport.setGridDeformation(None, render=False)
 
         # if nothing is selected or no output database is loaded:
         # render scene and return
@@ -274,6 +283,7 @@ class MainWindow(MainWindowShell):
                     self._outputDatabase.nodalScalarField(frame, groupName, fieldName),
                     render=False
                 )
+                self._outputViewport.setGridDeformation(self._outputDatabase.nodalDisplacements(frame), render=False)
         self._outputViewport.render()
 
 #-----------------------------------------------------------------------------------------------------------------------

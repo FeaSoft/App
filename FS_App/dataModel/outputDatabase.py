@@ -57,6 +57,19 @@ class OutputDatabase:
                 if groupName not in self._fieldData[frame]: self._fieldData[frame][groupName] = {}
                 self._fieldData[frame][groupName][fieldName] = tuple(x[i] for x in fieldOutput[frame])
 
+    def nodalDisplacements(self, frame: int) -> tuple[tuple[float, float, float], ...]:
+        '''Returns the nodal displacements for the specified frame.'''
+        if 'Displacement' in self._fieldData[frame]:
+            if all(x in self._fieldData[frame]['Displacement'] for x in (
+                'Displacement in X', 'Displacement in Y', 'Displacement in Z'
+            )):
+                return tuple((
+                    self._fieldData[frame]['Displacement']['Displacement in X'][i],
+                    self._fieldData[frame]['Displacement']['Displacement in Y'][i],
+                    self._fieldData[frame]['Displacement']['Displacement in Z'][i],
+                ) for i in range(len(self._mesh.nodes)))
+        raise RuntimeError('output database does not contain nodal displacements')
+
     def frameDescription(self, frame: int) -> str:
         '''Returns the frame description.'''
         return self._frameDescriptions[frame]

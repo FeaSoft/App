@@ -110,7 +110,11 @@ class SolverDialog(SolverDialogShell):
     def onOpenOutputDatabase(self) -> None:
         '''On open output database button clicked.'''
         if self._outputDatabaseFile and os.path.isfile(self._outputDatabaseFile):
-            exec(f"import application; application.current.mainWindow.setOutputDatabase('{self._outputDatabaseFile}')")
+            exec(f'''
+import application
+application.current.mainWindow.setOutputDatabase('{self._outputDatabaseFile}')
+print("Output database opened: '{self._outputDatabaseFile}'")
+            ''')
 
     def onOpenModelDatabase(self) -> None:
         '''On open model database button clicked.'''
