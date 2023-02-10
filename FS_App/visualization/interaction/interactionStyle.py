@@ -21,8 +21,27 @@ class InteractionStyle(ABC):
     Abstract base class for interaction styles.
     '''
 
-    @staticmethod
-    def recomputeGlyphSize(renderer: vtkRenderer, render: bool = True) -> None:
+    _gridLineWidth: float = 1.5
+    _pointGlyphScale: float = 0.003
+    _arrowGlyphScale: float = 0.020
+
+    @classmethod
+    def setGridLineWidth(cls, value: float) -> None:
+        '''Sets the grid line width.'''
+        cls._gridLineWidth = value
+
+    @classmethod
+    def setPointGlyphScale(cls, value: float) -> None:
+        '''Sets the point glyph scale.'''
+        cls._pointGlyphScale = value
+
+    @classmethod
+    def setArrowGlyphScale(cls, value: float) -> None:
+        '''Sets the arrow glyph scale.'''
+        cls._arrowGlyphScale = value
+
+    @classmethod
+    def recomputeGlyphSize(cls, renderer: vtkRenderer, render: bool = True) -> None:
         '''Recomputes the glyph size so it is independent of camera zoom.'''
         for i in range(renderer.GetActors().GetNumberOfItems()):
             actor: vtkActor = cast(vtkActor, renderer.GetActors().GetItemAsObject(i))
@@ -37,15 +56,15 @@ class InteractionStyle(ABC):
                 dz: float = cameraPosition[2] - actorPosition[2]
                 distance: float = math.sqrt(dx*dx + dy*dy + dz*dz)
                 match producer.GetObjectName():
-                    case 'points': scaleFactor: float = 0.003
-                    case 'arrows': scaleFactor: float = 0.020
+                    case 'points': scaleFactor: float = cls._pointGlyphScale
+                    case 'arrows': scaleFactor: float = cls._arrowGlyphScale
                     case _: raise NotImplementedError('case not implemented')
                 producer.SetScaleFactor(distance*scaleFactor)
                 producer.Modified()
         if render: renderer.GetRenderWindow().Render()
 
-    @staticmethod
-    def newLineHint2D(pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
+    @classmethod
+    def newLineHint2D(cls, pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
         '''Creates a new 2D line hint.'''
         # source
         lineSource: vtkLineSource = vtkLineSource()
@@ -61,8 +80,13 @@ class InteractionStyle(ABC):
         actor2D.SetMapper(polyDataMapper2D)
         return actor2D
 
-    @staticmethod
-    def newArcHint2D(pointA: tuple[int, int], pointB: tuple[int, int], renderWindowSize: tuple[int, int]) -> vtkActor2D:
+    @classmethod
+    def newArcHint2D(
+        cls,
+        pointA: tuple[int, int],
+        pointB: tuple[int, int],
+        renderWindowSize: tuple[int, int]
+    ) -> vtkActor2D:
         '''Creates a new 2D arc hint.'''
         # compute start and segment angles
         angleA: float = math.atan2(pointA[1] - renderWindowSize[1]/2.0, pointA[0] - renderWindowSize[0]/2.0)
@@ -111,8 +135,8 @@ class InteractionStyle(ABC):
         actor2D.SetPosition(0.5, 0.5)
         return actor2D
 
-    @staticmethod
-    def newRectangleHint2D(pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
+    @classmethod
+    def newRectangleHint2D(cls, pointA: tuple[int, int], pointB: tuple[int, int]) -> vtkActor2D:
         '''Creates a new 2D rectangle hint.'''
         # points
         points: vtkPoints = vtkPoints()
@@ -137,8 +161,8 @@ class InteractionStyle(ABC):
         actor2D.SetMapper(polyDataMapper2D)
         return actor2D
 
-    @staticmethod
-    def newLineHint(pointA: tuple[float, float, float], pointB: tuple[float, float, float]) -> vtkActor:
+    @classmethod
+    def newLineHint(cls, pointA: tuple[float, float, float], pointB: tuple[float, float, float]) -> vtkActor:
         '''Creates a new 3D line hint.'''
         # source
         lineSource: vtkLineSource = vtkLineSource()
@@ -152,20 +176,22 @@ class InteractionStyle(ABC):
         # actor
         actor: vtkActor = vtkActor()
         actor.SetMapper(polyDataMapper)
+        actor.GetProperty().SetLineWidth(cls._gridLineWidth)
         return actor
 
-    @staticmethod
-    def newPointsHint(unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
+    @classmethod
+    def newPointsHint(cls, unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
         '''Creates a new 3D points hint.'''
         return PointsRenderObject(unstructuredGrid, indices).actors()[0]
 
-    @staticmethod
-    def newCellsHint(unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
+    @classmethod
+    def newCellsHint(cls, unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
         '''Creates a new 3D cells hint.'''
-        return CellsRenderObject(unstructuredGrid, indices, True).actors()[0]
+        return CellsRenderObject(unstructuredGrid, indices, True, cls._gridLineWidth, (1.0, 1.0, 1.0)).actors()[0]
 
-    @staticmethod
+    @classmethod
     def pickSingle(
+        cls,
         point: tuple[int, int],
         target: Literal['Points', 'Cells'],
         renderer: vtkRenderer
@@ -173,7 +199,7 @@ class InteractionStyle(ABC):
         '''Picks a single point or cell.'''
         # perform pick operation
         picker: vtkPicker = vtkPointPicker() if target == 'Points' else vtkCellPicker()
-        picker.SetTolerance(0.0025 if target == 'Points' else 0.0)
+        picker.SetTolerance(0.003 if target == 'Points' else 0.0)
         picker.Pick(*point, 0.0, renderer)
         # get picked data set (if any)
         actor: vtkActor | None = picker.GetActor()
@@ -185,8 +211,9 @@ class InteractionStyle(ABC):
             return index, dataSet # type: ignore
         return -1, None
 
-    @staticmethod
+    @classmethod
     def pickMultiple(
+        cls,
         pointA: tuple[int, int],
         pointB: tuple[int, int],
         target: Literal['Points', 'Cells'],

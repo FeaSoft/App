@@ -9,11 +9,12 @@ class OptionsCommonDialogShell(QDialog):
 
 #   # attribute slots
 #   __slots__ = (
-#       '_layout', '_meshLinesGroupBox', '_meshLinesGroupBoxLayout', '_lineVisibilityLabel', '_lineVisibilityBox',
-#       '_lineWidthLabel', '_lineWidthBox', '_lineColorLabel', '_lineColorBox', '_meshCellsGroupBox',
-#       '_meshCellsGroupBoxLayout', '_cellRepresentationLabel', '_cellRepresentationBox', '_cellColorLabel',
-#       '_cellColorBox', '_meshGlyphsGroupBox', '_meshGlyphsGroupBoxLayout', '_pointScaleLabel', '_pointScaleBox',
-#       '_arrowScaleLabel', '_arrowScaleBox'
+#       '_layout', '_gridLinesGroupBox', '_gridLinesGroupBoxLayout', '_gridLinesVisibleLabel', '_gridLinesVisibleBox',
+#       '_gridLineWidthLabel', '_gridLineWidthBox', '_gridLineColorLabel', '_gridLineColorBox', '_gridCellsGroupBox',
+#       '_gridCellsGroupBoxLayout', '_cellRepresentationLabel', '_cellRepresentationBox', '_cellColorLabel',
+#       '_cellColorBox', '_gridGlyphsGroupBox', '_gridGlyphsGroupBoxLayout', '_pointScaleLabel', '_pointScaleBox',
+#       '_arrowScaleLabel', '_arrowScaleBox', '_viewportGroupBox', '_viewportGroupBoxLayout', '_projectionLabel',
+#       '_projectionBox', '_lightingLabel', '_lightingBox', '_background1Label', '_background1Box', '_background2Box'
 #   )
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -28,107 +29,149 @@ class OptionsCommonDialogShell(QDialog):
         self._layout: QVBoxLayout = QVBoxLayout(self)
         self.setLayout(self._layout)
 
-        # mesh lines group box
-        self._meshLinesGroupBox: QGroupBox = QGroupBox(self)
-        self._meshLinesGroupBox.setTitle('Mesh Lines')
-        self._layout.addWidget(self._meshLinesGroupBox)
+        # grid lines group box
+        self._gridLinesGroupBox: QGroupBox = QGroupBox(self)
+        self._gridLinesGroupBox.setTitle('Grid Lines')
+        self._layout.addWidget(self._gridLinesGroupBox)
 
-        # mesh lines group box layout
-        self._meshLinesGroupBoxLayout: QGridLayout = QGridLayout(self._meshLinesGroupBox)
-        self._meshLinesGroupBox.setLayout(self._meshLinesGroupBoxLayout)
+        # grid lines group box layout
+        self._gridLinesGroupBoxLayout: QGridLayout = QGridLayout(self._gridLinesGroupBox)
+        self._gridLinesGroupBox.setLayout(self._gridLinesGroupBoxLayout)
 
-        # line visibility label
-        self._lineVisibilityLabel: QLabel = QLabel(self._meshLinesGroupBox)
-        self._lineVisibilityLabel.setText('Line Visibility:')
-        self._meshLinesGroupBoxLayout.addWidget(self._lineVisibilityLabel, 0, 0)
+        # grid lines visible label
+        self._gridLinesVisibleLabel: QLabel = QLabel(self._gridLinesGroupBox)
+        self._gridLinesVisibleLabel.setText('Line Visibility:')
+        self._gridLinesGroupBoxLayout.addWidget(self._gridLinesVisibleLabel, 0, 0)
 
-        # line visibility box
-        self._lineVisibilityBox: QCheckBox = QCheckBox(self._meshLinesGroupBox)
-        self._meshLinesGroupBoxLayout.addWidget(self._lineVisibilityBox, 0, 1)
+        # grid lines visible box
+        self._gridLinesVisibleBox: QCheckBox = QCheckBox(self._gridLinesGroupBox)
+        self._gridLinesGroupBoxLayout.addWidget(self._gridLinesVisibleBox, 0, 1)
 
-        # line width label
-        self._lineWidthLabel: QLabel = QLabel(self._meshLinesGroupBox)
-        self._lineWidthLabel.setText('Line Width:')
-        self._meshLinesGroupBoxLayout.addWidget(self._lineWidthLabel, 1, 0)
+        # grid line width label
+        self._gridLineWidthLabel: QLabel = QLabel(self._gridLinesGroupBox)
+        self._gridLineWidthLabel.setText('Line Width:')
+        self._gridLinesGroupBoxLayout.addWidget(self._gridLineWidthLabel, 1, 0)
 
-        # line width slider
-        self._lineWidthBox: QDoubleSpinBox = QDoubleSpinBox(self._meshLinesGroupBox)
-        self._lineWidthBox.setDecimals(1)
-        self._lineWidthBox.setMinimum(1.0)
-        self._lineWidthBox.setMaximum(10.0)
-        self._lineWidthBox.setSingleStep(0.5)
-        self._meshLinesGroupBoxLayout.addWidget(self._lineWidthBox, 1, 1)
+        # grid line width slider
+        self._gridLineWidthBox: QDoubleSpinBox = QDoubleSpinBox(self._gridLinesGroupBox)
+        self._gridLineWidthBox.setDecimals(1)
+        self._gridLineWidthBox.setMinimum(1.0)
+        self._gridLineWidthBox.setMaximum(10.0)
+        self._gridLineWidthBox.setSingleStep(0.5)
+        self._gridLinesGroupBoxLayout.addWidget(self._gridLineWidthBox, 1, 1)
 
-        # line color label
-        self._lineColorLabel: QLabel = QLabel(self._meshLinesGroupBox)
-        self._lineColorLabel.setText('Line Color:')
-        self._meshLinesGroupBoxLayout.addWidget(self._lineColorLabel, 2, 0)
+        # grid line color label
+        self._gridLineColorLabel: QLabel = QLabel(self._gridLinesGroupBox)
+        self._gridLineColorLabel.setText('Line Color:')
+        self._gridLinesGroupBoxLayout.addWidget(self._gridLineColorLabel, 2, 0)
 
-        # line color box
-        self._lineColorBox: QCheckBox = QCheckBox(self._meshLinesGroupBox)
-        self._lineColorBox.setCheckable(False)
-        self._meshLinesGroupBoxLayout.addWidget(self._lineColorBox, 2, 1)
+        # grid line color box
+        self._gridLineColorBox: QCheckBox = QCheckBox(self._gridLinesGroupBox)
+        self._gridLineColorBox.setCheckable(False)
+        self._gridLinesGroupBoxLayout.addWidget(self._gridLineColorBox, 2, 1)
 
-        # mesh cells group box
-        self._meshCellsGroupBox: QGroupBox = QGroupBox(self)
-        self._meshCellsGroupBox.setTitle('Mesh Cells')
-        self._layout.addWidget(self._meshCellsGroupBox)
+        # grid cells group box
+        self._gridCellsGroupBox: QGroupBox = QGroupBox(self)
+        self._gridCellsGroupBox.setTitle('Grid Cells')
+        self._layout.addWidget(self._gridCellsGroupBox)
 
-        # mesh cells group box layout
-        self._meshCellsGroupBoxLayout: QGridLayout = QGridLayout(self._meshCellsGroupBox)
-        self._meshCellsGroupBox.setLayout(self._meshCellsGroupBoxLayout)
+        # grid cells group box layout
+        self._gridCellsGroupBoxLayout: QGridLayout = QGridLayout(self._gridCellsGroupBox)
+        self._gridCellsGroupBox.setLayout(self._gridCellsGroupBoxLayout)
 
         # cell representation label
-        self._cellRepresentationLabel: QLabel = QLabel(self._meshCellsGroupBox)
+        self._cellRepresentationLabel: QLabel = QLabel(self._gridCellsGroupBox)
         self._cellRepresentationLabel.setText('Cell Representation:')
-        self._meshCellsGroupBoxLayout.addWidget(self._cellRepresentationLabel, 0, 0)
+        self._gridCellsGroupBoxLayout.addWidget(self._cellRepresentationLabel, 0, 0)
 
         # cell representation box
-        self._cellRepresentationBox: QComboBox = QComboBox(self._meshCellsGroupBox)
+        self._cellRepresentationBox: QComboBox = QComboBox(self._gridCellsGroupBox)
         self._cellRepresentationBox.addItems(('Surface', 'Wireframe'))
-        self._meshCellsGroupBoxLayout.addWidget(self._cellRepresentationBox, 0, 1)
+        self._gridCellsGroupBoxLayout.addWidget(self._cellRepresentationBox, 0, 1)
 
         # cell color label
-        self._cellColorLabel: QLabel = QLabel(self._meshCellsGroupBox)
+        self._cellColorLabel: QLabel = QLabel(self._gridCellsGroupBox)
         self._cellColorLabel.setText('Cell Color:')
-        self._meshCellsGroupBoxLayout.addWidget(self._cellColorLabel, 1, 0)
+        self._gridCellsGroupBoxLayout.addWidget(self._cellColorLabel, 1, 0)
 
         # cell color box
-        self._cellColorBox: QCheckBox = QCheckBox(self._meshCellsGroupBox)
+        self._cellColorBox: QCheckBox = QCheckBox(self._gridCellsGroupBox)
         self._cellColorBox.setCheckable(False)
-        self._meshCellsGroupBoxLayout.addWidget(self._cellColorBox, 1, 1)
+        self._gridCellsGroupBoxLayout.addWidget(self._cellColorBox, 1, 1)
 
-        # mesh glyphs group box
-        self._meshGlyphsGroupBox: QGroupBox = QGroupBox(self)
-        self._meshGlyphsGroupBox.setTitle('Mesh Glyphs')
-        self._layout.addWidget(self._meshGlyphsGroupBox)
+        # grid glyphs group box
+        self._gridGlyphsGroupBox: QGroupBox = QGroupBox(self)
+        self._gridGlyphsGroupBox.setTitle('Grid Glyphs')
+        self._layout.addWidget(self._gridGlyphsGroupBox)
 
-        # mesh glyphs group box layout
-        self._meshGlyphsGroupBoxLayout: QGridLayout = QGridLayout(self._meshGlyphsGroupBox)
-        self._meshGlyphsGroupBox.setLayout(self._meshGlyphsGroupBoxLayout)
+        # grid glyphs group box layout
+        self._gridGlyphsGroupBoxLayout: QGridLayout = QGridLayout(self._gridGlyphsGroupBox)
+        self._gridGlyphsGroupBox.setLayout(self._gridGlyphsGroupBoxLayout)
 
         # point scale label
-        self._pointScaleLabel: QLabel = QLabel(self._meshGlyphsGroupBox)
+        self._pointScaleLabel: QLabel = QLabel(self._gridGlyphsGroupBox)
         self._pointScaleLabel.setText('Point Scale:')
-        self._meshGlyphsGroupBoxLayout.addWidget(self._pointScaleLabel, 0, 0)
+        self._gridGlyphsGroupBoxLayout.addWidget(self._pointScaleLabel, 0, 0)
 
         # point scale box
-        self._pointScaleBox: QDoubleSpinBox = QDoubleSpinBox(self._meshGlyphsGroupBox)
+        self._pointScaleBox: QDoubleSpinBox = QDoubleSpinBox(self._gridGlyphsGroupBox)
         self._pointScaleBox.setDecimals(3)
-        self._pointScaleBox.setMinimum(0.0)
-        self._pointScaleBox.setMaximum(100.0)
-        self._pointScaleBox.setSingleStep(0.005)
-        self._meshGlyphsGroupBoxLayout.addWidget(self._pointScaleBox, 0, 1)
+        self._pointScaleBox.setMinimum(0.001)
+        self._pointScaleBox.setMaximum(0.050)
+        self._pointScaleBox.setSingleStep(0.001)
+        self._gridGlyphsGroupBoxLayout.addWidget(self._pointScaleBox, 0, 1)
 
         # arrow scale label
-        self._arrowScaleLabel: QLabel = QLabel(self._meshGlyphsGroupBox)
+        self._arrowScaleLabel: QLabel = QLabel(self._gridGlyphsGroupBox)
         self._arrowScaleLabel.setText('Arrow Scale:')
-        self._meshGlyphsGroupBoxLayout.addWidget(self._arrowScaleLabel, 1, 0)
+        self._gridGlyphsGroupBoxLayout.addWidget(self._arrowScaleLabel, 1, 0)
 
         # arrow scale box
-        self._arrowScaleBox: QDoubleSpinBox = QDoubleSpinBox(self._meshGlyphsGroupBox)
+        self._arrowScaleBox: QDoubleSpinBox = QDoubleSpinBox(self._gridGlyphsGroupBox)
         self._arrowScaleBox.setDecimals(3)
-        self._arrowScaleBox.setMinimum(0.0)
-        self._arrowScaleBox.setMaximum(100.0)
-        self._arrowScaleBox.setSingleStep(0.005)
-        self._meshGlyphsGroupBoxLayout.addWidget(self._arrowScaleBox, 1, 1)
+        self._arrowScaleBox.setMinimum(0.010)
+        self._arrowScaleBox.setMaximum(0.500)
+        self._arrowScaleBox.setSingleStep(0.010)
+        self._gridGlyphsGroupBoxLayout.addWidget(self._arrowScaleBox, 1, 1)
+
+        # viewport group box
+        self._viewportGroupBox: QGroupBox = QGroupBox(self)
+        self._viewportGroupBox.setTitle('Viewport')
+        self._layout.addWidget(self._viewportGroupBox)
+
+        # viewport group box layout
+        self._viewportGroupBoxLayout: QGridLayout = QGridLayout(self._viewportGroupBox)
+        self._viewportGroupBox.setLayout(self._viewportGroupBoxLayout)
+
+        # projection label
+        self._projectionLabel: QLabel = QLabel(self._viewportGroupBox)
+        self._projectionLabel.setText('Projection:')
+        self._viewportGroupBoxLayout.addWidget(self._projectionLabel, 0, 0)
+
+        # projection box
+        self._projectionBox: QComboBox = QComboBox(self._viewportGroupBox)
+        self._projectionBox.addItems(('Perspective', 'Parallel'))
+        self._viewportGroupBoxLayout.addWidget(self._projectionBox, 0, 1)
+
+        # lighting label
+        self._lightingLabel: QLabel = QLabel(self._viewportGroupBox)
+        self._lightingLabel.setText('Lighting:')
+        self._viewportGroupBoxLayout.addWidget(self._lightingLabel, 1, 0)
+
+        # lighting box
+        self._lightingBox: QComboBox = QComboBox(self._viewportGroupBox)
+        self._lightingBox.addItems(('On', 'Off'))
+        self._viewportGroupBoxLayout.addWidget(self._lightingBox, 1, 1)
+
+        # background 1 label
+        self._background1Label: QLabel = QLabel(self._viewportGroupBox)
+        self._background1Label.setText('Background Color:')
+        self._viewportGroupBoxLayout.addWidget(self._background1Label, 2, 0)
+
+        # background 1 box
+        self._background1Box: QCheckBox = QCheckBox(self._viewportGroupBox)
+        self._viewportGroupBoxLayout.addWidget(self._background1Box, 2, 1)
+
+        # background 2 box
+        self._background2Box: QCheckBox = QCheckBox(self._viewportGroupBox)
+        self._viewportGroupBoxLayout.addWidget(self._background2Box, 3, 1)

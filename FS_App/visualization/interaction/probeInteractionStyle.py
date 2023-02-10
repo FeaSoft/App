@@ -1,3 +1,4 @@
+import math
 import visualization.utility as vu
 from typing import Literal
 from visualization.interaction.interactionStyle import InteractionStyle
@@ -31,7 +32,7 @@ class ProbeInteractionStyle(InteractionStyle):
                 pointData: vtkDataArray | None = self._pickedDataSet.GetPointData().GetScalars() # type: ignore
                 if pointData:
                     scalar: float = pointData.GetTuple1(self._pickedIndex)
-                    print(' '*4 + 'Scalar: ' + str(scalar))
+                    if not math.isnan(scalar): print(' '*4 + 'Scalar: ' + str(scalar))
             else:
                 print(f'Element {self._pickedIndex + 1} (1-based indexing):')
                 centroid: tuple[float, float, float] = vu.computeCentroid(
@@ -44,7 +45,7 @@ class ProbeInteractionStyle(InteractionStyle):
                 cellData: vtkDataArray | None = self._pickedDataSet.GetCellData().GetScalars() # type: ignore
                 if cellData:
                     scalar: float = cellData.GetTuple1(self._pickedIndex)
-                    print(' '*4 + 'Scalar: ' + str(scalar))
+                    if not math.isnan(scalar): print(' '*4 + 'Scalar: ' + str(scalar))
 
     def onLeftButtonRelease(self, sender: vtkObject, event: str) -> None:
         '''On left button release.'''

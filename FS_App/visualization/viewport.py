@@ -24,7 +24,17 @@ class Viewport(QFrame):
     _callbacks: dict[int, Callable[[str, Any], None]] = {}
     _viewports: list['Viewport'] = []
     _currentInteractionStyle: InteractionStyles = InteractionStyles.Rotate
-    _lineVisibility: bool = True
+    _gridLinesVisible: bool = True
+    _gridLineWidth: float = 1.5
+    _gridLineColor: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    _gridCellRepresentation: Literal['Surface', 'Wireframe'] = 'Surface'
+    _gridCellColor: tuple[float, float, float] = (0.0, 0.5, 1.0)
+    _pointGlyphScale: float = 0.003
+    _arrowGlyphScale: float = 0.020
+    _projection: Literal['Perspective', 'Parallel'] = 'Perspective'
+    _lighting: Literal['On', 'Off'] = 'On'
+    _background1: tuple[float, float, float] = (1.0, 0.0, 0.0)
+    _background2: tuple[float, float, float] = (1.0, 1.0, 0.0)
 
     @classmethod
     def registerCallback(cls, callback: Callable[[str, Any], None]) -> int:
@@ -57,21 +67,171 @@ class Viewport(QFrame):
         cls.notifyOptionChanged('InteractionStyle', cls._currentInteractionStyle)
 
     @classmethod
-    def lineVisibility(cls) -> bool:
+    def gridLinesVisible(cls) -> bool:
         '''Gets the grid line visibility.'''
-        return cls._lineVisibility
+        return cls._gridLinesVisible
 
     @classmethod
-    def setLineVisibility(cls, value: bool) -> None:
+    def setGridLinesVisible(cls, value: bool) -> None:
         '''Sets the grid line visibility.'''
-        cls._lineVisibility = value
+        cls._gridLinesVisible = value
         for viewport in cls._viewports:
             if viewport._gridRenderObject:
-                viewport._gridRenderObject.setLineVisibility(cls._lineVisibility)
+                viewport._gridRenderObject.setLinesVisible(cls._gridLinesVisible)
             if isinstance(viewport._selectionRenderObject, CellsRenderObject):
-                viewport._selectionRenderObject.setLineVisibility(cls._lineVisibility)
+                viewport._selectionRenderObject.setLinesVisible(cls._gridLinesVisible)
             viewport.render()
-        cls.notifyOptionChanged('LineVisibility', cls._lineVisibility)
+        cls.notifyOptionChanged('GridLinesVisible', cls._gridLinesVisible)
+
+    @classmethod
+    def gridLineWidth(cls) -> float:
+        '''Gets the grid line width.'''
+        return cls._gridLineWidth
+
+    @classmethod
+    def setGridLineWidth(cls, value: float) -> None:
+        '''Sets the grid line width.'''
+        InteractionStyle.setGridLineWidth(value)
+        cls._gridLineWidth = value
+        for viewport in cls._viewports:
+            if viewport._gridRenderObject:
+                viewport._gridRenderObject.setLineWidth(cls._gridLineWidth)
+            if isinstance(viewport._selectionRenderObject, CellsRenderObject):
+                viewport._selectionRenderObject.setLineWidth(cls._gridLineWidth)
+            viewport.render()
+        cls.notifyOptionChanged('GridLineWidth', cls._gridLineWidth)
+
+    @classmethod
+    def gridLineColor(cls) -> tuple[float, float, float]:
+        '''Gets the grid line color.'''
+        return cls._gridLineColor
+
+    @classmethod
+    def setGridLineColor(cls, value: tuple[float, float, float]) -> None:
+        '''Sets the grid line color.'''
+        cls._gridLineColor = value
+        for viewport in cls._viewports:
+            if viewport._gridRenderObject:
+                viewport._gridRenderObject.setLineColor(cls._gridLineColor)
+            if isinstance(viewport._selectionRenderObject, CellsRenderObject):
+                viewport._selectionRenderObject.setLineColor(cls._gridLineColor)
+            viewport.render()
+        cls.notifyOptionChanged('GridLineColor', cls._gridLineColor)
+
+    @classmethod
+    def gridCellRepresentation(cls) -> Literal['Surface', 'Wireframe']:
+        '''Gets the grid cell representation.'''
+        return cls._gridCellRepresentation
+
+    @classmethod
+    def setGridCellRepresentation(cls, value: Literal['Surface', 'Wireframe']) -> None:
+        '''Sets the grid cell representation.'''
+        cls._gridCellRepresentation = value
+        for viewport in cls._viewports:
+            if viewport._gridRenderObject:
+                viewport._gridRenderObject.setCellRepresentation(cls._gridCellRepresentation)
+            viewport.render()
+        cls.notifyOptionChanged('GridCellRepresentation', cls._gridCellRepresentation)
+
+    @classmethod
+    def gridCellColor(cls) -> tuple[float, float, float]:
+        '''Gets the grid cell color.'''
+        return cls._gridCellColor
+
+    @classmethod
+    def setGridCellColor(cls, value: tuple[float, float, float]) -> None:
+        '''Sets the grid cell color.'''
+        cls._gridCellColor = value
+        for viewport in cls._viewports:
+            if viewport._gridRenderObject:
+                viewport._gridRenderObject.setCellColor(cls._gridCellColor)
+            viewport.render()
+        cls.notifyOptionChanged('GridCellColor', cls._gridCellColor)
+
+    @classmethod
+    def pointGlyphScale(cls) -> float:
+        '''Gets the point glyph scale.'''
+        return cls._pointGlyphScale
+
+    @classmethod
+    def setPointGlyphScale(cls, value: float) -> None:
+        '''Sets the point glyph scale.'''
+        InteractionStyle.setPointGlyphScale(value)
+        cls._pointGlyphScale = value
+        for viewport in cls._viewports:
+            InteractionStyle.recomputeGlyphSize(viewport._renderer)
+        cls.notifyOptionChanged('PointGlyphScale', cls._pointGlyphScale)
+
+    @classmethod
+    def arrowGlyphScale(cls) -> float:
+        '''Gets the arrow glyph scale.'''
+        return cls._arrowGlyphScale
+
+    @classmethod
+    def setArrowGlyphScale(cls, value: float) -> None:
+        '''Sets the arrow glyph scale.'''
+        InteractionStyle.setArrowGlyphScale(value)
+        cls._arrowGlyphScale = value
+        for viewport in cls._viewports:
+            InteractionStyle.recomputeGlyphSize(viewport._renderer)
+        cls.notifyOptionChanged('ArrowGlyphScale', cls._arrowGlyphScale)
+
+    @classmethod
+    def projection(cls) -> Literal['Perspective', 'Parallel']:
+        '''Gets the projection type.'''
+        return cls._projection
+
+    @classmethod
+    def setProjection(cls, value: Literal['Perspective', 'Parallel']) -> None:
+        '''Sets the projection type.'''
+        cls._projection = value
+        for viewport in cls._viewports:
+            viewport._renderer.GetActiveCamera().SetParallelProjection(cls._projection == 'Parallel')
+            viewport.render()
+        cls.notifyOptionChanged('Projection', cls._projection)
+
+    @classmethod
+    def lighting(cls) -> Literal['On', 'Off']:
+        '''Gets the lighting flag.'''
+        return cls._lighting
+
+    @classmethod
+    def setLighting(cls, value: Literal['On', 'Off']) -> None:
+        '''Sets the lighting flag.'''
+        cls._lighting = value
+        for viewport in cls._viewports:
+            if viewport._gridRenderObject:
+                viewport._gridRenderObject.setLighting(cls._lighting)
+            viewport.render()
+        cls.notifyOptionChanged('Lighting', cls._lighting)
+
+    @classmethod
+    def background1(cls) -> tuple[float, float, float]:
+        '''Gets the background 1 (top color).'''
+        return cls._background1
+
+    @classmethod
+    def setBackground1(cls, value: tuple[float, float, float]) -> None:
+        '''Sets the background 1 (top color).'''
+        cls._background1 = value
+        for viewport in cls._viewports:
+            viewport._renderer.SetBackground2(cls._background1)
+            viewport.render()
+        cls.notifyOptionChanged('Background1', cls._background1)
+
+    @classmethod
+    def background2(cls) -> tuple[float, float, float]:
+        '''Gets the background 2 (bottom color).'''
+        return cls._background2
+
+    @classmethod
+    def setBackground2(cls, value: tuple[float, float, float]) -> None:
+        '''Sets the background 2 (top color).'''
+        cls._background2 = value
+        for viewport in cls._viewports:
+            viewport._renderer.SetBackground(cls._background2)
+            viewport.render()
+        cls.notifyOptionChanged('Background2', cls._background2)
 
     @classmethod
     def setPickAction(
@@ -113,8 +273,6 @@ class Viewport(QFrame):
         # renderer
         self._renderer: vtkRenderer = vtkRenderer()
         self._renderer.GradientBackgroundOn()
-        self._renderer.SetBackground(0.6, 0.7, 0.8)
-        self._renderer.SetBackground2(0.1, 0.2, 0.3)
         # render window
         self._renderWindow: vtkRenderWindow = cast(vtkRenderWindow, self._vtkWidget.GetRenderWindow())
         self._renderWindow.AddRenderer(self._renderer)
@@ -140,6 +298,9 @@ class Viewport(QFrame):
 
     def initialize(self) -> None:
         '''Initializes the viewport.'''
+        self._renderer.GetActiveCamera().SetParallelProjection(self._projection == 'Parallel')
+        self._renderer.SetBackground2(self._background1)
+        self._renderer.SetBackground(self._background2)
         self._interactor.Initialize()
         self._triad.initialize(self._interactor)
         self._info.initialize(self._renderer)
@@ -217,7 +378,12 @@ class Viewport(QFrame):
             mesh,
             isDeformable,
             self._scalarBar.lookupTable,
-            self._lineVisibility
+            self._gridLinesVisible,
+            self._gridLineWidth,
+            self._gridLineColor,
+            self._gridCellRepresentation,
+            self._gridCellColor,
+            self._lighting
         ) if mesh else None
         if self._gridRenderObject: self.add(self._gridRenderObject, render=False)
         if render: self.render()
@@ -253,7 +419,12 @@ class Viewport(QFrame):
                 )
             case ElementSet():
                 self._selectionRenderObject = CellsRenderObject(
-                    self._gridRenderObject.dataSet, dataObject.indices(), self._lineVisibility, color
+                    self._gridRenderObject.dataSet,
+                    dataObject.indices(),
+                    self._gridLinesVisible,
+                    self._gridLineWidth,
+                    self._gridLineColor,
+                    color
                 )
             case ConcentratedLoad():
                 if not modelDatabase: raise ValueError("missing optional argument: 'modelDatabase'")
