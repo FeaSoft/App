@@ -162,7 +162,7 @@ class InteractionStyle(ABC):
     @staticmethod
     def newCellsHint(unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
         '''Creates a new 3D cells hint.'''
-        return CellsRenderObject(unstructuredGrid, indices).actors()[0]
+        return CellsRenderObject(unstructuredGrid, indices, True).actors()[0]
 
     @staticmethod
     def pickSingle(

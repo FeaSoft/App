@@ -26,7 +26,7 @@ class SolverDialogShell(QDialog):
         '''Solver dialog shell constructor.'''
         super().__init__(parent)
 
-        # widget (self)
+        # dialog (self)
         self.setWindowTitle('Solver Dialog')
         self.resize(480, 720)
 

@@ -1,6 +1,9 @@
 import sys
 from application.mainWindow import MainWindow
 from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QLocale
+
+QLocale.setDefault(QLocale.c())
 
 class App(QApplication):
     '''

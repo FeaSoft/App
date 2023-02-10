@@ -55,6 +55,7 @@ class MainWindow(MainWindowShell):
         self._menuBarModulePreprocessor.triggered.connect(self.onMenuBarModulePreprocessor)           # type: ignore
         self._menuBarModuleVisualization.triggered.connect(self.onMenuBarModuleVisualization)         # type: ignore
         self._menuBarSolverDialog.triggered.connect(self.onMenuBarSolverDialog)                       # type: ignore
+        self._menuBarOptionsCommon.triggered.connect(self.onMenuBarOptionsCommon)                     # type: ignore
         self._toolBarFileNew.triggered.connect(self.onToolBarFileNew)                                 # type: ignore
         self._toolBarFileOpen.triggered.connect(self.onToolBarFileOpen)                               # type: ignore
         self._toolBarFileSave.triggered.connect(self.onToolBarFileSave)                               # type: ignore
@@ -302,7 +303,7 @@ class MainWindow(MainWindowShell):
     def onViewportOptionChanged(self, optionName: str, optionValue: Any) -> None:
         '''On viewport global option changed.'''
         match optionName:
-            case InteractionStyles.__name__:
+            case 'InteractionStyle':
                 # uncheck all buttons in the interaction tool bar
                 for action in (
                     self._toolBarInteractionRotate, self._toolBarInteractionPan, self._toolBarInteractionZoom,
@@ -323,6 +324,7 @@ class MainWindow(MainWindowShell):
                     case InteractionStyles.PickSingle | InteractionStyles.PickMultiple:
                         self.onModelTreeSelection() # will enable picking based on selected data object
                     case _: pass
+            case _: pass
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Menu Bar
@@ -426,6 +428,10 @@ class MainWindow(MainWindowShell):
     def onMenuBarSolverDialog(self) -> None:
         '''On Menu Bar > Solver > Dialog.'''
         self._solverDialog.show()
+
+    def onMenuBarOptionsCommon(self) -> None:
+        '''On Menu Bar > Options > Common.'''
+        self._optionsCommonDialog.show()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tool Bar

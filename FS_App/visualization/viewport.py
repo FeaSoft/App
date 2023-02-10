@@ -24,6 +24,7 @@ class Viewport(QFrame):
     _callbacks: dict[int, Callable[[str, Any], None]] = {}
     _viewports: list['Viewport'] = []
     _currentInteractionStyle: InteractionStyles = InteractionStyles.Rotate
+    _lineVisibility: bool = True
 
     @classmethod
     def registerCallback(cls, callback: Callable[[str, Any], None]) -> int:
@@ -53,7 +54,24 @@ class Viewport(QFrame):
         for viewport in cls._viewports:
             viewport._interactor.SetInteractorStyle(viewport._interactionStyles[cls._currentInteractionStyle].base)
             viewport._interactor.RemoveObservers('CharEvent')
-        cls.notifyOptionChanged(InteractionStyles.__name__, interactionStyle)
+        cls.notifyOptionChanged('InteractionStyle', cls._currentInteractionStyle)
+
+    @classmethod
+    def lineVisibility(cls) -> bool:
+        '''Gets the grid line visibility.'''
+        return cls._lineVisibility
+
+    @classmethod
+    def setLineVisibility(cls, value: bool) -> None:
+        '''Sets the grid line visibility.'''
+        cls._lineVisibility = value
+        for viewport in cls._viewports:
+            if viewport._gridRenderObject:
+                viewport._gridRenderObject.setLineVisibility(cls._lineVisibility)
+            if isinstance(viewport._selectionRenderObject, CellsRenderObject):
+                viewport._selectionRenderObject.setLineVisibility(cls._lineVisibility)
+            viewport.render()
+        cls.notifyOptionChanged('LineVisibility', cls._lineVisibility)
 
     @classmethod
     def setPickAction(
@@ -195,7 +213,12 @@ class Viewport(QFrame):
         self._scalarBar.setVisible(False)
         if self._selectionRenderObject: self.remove(self._selectionRenderObject, render=False)
         if self._gridRenderObject: self.remove(self._gridRenderObject, render=False)
-        self._gridRenderObject = GridRenderObject(mesh, isDeformable, self._scalarBar.lookupTable) if mesh else None
+        self._gridRenderObject = GridRenderObject(
+            mesh,
+            isDeformable,
+            self._scalarBar.lookupTable,
+            self._lineVisibility
+        ) if mesh else None
         if self._gridRenderObject: self.add(self._gridRenderObject, render=False)
         if render: self.render()
 
@@ -230,7 +253,7 @@ class Viewport(QFrame):
                 )
             case ElementSet():
                 self._selectionRenderObject = CellsRenderObject(
-                    self._gridRenderObject.dataSet, dataObject.indices(), color
+                    self._gridRenderObject.dataSet, dataObject.indices(), self._lineVisibility, color
                 )
             case ConcentratedLoad():
                 if not modelDatabase: raise ValueError("missing optional argument: 'modelDatabase'")

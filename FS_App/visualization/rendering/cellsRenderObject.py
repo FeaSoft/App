@@ -17,6 +17,7 @@ class CellsRenderObject(RenderObject):
         self,
         dataSet: vtkUnstructuredGrid,
         indices: Sequence[int],
+        lineVisibility: bool,
         color: tuple[float, float, float] | None = None
     ) -> None:
         '''Cells render object constructor.'''
@@ -47,7 +48,7 @@ class CellsRenderObject(RenderObject):
         # actor
         self._actor: vtkActor = vtkActor()
         self._actor.SetMapper(self._mapper)
-        self._actor.GetProperty().EdgeVisibilityOn()
+        self._actor.GetProperty().SetEdgeVisibility(lineVisibility)
         self._actor.GetProperty().SetLineWidth(1.5)
         self._actor.GetProperty().LightingOff()
         if color: self._actor.GetProperty().SetColor(*color)
@@ -55,3 +56,7 @@ class CellsRenderObject(RenderObject):
     def actors(self) -> Sequence[vtkActor]:
         '''The renderable VTK actors.'''
         return (self._actor,)
+
+    def setLineVisibility(self, value: bool) -> None:
+        '''Sets the line visibility.'''
+        self._actor.GetProperty().SetEdgeVisibility(value)

@@ -42,7 +42,7 @@ class GridRenderObject(RenderObject):
     # attribute slots
     __slots__ = ('_dataSet', '_mapper', '_actor', '_isDeformable', '_pointCoordinates', '_pointDisplacements')
 
-    def __init__(self, mesh: Mesh, isDeformable: bool, lookupTable: vtkLookupTable) -> None:
+    def __init__(self, mesh: Mesh, isDeformable: bool, lookupTable: vtkLookupTable, lineVisibility: bool) -> None:
         '''Mesh render object constructor.'''
         super().__init__()
         # data set
@@ -57,7 +57,7 @@ class GridRenderObject(RenderObject):
         # actor
         self._actor: vtkActor = vtkActor()
         self._actor.SetMapper(self._mapper)
-        self._actor.GetProperty().EdgeVisibilityOn()
+        self._actor.GetProperty().SetEdgeVisibility(lineVisibility)
         self._actor.GetProperty().SetLineWidth(1.5)
         self._actor.GetProperty().SetColor(0.0, 0.5, 1.0)
         # deformable grid
@@ -73,6 +73,10 @@ class GridRenderObject(RenderObject):
     def actors(self) -> Sequence[vtkActor]:
         '''The renderable VTK actors.'''
         return (self._actor,)
+
+    def setLineVisibility(self, value: bool) -> None:
+        '''Sets the line visibility.'''
+        self._actor.GetProperty().SetEdgeVisibility(value)
 
     def setPointDisplacements(
         self,

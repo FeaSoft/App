@@ -1,5 +1,6 @@
 from application.terminal import Terminal
 from application.solverDialog import SolverDialog
+from application.optionsCommonDialog import OptionsCommonDialog
 from control import ModelDatabaseControl, OutputDatabaseControl
 from visualization import Viewport
 from PySide6.QtGui import Qt, QAction, QIcon
@@ -16,14 +17,16 @@ class MainWindowShell(QMainWindow):
 #   __slots__ = (
 #       '_icons', '_menuBar', '_menuBarFile', '_menuBarFileNew', '_menuBarFileOpen', '_menuBarFileSave',
 #       '_menuBarFileSaveAs', '_menuBarFileClose', '_menuBarFileExit', '_menuBarModule', '_menuBarModulePreprocessor',
-#       '_menuBarModuleVisualization', '_menuBarSolver', '_menuBarSolverDialog', '_toolBarFile', '_toolBarFileNew',
-#       '_toolBarFileOpen', '_toolBarFileSave', '_toolBarView', '_toolBarViewFront', '_toolBarViewBack',
-#       '_toolBarViewTop', '_toolBarViewBottom', '_toolBarViewLeft', '_toolBarViewRight', '_toolBarViewIsometric',
-#       '_toolBarInteraction', '_toolBarInteractionRotate', '_toolBarInteractionPan', '_toolBarInteractionZoom',
+#       '_menuBarModuleVisualization', '_menuBarSolver', '_menuBarSolverDialog', '_menuBarOptions',
+#       '_menuBarOptionsCommon', '_toolBarFile', '_toolBarFileNew', '_toolBarFileOpen', '_toolBarFileSave',
+#       '_toolBarView', '_toolBarViewFront', '_toolBarViewBack', '_toolBarViewTop', '_toolBarViewBottom',
+#       '_toolBarViewLeft', '_toolBarViewRight', '_toolBarViewIsometric', '_toolBarInteraction',
+#       '_toolBarInteractionRotate', '_toolBarInteractionPan', '_toolBarInteractionZoom',
 #       '_toolBarInteractionPickSingle', '_toolBarInteractionPickMultiple', '_toolBarInteractionProbe',
 #       '_toolBarInteractionRuler', '_centralWidget', '_centralWidgetLayout', '_verticalSplitter',
-#       '_horizontalSplitter', '_splitterLeft', '_splitterLeftLayout', '_modelTree', '_outputTree', '_terminal', '_rightSplitter', '_rightSplitterLayout', '_modelViewport', '_outputViewport',
-#       '_solverDialog'
+#       '_horizontalSplitter', '_splitterLeft', '_splitterLeftLayout', '_modelTree', '_outputTree', '_terminal',
+#       '_rightSplitter', '_rightSplitterLayout', '_modelViewport', '_outputViewport', '_solverDialog',
+#       '_optionsCommonDialog'
 #   )
 
     def __init__(self) -> None:
@@ -34,8 +37,8 @@ class MainWindowShell(QMainWindow):
         self._icons: dict[str, QIcon] = {
             x: QIcon(f'./resources/images/{x}.svg') for x in (
                 'file-new', 'file-open', 'file-save', 'file-save-as', 'file-close', 'file-exit', 'solver-dialog',
-                'view-front', 'view-back', 'view-top', 'view-bottom', 'view-left', 'view-right', 'view-isometric',
-                'interaction-style-rotate', 'interaction-style-pan', 'interaction-style-zoom',
+                'options', 'view-front', 'view-back', 'view-top', 'view-bottom', 'view-left', 'view-right',
+                'view-isometric', 'interaction-style-rotate', 'interaction-style-pan', 'interaction-style-zoom',
                 'interaction-style-pick-single', 'interaction-style-pick-multiple', 'interaction-style-probe',
                 'interaction-style-ruler'
             )
@@ -128,6 +131,17 @@ class MainWindowShell(QMainWindow):
         self._menuBarSolverDialog.setText('Submit Job')
         self._menuBarSolverDialog.setIcon(self._icons['solver-dialog'])
         self._menuBarSolver.addAction(self._menuBarSolverDialog) # type: ignore
+
+        # menu bar > options
+        self._menuBarOptions: QMenu = QMenu(self._menuBar)
+        self._menuBarOptions.setTitle('Options')
+        self._menuBar.addAction(self._menuBarOptions.menuAction())
+
+        # menu bar > options > common
+        self._menuBarOptionsCommon: QAction = QAction(self._menuBarOptions)
+        self._menuBarOptionsCommon.setText('Common')
+        self._menuBarOptionsCommon.setIcon(self._icons['options'])
+        self._menuBarOptions.addAction(self._menuBarOptionsCommon) # type: ignore
 
         # tool bar (file)
         self._toolBarFile: QToolBar = QToolBar(self)
@@ -331,5 +345,6 @@ class MainWindowShell(QMainWindow):
         self._outputViewport.setVisible(False)
         self._rightSplitterLayout.addWidget(self._outputViewport)
 
-        # solver dialog
+        # dialogs
         self._solverDialog: SolverDialog = SolverDialog(self)
+        self._optionsCommonDialog: OptionsCommonDialog = OptionsCommonDialog(self)
