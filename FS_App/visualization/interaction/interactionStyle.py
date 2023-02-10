@@ -24,6 +24,7 @@ class InteractionStyle(ABC):
     _gridLineWidth: float = 1.5
     _pointGlyphScale: float = 0.003
     _arrowGlyphScale: float = 0.020
+    _foreground: tuple[float, float, float] = (1.0, 0.0, 0.0)
 
     @classmethod
     def setGridLineWidth(cls, value: float) -> None:
@@ -39,6 +40,11 @@ class InteractionStyle(ABC):
     def setArrowGlyphScale(cls, value: float) -> None:
         '''Sets the arrow glyph scale.'''
         cls._arrowGlyphScale = value
+
+    @classmethod
+    def setForeground(cls, value: tuple[float, float, float]) -> None:
+        '''Sets the foreground color.'''
+        cls._foreground = value
 
     @classmethod
     def recomputeGlyphSize(cls, renderer: vtkRenderer, render: bool = True) -> None:
@@ -78,6 +84,7 @@ class InteractionStyle(ABC):
         # actor
         actor2D: vtkActor2D = vtkActor2D()
         actor2D.SetMapper(polyDataMapper2D)
+        actor2D.GetProperty().SetColor(cls._foreground)
         return actor2D
 
     @classmethod
@@ -133,6 +140,7 @@ class InteractionStyle(ABC):
         actor2D.SetMapper(polyDataMapper2D)
         actor2D.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
         actor2D.SetPosition(0.5, 0.5)
+        actor2D.GetProperty().SetColor(cls._foreground)
         return actor2D
 
     @classmethod
@@ -159,6 +167,7 @@ class InteractionStyle(ABC):
         # actor
         actor2D: vtkActor2D = vtkActor2D()
         actor2D.SetMapper(polyDataMapper2D)
+        actor2D.GetProperty().SetColor(cls._foreground)
         return actor2D
 
     @classmethod
@@ -177,17 +186,29 @@ class InteractionStyle(ABC):
         actor: vtkActor = vtkActor()
         actor.SetMapper(polyDataMapper)
         actor.GetProperty().SetLineWidth(cls._gridLineWidth)
+        actor.GetProperty().SetColor(*cls._foreground)
         return actor
 
     @classmethod
     def newPointsHint(cls, unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
         '''Creates a new 3D points hint.'''
-        return PointsRenderObject(unstructuredGrid, indices).actors()[0]
+        actor: vtkActor = PointsRenderObject(unstructuredGrid, indices).actors()[0]
+        actor.GetProperty().SetColor(*cls._foreground)
+        return actor
 
     @classmethod
     def newCellsHint(cls, unstructuredGrid: vtkUnstructuredGrid, indices: Sequence[int]) -> vtkActor:
         '''Creates a new 3D cells hint.'''
-        return CellsRenderObject(unstructuredGrid, indices, True, cls._gridLineWidth, (1.0, 1.0, 1.0)).actors()[0]
+        actor: vtkActor = CellsRenderObject(
+            unstructuredGrid,
+            indices,
+            True,
+            cls._gridLineWidth,
+            (1.0, 1.0, 1.0)
+        ).actors()[0]
+        actor.GetProperty().SetRepresentationToWireframe()
+        actor.GetProperty().SetColor(*cls._foreground)
+        return actor
 
     @classmethod
     def pickSingle(

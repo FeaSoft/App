@@ -16,14 +16,14 @@ class ScalarBar:
     # attribute slots
     __slots__ = ('_lookupTable', '_scalarBarActor')
 
-    def __init__(self) -> None:
+    def __init__(self, textColor: tuple[float, float, float], fontSize: int) -> None:
         '''Scalar bar constructor.'''
         # lookup table
         self._lookupTable: vtkLookupTable = vtkLookupTable()
         # scalar bar actor
         self._scalarBarActor: vtkScalarBarActor = vtkScalarBarActor()
         self._scalarBarActor.UnconstrainedFontSizeOn()
-        self._scalarBarActor.GetLabelTextProperty().SetFontSize(20)          # type: ignore
+        self._scalarBarActor.GetLabelTextProperty().SetFontSize(fontSize)    # type: ignore
         self._scalarBarActor.GetLabelTextProperty().SetFontFamilyToCourier() # type: ignore
         self._scalarBarActor.GetLabelTextProperty().ItalicOff()              # type: ignore
         self._scalarBarActor.GetLabelTextProperty().ShadowOn()               # type: ignore
@@ -32,6 +32,7 @@ class ScalarBar:
         self._scalarBarActor.SetPosition(0.025, 0.5)
         self._scalarBarActor.SetWidth(0.1)
         self._scalarBarActor.SetHeight(0.45)
+        self.setTextColor(textColor)
         # initialize colormap
         self.setColormap(Colormaps.Jet)
 
@@ -42,6 +43,14 @@ class ScalarBar:
     def setVisible(self, value: bool) -> None:
         '''Sets the visibility of the actor.'''
         self._scalarBarActor.SetVisibility(value)
+
+    def setTextColor(self, color: tuple[float, float, float]) -> None:
+        '''Sets the text color.'''
+        self._scalarBarActor.GetLabelTextProperty().SetColor(color) # type: ignore
+
+    def setFontSize(self, size: int) -> None:
+        '''Sets the font size.'''
+        self._scalarBarActor.GetLabelTextProperty().SetFontSize(size) # type: ignore
 
     def setColormap(self, colormap: Colormaps, numberOfColors: int = 12, reverse: bool = False) -> None:
         '''Sets the current colormap.'''

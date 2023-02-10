@@ -44,6 +44,8 @@ class OptionsCommonDialog(OptionsCommonDialogShell):
         self._lightingBox.setCurrentText(Viewport.lighting())
         self.setBoxColor(self._background1Box, Viewport.background1())
         self.setBoxColor(self._background2Box, Viewport.background2())
+        self.setBoxColor(self._foregroundBox, Viewport.foreground())
+        self._fontSizeBox.setValue(Viewport.fontSize())
         # setup connections
         Viewport.registerCallback(self.onViewportOptionChanged)
         self._gridLinesVisibleBox.stateChanged.connect(self.onGridLinesVisible)            # type: ignore
@@ -57,6 +59,8 @@ class OptionsCommonDialog(OptionsCommonDialogShell):
         self._lightingBox.currentIndexChanged.connect(self.onLighting)                     # type: ignore
         self._background1Box.clicked.connect(self.onBackground1)                           # type: ignore
         self._background2Box.clicked.connect(self.onBackground2)                           # type: ignore
+        self._foregroundBox.clicked.connect(self.onForeground)                             # type: ignore
+        self._fontSizeBox.valueChanged.connect(self.onFontSize)                            # type: ignore
 
     def getColor(self, widget: QCheckBox) -> QColor:
         '''Launches the QColorDialog.'''
@@ -78,8 +82,10 @@ class OptionsCommonDialog(OptionsCommonDialogShell):
             case 'ArrowGlyphScale': self._arrowScaleBox.setValue(optionValue)
             case 'Projection': self._projectionBox.setCurrentText(optionValue)
             case 'Lighting': self._lightingBox.setCurrentText(optionValue)
-            case 'Background1': self.setBoxColor(self._background1Box, Viewport.background1())
-            case 'Background2': self.setBoxColor(self._background2Box, Viewport.background2())
+            case 'Background1': self.setBoxColor(self._background1Box, optionValue)
+            case 'Background2': self.setBoxColor(self._background2Box, optionValue)
+            case 'Foreground': self.setBoxColor(self._foregroundBox, optionValue)
+            case 'FontSize': self._fontSizeBox.setValue(optionValue)
             case _: pass
 
     def onGridLinesVisible(self) -> None:
@@ -129,10 +135,12 @@ class OptionsCommonDialog(OptionsCommonDialogShell):
         '''On background 2 box clicked.'''
         color: QColor = self.getColor(self._background2Box)
         if color.isValid(): Viewport.setBackground2(self.convertColor(color))
-        
 
+    def onForeground(self) -> None:
+        '''On foreground box clicked.'''
+        color: QColor = self.getColor(self._foregroundBox)
+        if color.isValid(): Viewport.setForeground(self.convertColor(color))
 
-
-
-
-
+    def onFontSize(self) -> None:
+        '''On font size box value changed.'''
+        Viewport.setFontSize(self._fontSizeBox.value())

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (
-    QWidget, QDialog, QVBoxLayout, QGridLayout, QGroupBox, QLabel, QCheckBox, QDoubleSpinBox, QComboBox
+    QWidget, QDialog, QVBoxLayout, QGridLayout, QGroupBox, QLabel, QCheckBox, QDoubleSpinBox, QComboBox, QSpinBox
 )
 
 class OptionsCommonDialogShell(QDialog):
@@ -14,7 +14,8 @@ class OptionsCommonDialogShell(QDialog):
 #       '_gridCellsGroupBoxLayout', '_cellRepresentationLabel', '_cellRepresentationBox', '_cellColorLabel',
 #       '_cellColorBox', '_gridGlyphsGroupBox', '_gridGlyphsGroupBoxLayout', '_pointScaleLabel', '_pointScaleBox',
 #       '_arrowScaleLabel', '_arrowScaleBox', '_viewportGroupBox', '_viewportGroupBoxLayout', '_projectionLabel',
-#       '_projectionBox', '_lightingLabel', '_lightingBox', '_background1Label', '_background1Box', '_background2Box'
+#       '_projectionBox', '_lightingLabel', '_lightingBox', '_backgroundLabel', '_background1Box', '_background2Box',
+#       '_foregroundLabel', '_foregroundBox', '_fontSizeLabel', '_fontSizeBox'
 #   )
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -163,15 +164,36 @@ class OptionsCommonDialogShell(QDialog):
         self._lightingBox.addItems(('On', 'Off'))
         self._viewportGroupBoxLayout.addWidget(self._lightingBox, 1, 1)
 
-        # background 1 label
-        self._background1Label: QLabel = QLabel(self._viewportGroupBox)
-        self._background1Label.setText('Background Color:')
-        self._viewportGroupBoxLayout.addWidget(self._background1Label, 2, 0)
+        # font size label
+        self._fontSizeLabel: QLabel = QLabel(self._viewportGroupBox)
+        self._fontSizeLabel.setText('Font Size:')
+        self._viewportGroupBoxLayout.addWidget(self._fontSizeLabel, 2, 0)
+
+        # font size box
+        self._fontSizeBox: QSpinBox = QSpinBox(self._viewportGroupBox)
+        self._fontSizeBox.setMinimum(5)
+        self._fontSizeBox.setMaximum(50)
+        self._fontSizeBox.setSingleStep(1)
+        self._viewportGroupBoxLayout.addWidget(self._fontSizeBox)
+
+        # background label
+        self._backgroundLabel: QLabel = QLabel(self._viewportGroupBox)
+        self._backgroundLabel.setText('Background Color:')
+        self._viewportGroupBoxLayout.addWidget(self._backgroundLabel, 3, 0)
 
         # background 1 box
         self._background1Box: QCheckBox = QCheckBox(self._viewportGroupBox)
-        self._viewportGroupBoxLayout.addWidget(self._background1Box, 2, 1)
+        self._viewportGroupBoxLayout.addWidget(self._background1Box, 3, 1)
 
         # background 2 box
         self._background2Box: QCheckBox = QCheckBox(self._viewportGroupBox)
-        self._viewportGroupBoxLayout.addWidget(self._background2Box, 3, 1)
+        self._viewportGroupBoxLayout.addWidget(self._background2Box, 4, 1)
+
+        # foreground label
+        self._foregroundLabel: QLabel = QLabel(self._viewportGroupBox)
+        self._foregroundLabel.setText('Foreground Color:')
+        self._viewportGroupBoxLayout.addWidget(self._foregroundLabel, 5, 0)
+
+        # foreground box
+        self._foregroundBox: QCheckBox = QCheckBox(self._viewportGroupBox)
+        self._viewportGroupBoxLayout.addWidget(self._foregroundBox, 5, 1)

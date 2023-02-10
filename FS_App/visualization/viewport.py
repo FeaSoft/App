@@ -33,8 +33,10 @@ class Viewport(QFrame):
     _arrowGlyphScale: float = 0.020
     _projection: Literal['Perspective', 'Parallel'] = 'Perspective'
     _lighting: Literal['On', 'Off'] = 'On'
-    _background1: tuple[float, float, float] = (1.0, 0.0, 0.0)
-    _background2: tuple[float, float, float] = (1.0, 1.0, 0.0)
+    _background1: tuple[float, float, float] = (0.1, 0.2, 0.3)
+    _background2: tuple[float, float, float] = (0.6, 0.7, 0.8)
+    _foreground: tuple[float, float, float] = (1.0, 1.0, 1.0)
+    _fontSize: int = 20
 
     @classmethod
     def registerCallback(cls, callback: Callable[[str, Any], None]) -> int:
@@ -234,6 +236,39 @@ class Viewport(QFrame):
         cls.notifyOptionChanged('Background2', cls._background2)
 
     @classmethod
+    def foreground(cls) -> tuple[float, float, float]:
+        '''Gets the foreground color.'''
+        return cls._foreground
+
+    @classmethod
+    def setForeground(cls, value: tuple[float, float, float]) -> None:
+        '''Sets the foreground color.'''
+        InteractionStyle.setForeground(value)
+        cls._foreground = value
+        for viewport in cls._viewports:
+            viewport._triad.setTextColor(cls._foreground)
+            viewport._info.setTextColor(cls._foreground)
+            viewport._scalarBar.setTextColor(cls._foreground)
+            viewport.render()
+        cls.notifyOptionChanged('Foreground', cls._foreground)
+
+    @classmethod
+    def fontSize(cls) -> int:
+        '''Gets the font size.'''
+        return cls._fontSize
+
+    @classmethod
+    def setFontSize(cls, value: int) -> None:
+        '''Sets the font size.'''
+        cls._fontSize = value
+        for viewport in cls._viewports:
+            viewport._triad.setFontSize(cls._fontSize)
+            viewport._info.setFontSize(cls._fontSize)
+            viewport._scalarBar.setFontSize(cls._fontSize)
+            viewport.render()
+        cls.notifyOptionChanged('FontSize', cls._fontSize)
+
+    @classmethod
     def setPickAction(
         cls,
         onPicked: Callable[[Sequence[int], bool], None] | None,
@@ -289,9 +324,9 @@ class Viewport(QFrame):
             InteractionStyles.Ruler        : RulerInteractionStyle()
         }
         # triad & info % scalar bar
-        self._triad: Triad = Triad()
-        self._info: Info = Info()
-        self._scalarBar: ScalarBar = ScalarBar()
+        self._triad: Triad = Triad(self._foreground, self._fontSize)
+        self._info: Info = Info(self._foreground, self._fontSize)
+        self._scalarBar: ScalarBar = ScalarBar(self._foreground, self._fontSize)
         # render objects
         self._gridRenderObject: GridRenderObject | None = None
         self._selectionRenderObject: RenderObject | None = None
