@@ -24,7 +24,7 @@ class InteractionStyle(ABC):
     _gridLineWidth: float = 1.5
     _pointGlyphScale: float = 0.003
     _arrowGlyphScale: float = 0.020
-    _foreground: tuple[float, float, float] = (1.0, 0.0, 0.0)
+    _foreground: tuple[float, float, float] = (1.0, 1.0, 1.0)
 
     @classmethod
     def setGridLineWidth(cls, value: float) -> None:

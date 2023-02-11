@@ -57,6 +57,7 @@ class MainWindow(MainWindowShell):
         self._menuBarModuleVisualization.triggered.connect(self.onMenuBarModuleVisualization)         # type: ignore
         self._menuBarSolverDialog.triggered.connect(self.onMenuBarSolverDialog)                       # type: ignore
         self._menuBarOptionsCommon.triggered.connect(self.onMenuBarOptionsCommon)                     # type: ignore
+        self._menuBarOptionsResult.triggered.connect(self.onMenuBarOptionsResult)                     # type: ignore
         self._toolBarFileNew.triggered.connect(self.onToolBarFileNew)                                 # type: ignore
         self._toolBarFileOpen.triggered.connect(self.onToolBarFileOpen)                               # type: ignore
         self._toolBarFileSave.triggered.connect(self.onToolBarFileSave)                               # type: ignore
@@ -462,6 +463,10 @@ class MainWindow(MainWindowShell):
     def onMenuBarOptionsCommon(self) -> None:
         '''On Menu Bar > Options > Common.'''
         self._optionsCommonDialog.show()
+
+    def onMenuBarOptionsResult(self) -> None:
+        '''On Menu Bar > Options > Result.'''
+        self._optionsResultDialog.show()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tool Bar

@@ -1,6 +1,7 @@
 from application.terminal import Terminal
 from application.solverDialog import SolverDialog
 from application.optionsCommonDialog import OptionsCommonDialog
+from application.optionsResultDialog import OptionsResultDialog
 from control import ModelDatabaseControl, OutputDatabaseControl
 from visualization import Viewport
 from PySide6.QtGui import Qt, QAction, QIcon
@@ -18,17 +19,17 @@ class MainWindowShell(QMainWindow):
 #       '_icons', '_menuBar', '_menuBarFile', '_menuBarFileNew', '_menuBarFileOpen', '_menuBarFileSave',
 #       '_menuBarFileSaveAs', '_menuBarFilePrint', '_menuBarFileClose', '_menuBarFileExit', '_menuBarModule',
 #       '_menuBarModulePreprocessor', '_menuBarModuleVisualization', '_menuBarSolver', '_menuBarSolverDialog',
-#       '_menuBarOptions', '_menuBarOptionsCommon', '_toolBarFile', '_toolBarFileNew', '_toolBarFileOpen',
-#       '_toolBarFileSave', '_toolBarFilePrint', '_toolBarView', '_toolBarViewFront', '_toolBarViewBack',
-#       '_toolBarViewTop', '_toolBarViewBottom', '_toolBarViewLeft', '_toolBarViewRight', '_toolBarViewIsometric',
-#       '_toolBarCell', '_toolBarCellSurface', '_toolBarCellWireframe', '_toolBarProjection',
+#       '_menuBarOptions', '_menuBarOptionsCommon', '_menuBarOptionsResult', '_toolBarFile', '_toolBarFileNew',
+#       '_toolBarFileOpen', '_toolBarFileSave', '_toolBarFilePrint', '_toolBarView', '_toolBarViewFront',
+#       '_toolBarViewBack', '_toolBarViewTop', '_toolBarViewBottom', '_toolBarViewLeft', '_toolBarViewRight',
+#       '_toolBarViewIsometric', '_toolBarCell', '_toolBarCellSurface', '_toolBarCellWireframe', '_toolBarProjection',
 #       '_toolBarProjectionPerspective', '_toolBarProjectionParallel', '_toolBarLighting', '_toolBarLightingOn',
 #       '_toolBarLightingOff', '_toolBarInteraction', '_toolBarInteractionRotate', '_toolBarInteractionPan',
 #       '_toolBarInteractionZoom', '_toolBarInteractionPickSingle', '_toolBarInteractionPickMultiple',
 #       '_toolBarInteractionProbe', '_toolBarInteractionRuler', '_centralWidget', '_centralWidgetLayout',
 #       '_verticalSplitter', '_horizontalSplitter', '_splitterLeft', '_splitterLeftLayout', '_modelTree', '_outputTree',
 #       '_terminal', '_rightSplitter', '_rightSplitterLayout', '_modelViewport', '_outputViewport', '_solverDialog',
-#       '_optionsCommonDialog'
+#       '_optionsCommonDialog', '_optionsResultDialog'
 #   )
 
     def __init__(self) -> None:
@@ -39,11 +40,12 @@ class MainWindowShell(QMainWindow):
         self._icons: dict[str, QIcon] = {
             x: QIcon(f'./resources/images/{x}.svg') for x in (
                 'file-new', 'file-open', 'file-save', 'file-save-as', 'file-print', 'file-close', 'file-exit',
-                'solver-dialog', 'options', 'view-front', 'view-back', 'view-top', 'view-bottom', 'view-left',
-                'view-right', 'view-isometric', 'cell-surface', 'cell-wireframe', 'projection-perspective',
-                'projection-parallel', 'lighting-on', 'lighting-off', 'interaction-style-rotate',
-                'interaction-style-pan', 'interaction-style-zoom', 'interaction-style-pick-single',
-                'interaction-style-pick-multiple', 'interaction-style-probe', 'interaction-style-ruler'
+                'solver-dialog', 'options-common', 'options-result', 'view-front', 'view-back', 'view-top',
+                'view-bottom', 'view-left', 'view-right', 'view-isometric', 'cell-surface', 'cell-wireframe',
+                'projection-perspective', 'projection-parallel', 'lighting-on', 'lighting-off',
+                'interaction-style-rotate', 'interaction-style-pan', 'interaction-style-zoom',
+                'interaction-style-pick-single', 'interaction-style-pick-multiple', 'interaction-style-probe',
+                'interaction-style-ruler'
             )
         }
 
@@ -151,8 +153,14 @@ class MainWindowShell(QMainWindow):
         # menu bar > options > common
         self._menuBarOptionsCommon: QAction = QAction(self._menuBarOptions)
         self._menuBarOptionsCommon.setText('Common')
-        self._menuBarOptionsCommon.setIcon(self._icons['options'])
+        self._menuBarOptionsCommon.setIcon(self._icons['options-common'])
         self._menuBarOptions.addAction(self._menuBarOptionsCommon) # type: ignore
+
+        # menu bar > options > result
+        self._menuBarOptionsResult: QAction = QAction(self._menuBarOptions)
+        self._menuBarOptionsResult.setText('Result')
+        self._menuBarOptionsResult.setIcon(self._icons['options-result'])
+        self._menuBarOptions.addAction(self._menuBarOptionsResult) # type: ignore
 
         # tool bar (file)
         self._toolBarFile: QToolBar = QToolBar(self)
@@ -425,3 +433,4 @@ class MainWindowShell(QMainWindow):
         # dialogs
         self._solverDialog: SolverDialog = SolverDialog(self)
         self._optionsCommonDialog: OptionsCommonDialog = OptionsCommonDialog(self)
+        self._optionsResultDialog: OptionsResultDialog = OptionsResultDialog(self)
