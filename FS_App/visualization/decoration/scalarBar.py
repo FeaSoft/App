@@ -40,6 +40,10 @@ class ScalarBar:
         '''Sets the renderer.'''
         renderer.AddActor2D(self._scalarBarActor)
 
+    def visible(self) -> bool:
+        '''Sets the visibility of the actor.'''
+        return bool(self._scalarBarActor.GetVisibility())
+
     def setVisible(self, value: bool) -> None:
         '''Sets the visibility of the actor.'''
         self._scalarBarActor.SetVisibility(value)

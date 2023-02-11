@@ -2,7 +2,7 @@ import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
 from typing import Literal, Any, cast
 from collections.abc import Callable, Sequence
 from dataModel import Mesh, NodeSet, ElementSet, ConcentratedLoad, BoundaryCondition, ModelDatabase
-from visualization.decoration import Triad, Info, ScalarBar
+from visualization.decoration import Triad, Info, ScalarBar, PointLabel
 from visualization.rendering import (
     RenderObject, GridRenderObject, PointsRenderObject, CellsRenderObject, ArrowsRenderObject, GroupRenderObject
 )
@@ -39,6 +39,8 @@ class Viewport(QFrame):
     _foreground: tuple[float, float, float] = (1.0, 1.0, 1.0)
     _fontSize: int = 20
     _deformationScaleFactor: float = 1.0
+    _showMaxPointLabel: bool = False
+    _showMinPointLabel: bool = False
 
     @classmethod
     def registerCallback(cls, callback: Callable[[str, Any], None]) -> int:
@@ -251,6 +253,8 @@ class Viewport(QFrame):
             viewport._triad.setTextColor(cls._foreground)
             viewport._info.setTextColor(cls._foreground)
             viewport._scalarBar.setTextColor(cls._foreground)
+            viewport._maxPointLabel.setColor(cls._foreground)
+            viewport._minPointLabel.setColor(cls._foreground)
             viewport.render()
         cls.notifyOptionChanged('Foreground', cls._foreground)
 
@@ -267,6 +271,8 @@ class Viewport(QFrame):
             viewport._triad.setFontSize(cls._fontSize)
             viewport._info.setFontSize(cls._fontSize)
             viewport._scalarBar.setFontSize(cls._fontSize)
+            viewport._maxPointLabel.setFontSize(cls._fontSize)
+            viewport._minPointLabel.setFontSize(cls._fontSize)
             viewport.render()
         cls.notifyOptionChanged('FontSize', cls._fontSize)
 
@@ -281,9 +287,40 @@ class Viewport(QFrame):
         cls._deformationScaleFactor = value
         for viewport in cls._viewports:
             if viewport._gridRenderObject:
-                viewport._gridRenderObject.setPointDisplacements(None, cls._deformationScaleFactor)
+                gridRenderObject: GridRenderObject = viewport._gridRenderObject
+                gridRenderObject.setPointDisplacements(None, cls._deformationScaleFactor)
+                viewport._maxPointLabel.setPosition(gridRenderObject.dataSet.GetPoint(viewport._maxPointIndex))
+                viewport._minPointLabel.setPosition(gridRenderObject.dataSet.GetPoint(viewport._minPointIndex))
             viewport.render()
         cls.notifyOptionChanged('DeformationScaleFactor', cls._deformationScaleFactor)
+
+    @classmethod
+    def showMaxPointLabel(cls) -> bool:
+        '''Gets the show max point label flag.'''
+        return cls._showMaxPointLabel
+
+    @classmethod
+    def setShowMaxPointLabel(cls, value: bool) -> None:
+        '''Sets the show max point label flag.'''
+        cls._showMaxPointLabel = value
+        for viewport in cls._viewports:
+            viewport._maxPointLabel.setVisible(viewport._scalarBar.visible() and cls._showMaxPointLabel)
+            viewport.render()
+        cls.notifyOptionChanged('ShowMaxPointLabel', cls._showMaxPointLabel)
+
+    @classmethod
+    def showMinPointLabel(cls) -> bool:
+        '''Gets the show min point label flag.'''
+        return cls._showMinPointLabel
+
+    @classmethod
+    def setShowMinPointLabel(cls, value: bool) -> None:
+        '''Sets the show min point label flag.'''
+        cls._showMinPointLabel = value
+        for viewport in cls._viewports:
+            viewport._minPointLabel.setVisible(viewport._scalarBar.visible() and cls._showMinPointLabel)
+            viewport.render()
+        cls.notifyOptionChanged('ShowMinPointLabel', cls._showMinPointLabel)
 
     @classmethod
     def setPickAction(
@@ -303,7 +340,8 @@ class Viewport(QFrame):
     # attribute slots
     __slots__ = (
         '_layout', '_vtkWidget', '_renderer', '_renderWindow', '_interactor', '_interactionStyles', '_triad', '_info',
-        '_scalarBar', '_gridRenderObject', '_selectionRenderObject'
+        '_scalarBar', '_gridRenderObject', '_selectionRenderObject', '_maxPointIndex', '_minPointIndex',
+        '_maxPointLabel', '_minPointLabel'
     )
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -340,10 +378,16 @@ class Viewport(QFrame):
             InteractionStyles.Probe        : ProbeInteractionStyle(),
             InteractionStyles.Ruler        : RulerInteractionStyle()
         }
-        # triad & info % scalar bar
+        # triad & info % scalar bar & max/min point labels
         self._triad: Triad = Triad(self._foreground, self._fontSize)
         self._info: Info = Info(self._foreground, self._fontSize)
         self._scalarBar: ScalarBar = ScalarBar(self._foreground, self._fontSize)
+        self._maxPointLabel: PointLabel = PointLabel(self._foreground, self._fontSize)
+        self._minPointLabel: PointLabel = PointLabel(self._foreground, self._fontSize)
+        self._maxPointLabel.setText('Max')
+        self._minPointLabel.setText('Min')
+        self._maxPointIndex: int = 0
+        self._minPointIndex: int = 0
         # render objects
         self._gridRenderObject: GridRenderObject | None = None
         self._selectionRenderObject: RenderObject | None = None
@@ -358,6 +402,10 @@ class Viewport(QFrame):
         self._info.initialize(self._renderer)
         self._scalarBar.initialize(self._renderer)
         self._scalarBar.setVisible(False)
+        self._maxPointLabel.initialize(self._renderer)
+        self._minPointLabel.initialize(self._renderer)
+        self._maxPointLabel.setVisible(False)
+        self._minPointLabel.setVisible(False)
         self.setInteractionStyle(self._currentInteractionStyle)
 
     def finalize(self) -> None:
@@ -451,6 +499,8 @@ class Viewport(QFrame):
     def setGridRenderObject(self, mesh: Mesh | None, isDeformable: bool, render: bool = True) -> None:
         '''Renders the specified grid.'''
         self._scalarBar.setVisible(False)
+        self._maxPointLabel.setVisible(False)
+        self._minPointLabel.setVisible(False)
         if self._selectionRenderObject: self.remove(self._selectionRenderObject, render=False)
         if self._gridRenderObject: self.remove(self._gridRenderObject, render=False)
         self._gridRenderObject = GridRenderObject(
@@ -479,6 +529,9 @@ class Viewport(QFrame):
                 (0.0, 0.0, 0.0) for _ in range(self._gridRenderObject.dataSet.GetNumberOfPoints())
             )
         self._gridRenderObject.setPointDisplacements(nodalDisplacements, self._deformationScaleFactor)
+        # update max/min labels position
+        self._maxPointLabel.setPosition(self._gridRenderObject.dataSet.GetPoint(self._maxPointIndex))
+        self._minPointLabel.setPosition(self._gridRenderObject.dataSet.GetPoint(self._minPointIndex))
         if render: self.render()
 
     def setSelectionRenderObject(
@@ -551,7 +604,17 @@ class Viewport(QFrame):
         '''Plots the given nodal scalar field on the current mesh.'''
         if not self._gridRenderObject:
             self._scalarBar.setVisible(False)
+            self._maxPointLabel.setVisible(False)
+            self._minPointLabel.setVisible(False)
         else:
             self._gridRenderObject.setNodalScalarField(nodalScalarField)
             self._scalarBar.setVisible(nodalScalarField is not None)
+            self._maxPointLabel.setVisible(nodalScalarField is not None and self._showMaxPointLabel)
+            self._minPointLabel.setVisible(nodalScalarField is not None and self._showMinPointLabel)
+            # update max/min labels position
+            if nodalScalarField:
+                self._maxPointIndex = nodalScalarField.index(max(nodalScalarField))
+                self._minPointIndex = nodalScalarField.index(min(nodalScalarField))
+                self._maxPointLabel.setPosition(self._gridRenderObject.dataSet.GetPoint(self._maxPointIndex))
+                self._minPointLabel.setPosition(self._gridRenderObject.dataSet.GetPoint(self._minPointIndex))
         if render: self.render()
