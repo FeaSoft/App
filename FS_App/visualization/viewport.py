@@ -13,7 +13,8 @@ from visualization.interaction import (
 from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor # type: ignore
 from vtkmodules.vtkCommonCore import vtkObject
-from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkRenderWindowInteractor
+from vtkmodules.vtkIOImage import vtkPNGWriter
+from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkRenderWindowInteractor, vtkWindowToImageFilter
 
 class Viewport(QFrame):
     '''
@@ -346,6 +347,33 @@ class Viewport(QFrame):
     def finalize(self) -> None:
         '''Finalizes the viewport.'''
         self._vtkWidget.Finalize()
+
+    def print(self, file: str) -> None:
+        '''Prints the viewport scene to a file.'''
+        # save current background and foreground colors
+        background1: tuple[float, float, float] = Viewport.background1()
+        background2: tuple[float, float, float] = Viewport.background2()
+        foreground: tuple[float, float, float] = Viewport.foreground()
+        # set white background and black foreground
+        Viewport.setBackground1((1.0, 1.0, 1.0))
+        Viewport.setBackground2((1.0, 1.0, 1.0))
+        Viewport.setForeground((0.0, 0.0, 0.0))
+        # create filter
+        filter: vtkWindowToImageFilter = vtkWindowToImageFilter()
+        filter.SetInput(self._renderWindow) # type: ignore
+        filter.SetInputBufferTypeToRGBA()
+        filter.Update() # type: ignore
+        # create writer
+        writer: vtkPNGWriter = vtkPNGWriter()
+        writer.SetInputConnection(filter.GetOutputPort())
+        writer.SetFileName(file)
+        writer.Update() # type: ignore
+        # write
+        writer.Write()
+        # reset background and foreground colors
+        Viewport.setBackground1(background1)
+        Viewport.setBackground2(background2)
+        Viewport.setForeground(foreground)
 
     def render(self) -> None:
         '''Renders the current scene.'''

@@ -27,7 +27,7 @@ class SolverDialogShell(QDialog):
         super().__init__(parent)
 
         # dialog (self)
-        self.setWindowTitle('Solver Dialog')
+        self.setWindowTitle('Submit Solver Job')
         self.resize(480, 720)
 
         # layout

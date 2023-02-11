@@ -50,6 +50,7 @@ class MainWindow(MainWindowShell):
         self._menuBarFileOpen.triggered.connect(self.onMenuBarFileOpen)                               # type: ignore
         self._menuBarFileSave.triggered.connect(self.onMenuBarFileSave)                               # type: ignore
         self._menuBarFileSaveAs.triggered.connect(self.onMenuBarFileSaveAs)                           # type: ignore
+        self._menuBarFilePrint.triggered.connect(self.onMenuBarFilePrint)                             # type: ignore
         self._menuBarFileClose.triggered.connect(self.onMenuBarFileClose)                             # type: ignore
         self._menuBarFileExit.triggered.connect(self.onMenuBarFileExit)                               # type: ignore
         self._menuBarModulePreprocessor.triggered.connect(self.onMenuBarModulePreprocessor)           # type: ignore
@@ -59,6 +60,7 @@ class MainWindow(MainWindowShell):
         self._toolBarFileNew.triggered.connect(self.onToolBarFileNew)                                 # type: ignore
         self._toolBarFileOpen.triggered.connect(self.onToolBarFileOpen)                               # type: ignore
         self._toolBarFileSave.triggered.connect(self.onToolBarFileSave)                               # type: ignore
+        self._toolBarFilePrint.triggered.connect(self.onToolBarFilePrint)                             # type: ignore
         self._toolBarViewFront.triggered.connect(self.onToolBarViewFront)                             # type: ignore
         self._toolBarViewBack.triggered.connect(self.onToolBarViewBack)                               # type: ignore
         self._toolBarViewTop.triggered.connect(self.onToolBarViewTop)                                 # type: ignore
@@ -414,6 +416,19 @@ class MainWindow(MainWindowShell):
             # update window title
             self.updateWindowTitle()
 
+    def onMenuBarFilePrint(self) -> None:
+        '''On Menu Bar > File > Print.'''
+        filePath: str = QFileDialog.getSaveFileName( # type: ignore
+            parent=self,
+            caption='Print Viewport',
+            filter='PNG Image Files (*.png)',
+            options=QFileDialog.Option.DontUseNativeDialog
+        )[0]
+        if filePath != '':
+            filePath = os.path.splitext(filePath)[0] + '.png'
+            self.currentViewport.print(filePath)
+            print(f"Viewport printed: '{filePath}'")
+
     def onMenuBarFileClose(self) -> None:
         '''On Menu Bar > File > Close.'''
         match self._module:
@@ -463,6 +478,10 @@ class MainWindow(MainWindowShell):
     def onToolBarFileSave(self) -> None:
         '''On Tool Bar > File > Save.'''
         self.onMenuBarFileSave()
+
+    def onToolBarFilePrint(self) -> None:
+        '''On Tool Bar > File > Print.'''
+        self.onMenuBarFilePrint()
 
     def onToolBarViewFront(self) -> None:
         '''On Tool Bar > View > Front.'''

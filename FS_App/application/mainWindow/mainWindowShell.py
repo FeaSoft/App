@@ -13,21 +13,21 @@ class MainWindowShell(QMainWindow):
     The main window shell (basic UI).
     '''
 
-#   # attribute slots
+#   # attribute slots (crashes QT)
 #   __slots__ = (
 #       '_icons', '_menuBar', '_menuBarFile', '_menuBarFileNew', '_menuBarFileOpen', '_menuBarFileSave',
-#       '_menuBarFileSaveAs', '_menuBarFileClose', '_menuBarFileExit', '_menuBarModule', '_menuBarModulePreprocessor',
-#       '_menuBarModuleVisualization', '_menuBarSolver', '_menuBarSolverDialog', '_menuBarOptions',
-#       '_menuBarOptionsCommon', '_toolBarFile', '_toolBarFileNew', '_toolBarFileOpen', '_toolBarFileSave',
-#       '_toolBarView', '_toolBarViewFront', '_toolBarViewBack', '_toolBarViewTop', '_toolBarViewBottom',
-#       '_toolBarViewLeft', '_toolBarViewRight', '_toolBarViewIsometric', '_toolBarCell', '_toolBarCellSurface',
-#       '_toolBarCellWireframe', '_toolBarProjection', '_toolBarProjectionPerspective', , '_toolBarProjectionParallel',
-#       '_toolBarLighting', '_toolBarLightingOn', '_toolBarLightingOff', '_toolBarInteraction',
-#       '_toolBarInteractionRotate', '_toolBarInteractionPan', '_toolBarInteractionZoom',
-#       '_toolBarInteractionPickSingle', '_toolBarInteractionPickMultiple', '_toolBarInteractionProbe',
-#       '_toolBarInteractionRuler', '_centralWidget', '_centralWidgetLayout', '_verticalSplitter',
-#       '_horizontalSplitter', '_splitterLeft', '_splitterLeftLayout', '_modelTree', '_outputTree', '_terminal',
-#       '_rightSplitter', '_rightSplitterLayout', '_modelViewport', '_outputViewport', '_solverDialog',
+#       '_menuBarFileSaveAs', '_menuBarFilePrint', '_menuBarFileClose', '_menuBarFileExit', '_menuBarModule',
+#       '_menuBarModulePreprocessor', '_menuBarModuleVisualization', '_menuBarSolver', '_menuBarSolverDialog',
+#       '_menuBarOptions', '_menuBarOptionsCommon', '_toolBarFile', '_toolBarFileNew', '_toolBarFileOpen',
+#       '_toolBarFileSave', '_toolBarFilePrint', '_toolBarView', '_toolBarViewFront', '_toolBarViewBack',
+#       '_toolBarViewTop', '_toolBarViewBottom', '_toolBarViewLeft', '_toolBarViewRight', '_toolBarViewIsometric',
+#       '_toolBarCell', '_toolBarCellSurface', '_toolBarCellWireframe', '_toolBarProjection',
+#       '_toolBarProjectionPerspective', '_toolBarProjectionParallel', '_toolBarLighting', '_toolBarLightingOn',
+#       '_toolBarLightingOff', '_toolBarInteraction', '_toolBarInteractionRotate', '_toolBarInteractionPan',
+#       '_toolBarInteractionZoom', '_toolBarInteractionPickSingle', '_toolBarInteractionPickMultiple',
+#       '_toolBarInteractionProbe', '_toolBarInteractionRuler', '_centralWidget', '_centralWidgetLayout',
+#       '_verticalSplitter', '_horizontalSplitter', '_splitterLeft', '_splitterLeftLayout', '_modelTree', '_outputTree',
+#       '_terminal', '_rightSplitter', '_rightSplitterLayout', '_modelViewport', '_outputViewport', '_solverDialog',
 #       '_optionsCommonDialog'
 #   )
 
@@ -38,12 +38,12 @@ class MainWindowShell(QMainWindow):
         # load icons
         self._icons: dict[str, QIcon] = {
             x: QIcon(f'./resources/images/{x}.svg') for x in (
-                'file-new', 'file-open', 'file-save', 'file-save-as', 'file-close', 'file-exit', 'solver-dialog',
-                'options', 'view-front', 'view-back', 'view-top', 'view-bottom', 'view-left', 'view-right',
-                'view-isometric', 'cell-surface', 'cell-wireframe', 'projection-perspective', 'projection-parallel',
-                'lighting-on', 'lighting-off', 'interaction-style-rotate', 'interaction-style-pan',
-                'interaction-style-zoom', 'interaction-style-pick-single', 'interaction-style-pick-multiple',
-                'interaction-style-probe', 'interaction-style-ruler'
+                'file-new', 'file-open', 'file-save', 'file-save-as', 'file-print', 'file-close', 'file-exit',
+                'solver-dialog', 'options', 'view-front', 'view-back', 'view-top', 'view-bottom', 'view-left',
+                'view-right', 'view-isometric', 'cell-surface', 'cell-wireframe', 'projection-perspective',
+                'projection-parallel', 'lighting-on', 'lighting-off', 'interaction-style-rotate',
+                'interaction-style-pan', 'interaction-style-zoom', 'interaction-style-pick-single',
+                'interaction-style-pick-multiple', 'interaction-style-probe', 'interaction-style-ruler'
             )
         }
 
@@ -90,6 +90,15 @@ class MainWindowShell(QMainWindow):
         # separator
         self._menuBarFile.addSeparator()
 
+        # menu bar > file > print
+        self._menuBarFilePrint: QAction = QAction(self._menuBarFile)
+        self._menuBarFilePrint.setText('Print...')
+        self._menuBarFilePrint.setIcon(self._icons['file-print'])
+        self._menuBarFile.addAction(self._menuBarFilePrint) # type: ignore
+
+        # separator
+        self._menuBarFile.addSeparator()
+
         # menu bar > file > close
         self._menuBarFileClose: QAction = QAction(self._menuBarFile)
         self._menuBarFileClose.setText('Close')
@@ -130,7 +139,7 @@ class MainWindowShell(QMainWindow):
 
         # menu bar > solver > dialog
         self._menuBarSolverDialog: QAction = QAction(self._menuBarSolver)
-        self._menuBarSolverDialog.setText('Submit Job')
+        self._menuBarSolverDialog.setText('Submit')
         self._menuBarSolverDialog.setIcon(self._icons['solver-dialog'])
         self._menuBarSolver.addAction(self._menuBarSolverDialog) # type: ignore
 
@@ -167,6 +176,12 @@ class MainWindowShell(QMainWindow):
         self._toolBarFileSave.setToolTip('Save Model Database')
         self._toolBarFileSave.setIcon(self._icons['file-save'])
         self._toolBarFile.addAction(self._toolBarFileSave)
+
+        # tool bar (file) > print
+        self._toolBarFilePrint: QAction = QAction(self._toolBarFile)
+        self._toolBarFilePrint.setToolTip('Print Viewport')
+        self._toolBarFilePrint.setIcon(self._icons['file-print'])
+        self._toolBarFile.addAction(self._toolBarFilePrint)
 
         # tool bar (view)
         self._toolBarView: QToolBar = QToolBar(self)

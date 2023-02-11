@@ -7,7 +7,7 @@ class OptionsCommonDialogShell(QDialog):
     The options > common dialog shell (basic UI).
     '''
 
-#   # attribute slots
+#   # attribute slots (crashes QT)
 #   __slots__ = (
 #       '_layout', '_gridLinesGroupBox', '_gridLinesGroupBoxLayout', '_gridLinesVisibleLabel', '_gridLinesVisibleBox',
 #       '_gridLineWidthLabel', '_gridLineWidthBox', '_gridLineColorLabel', '_gridLineColorBox', '_gridCellsGroupBox',
