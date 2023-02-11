@@ -20,7 +20,9 @@ class MainWindowShell(QMainWindow):
 #       '_menuBarModuleVisualization', '_menuBarSolver', '_menuBarSolverDialog', '_menuBarOptions',
 #       '_menuBarOptionsCommon', '_toolBarFile', '_toolBarFileNew', '_toolBarFileOpen', '_toolBarFileSave',
 #       '_toolBarView', '_toolBarViewFront', '_toolBarViewBack', '_toolBarViewTop', '_toolBarViewBottom',
-#       '_toolBarViewLeft', '_toolBarViewRight', '_toolBarViewIsometric', '_toolBarInteraction',
+#       '_toolBarViewLeft', '_toolBarViewRight', '_toolBarViewIsometric', '_toolBarCell', '_toolBarCellSurface',
+#       '_toolBarCellWireframe', '_toolBarProjection', '_toolBarProjectionPerspective', , '_toolBarProjectionParallel',
+#       '_toolBarLighting', '_toolBarLightingOn', '_toolBarLightingOff', '_toolBarInteraction',
 #       '_toolBarInteractionRotate', '_toolBarInteractionPan', '_toolBarInteractionZoom',
 #       '_toolBarInteractionPickSingle', '_toolBarInteractionPickMultiple', '_toolBarInteractionProbe',
 #       '_toolBarInteractionRuler', '_centralWidget', '_centralWidgetLayout', '_verticalSplitter',
@@ -38,9 +40,10 @@ class MainWindowShell(QMainWindow):
             x: QIcon(f'./resources/images/{x}.svg') for x in (
                 'file-new', 'file-open', 'file-save', 'file-save-as', 'file-close', 'file-exit', 'solver-dialog',
                 'options', 'view-front', 'view-back', 'view-top', 'view-bottom', 'view-left', 'view-right',
-                'view-isometric', 'interaction-style-rotate', 'interaction-style-pan', 'interaction-style-zoom',
-                'interaction-style-pick-single', 'interaction-style-pick-multiple', 'interaction-style-probe',
-                'interaction-style-ruler'
+                'view-isometric', 'cell-surface', 'cell-wireframe', 'projection-perspective', 'projection-parallel',
+                'lighting-on', 'lighting-off', 'interaction-style-rotate', 'interaction-style-pan',
+                'interaction-style-zoom', 'interaction-style-pick-single', 'interaction-style-pick-multiple',
+                'interaction-style-probe', 'interaction-style-ruler'
             )
         }
 
@@ -117,7 +120,6 @@ class MainWindowShell(QMainWindow):
         # menu bar > module > visualization
         self._menuBarModuleVisualization: QAction = QAction(self._menuBarModule)
         self._menuBarModuleVisualization.setCheckable(True)
-        self._menuBarModuleVisualization.setChecked(False)
         self._menuBarModuleVisualization.setText('Visualization')
         self._menuBarModule.addAction(self._menuBarModuleVisualization) # type: ignore
 
@@ -212,6 +214,66 @@ class MainWindowShell(QMainWindow):
         self._toolBarViewIsometric.setToolTip('View Isometric')
         self._toolBarViewIsometric.setIcon(self._icons['view-isometric'])
         self._toolBarView.addAction(self._toolBarViewIsometric)
+
+        # tool bar (cell)
+        self._toolBarCell: QToolBar = QToolBar(self)
+        self._toolBarCell.setFloatable(False)
+        self.addToolBar(self._toolBarCell)
+
+        # tool bar (cell) > surface
+        self._toolBarCellSurface: QAction = QAction(self._toolBarCell)
+        self._toolBarCellSurface.setToolTip('Cell Surface Representation')
+        self._toolBarCellSurface.setIcon(self._icons['cell-surface'])
+        self._toolBarCellSurface.setCheckable(True)
+        self._toolBarCellSurface.setChecked(True)
+        self._toolBarCell.addAction(self._toolBarCellSurface)
+
+        # tool bar (cell) > wireframe
+        self._toolBarCellWireframe: QAction = QAction(self._toolBarCell)
+        self._toolBarCellWireframe.setToolTip('Cell Wireframe Representation')
+        self._toolBarCellWireframe.setIcon(self._icons['cell-wireframe'])
+        self._toolBarCellWireframe.setCheckable(True)
+        self._toolBarCell.addAction(self._toolBarCellWireframe)
+
+        # tool bar (projection)
+        self._toolBarProjection: QToolBar = QToolBar(self)
+        self._toolBarProjection.setFloatable(False)
+        self.addToolBar(self._toolBarProjection)
+
+        # tool bar (projection) > perspective
+        self._toolBarProjectionPerspective: QAction = QAction(self._toolBarProjection)
+        self._toolBarProjectionPerspective.setToolTip('Perspective Projection')
+        self._toolBarProjectionPerspective.setIcon(self._icons['projection-perspective'])
+        self._toolBarProjectionPerspective.setCheckable(True)
+        self._toolBarProjectionPerspective.setChecked(True)
+        self._toolBarProjection.addAction(self._toolBarProjectionPerspective)
+
+        # tool bar (projection) > parallel
+        self._toolBarProjectionParallel: QAction = QAction(self._toolBarProjection)
+        self._toolBarProjectionParallel.setToolTip('Parallel Projection')
+        self._toolBarProjectionParallel.setIcon(self._icons['projection-parallel'])
+        self._toolBarProjectionParallel.setCheckable(True)
+        self._toolBarProjection.addAction(self._toolBarProjectionParallel)
+
+        # tool bar (lighting)
+        self._toolBarLighting: QToolBar = QToolBar(self)
+        self._toolBarLighting.setFloatable(False)
+        self.addToolBar(self._toolBarLighting)
+
+        # tool bar (lighting) > on
+        self._toolBarLightingOn: QAction = QAction(self._toolBarLighting)
+        self._toolBarLightingOn.setToolTip('Lighting On')
+        self._toolBarLightingOn.setIcon(self._icons['lighting-on'])
+        self._toolBarLightingOn.setCheckable(True)
+        self._toolBarLightingOn.setChecked(True)
+        self._toolBarLighting.addAction(self._toolBarLightingOn)
+
+        # tool bar (lighting) > off
+        self._toolBarLightingOff: QAction = QAction(self._toolBarLighting)
+        self._toolBarLightingOff.setToolTip('Lighting Off')
+        self._toolBarLightingOff.setIcon(self._icons['lighting-off'])
+        self._toolBarLightingOff.setCheckable(True)
+        self._toolBarLighting.addAction(self._toolBarLightingOff)
 
         # tool bar (interaction)
         self._toolBarInteraction: QToolBar = QToolBar(self)

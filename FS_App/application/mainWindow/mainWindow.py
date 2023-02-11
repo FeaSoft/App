@@ -66,6 +66,12 @@ class MainWindow(MainWindowShell):
         self._toolBarViewLeft.triggered.connect(self.onToolBarViewLeft)                               # type: ignore
         self._toolBarViewRight.triggered.connect(self.onToolBarViewRight)                             # type: ignore
         self._toolBarViewIsometric.triggered.connect(self.onToolBarViewIsometric)                     # type: ignore
+        self._toolBarCellSurface.triggered.connect(self.onToolBarCellSurface)                         # type: ignore
+        self._toolBarCellWireframe.triggered.connect(self.onToolBarCellWireframe)                     # type: ignore
+        self._toolBarProjectionPerspective.triggered.connect(self.onToolBarProjectionPerspective)     # type: ignore
+        self._toolBarProjectionParallel.triggered.connect(self.onToolBarProjectionParallel)           # type: ignore
+        self._toolBarLightingOn.triggered.connect(self.onToolBarLightingOn)                           # type: ignore
+        self._toolBarLightingOff.triggered.connect(self.onToolBarLightingOff)                         # type: ignore
         self._toolBarInteractionRotate.triggered.connect(self.onToolBarInteractionRotate)             # type: ignore
         self._toolBarInteractionPan.triggered.connect(self.onToolBarInteractionPan)                   # type: ignore
         self._toolBarInteractionZoom.triggered.connect(self.onToolBarInteractionZoom)                 # type: ignore
@@ -324,6 +330,15 @@ class MainWindow(MainWindowShell):
                     case InteractionStyles.PickSingle | InteractionStyles.PickMultiple:
                         self.onModelTreeSelection() # will enable picking based on selected data object
                     case _: pass
+            case 'GridCellRepresentation':
+                self._toolBarCellSurface.setChecked(optionValue == 'Surface')
+                self._toolBarCellWireframe.setChecked(optionValue == 'Wireframe')
+            case 'Projection':
+                self._toolBarProjectionPerspective.setChecked(optionValue == 'Perspective')
+                self._toolBarProjectionParallel.setChecked(optionValue == 'Parallel')
+            case 'Lighting':
+                self._toolBarLightingOn.setChecked(optionValue == 'On')
+                self._toolBarLightingOff.setChecked(optionValue == 'Off')
             case _: pass
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -476,6 +491,30 @@ class MainWindow(MainWindowShell):
     def onToolBarViewIsometric(self) -> None:
         '''On Tool Bar > View > Isometric.'''
         self.currentViewport.setView(Views.Isometric)
+
+    def onToolBarCellSurface(self) -> None:
+        '''On Tool Bat > Cell > Surface.'''
+        Viewport.setGridCellRepresentation('Surface')
+
+    def onToolBarCellWireframe(self) -> None:
+        '''On Tool Bat > Cell > Wireframe.'''
+        Viewport.setGridCellRepresentation('Wireframe')
+
+    def onToolBarProjectionPerspective(self) -> None:
+        '''On Tool Bat > Projection > Perspective.'''
+        Viewport.setProjection('Perspective')
+
+    def onToolBarProjectionParallel(self) -> None:
+        '''On Tool Bat > Projection > Parallel.'''
+        Viewport.setProjection('Parallel')
+
+    def onToolBarLightingOn(self) -> None:
+        '''On Tool Bat > Lighting > On.'''
+        Viewport.setLighting('On')
+
+    def onToolBarLightingOff(self) -> None:
+        '''On Tool Bat > Lighting > Off.'''
+        Viewport.setLighting('Off')
 
     def onToolBarInteractionRotate(self) -> None:
         '''On Tool Bar > Interaction > Rotate.'''
