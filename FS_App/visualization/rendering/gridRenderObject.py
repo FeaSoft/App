@@ -118,13 +118,13 @@ class GridRenderObject(RenderObject):
 
     def setPointDisplacements(
         self,
-        displacements: tuple[tuple[float, float, float], ...] | None = None,
-        deformationScaleFactor: float = 1.0
+        displacements: tuple[tuple[float, float, float], ...] | None,
+        deformationScaleFactor: float
     ) -> None:
         '''Sets the grid deformation.'''
         k = deformationScaleFactor
         # check if the current grid is set up to be deformable
-        if not self._isDeformable: raise ValueError('grid is not deformable')
+        if not self._isDeformable: return # raise ValueError('grid is not deformable')
         # update point displacements if required
         if displacements: self._pointDisplacements = displacements
         # update point coordinates

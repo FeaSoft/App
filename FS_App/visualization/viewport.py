@@ -38,6 +38,7 @@ class Viewport(QFrame):
     _background2: tuple[float, float, float] = (0.6, 0.7, 0.8)
     _foreground: tuple[float, float, float] = (1.0, 1.0, 1.0)
     _fontSize: int = 20
+    _deformationScaleFactor: float = 1.0
 
     @classmethod
     def registerCallback(cls, callback: Callable[[str, Any], None]) -> int:
@@ -270,6 +271,21 @@ class Viewport(QFrame):
         cls.notifyOptionChanged('FontSize', cls._fontSize)
 
     @classmethod
+    def deformationScaleFactor(cls) -> float:
+        '''Gets the deformation scale factor.'''
+        return cls._deformationScaleFactor
+
+    @classmethod
+    def setDeformationScaleFactor(cls, value: float) -> None:
+        '''Sets the deformation scale factor.'''
+        cls._deformationScaleFactor = value
+        for viewport in cls._viewports:
+            if viewport._gridRenderObject:
+                viewport._gridRenderObject.setPointDisplacements(None, cls._deformationScaleFactor)
+            viewport.render()
+        cls.notifyOptionChanged('DeformationScaleFactor', cls._deformationScaleFactor)
+
+    @classmethod
     def setPickAction(
         cls,
         onPicked: Callable[[Sequence[int], bool], None] | None,
@@ -462,7 +478,7 @@ class Viewport(QFrame):
             nodalDisplacements = tuple(
                 (0.0, 0.0, 0.0) for _ in range(self._gridRenderObject.dataSet.GetNumberOfPoints())
             )
-        self._gridRenderObject.setPointDisplacements(nodalDisplacements)
+        self._gridRenderObject.setPointDisplacements(nodalDisplacements, self._deformationScaleFactor)
         if render: self.render()
 
     def setSelectionRenderObject(

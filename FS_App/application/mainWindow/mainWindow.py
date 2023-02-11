@@ -288,7 +288,7 @@ class MainWindow(MainWindowShell):
                 frame, groupName, fieldName = cast(tuple[int, str, str], selection[1])
                 self._outputViewport.info.setText(2, fieldName)
                 self._outputViewport.info.setText(1, self._outputDatabase.frameDescription(frame))
-                self._outputViewport.info.setText(0, 'Deformation Scale Factor: 0.0')
+                self._outputViewport.info.setText(0, f'Deformation Scale Factor: {Viewport.deformationScaleFactor()}')
                 self._outputViewport.plotNodalScalarField(
                     self._outputDatabase.nodalScalarField(frame, groupName, fieldName),
                     render=False
@@ -342,6 +342,12 @@ class MainWindow(MainWindowShell):
             case 'Lighting':
                 self._toolBarLightingOn.setChecked(optionValue == 'On')
                 self._toolBarLightingOff.setChecked(optionValue == 'Off')
+            case 'DeformationScaleFactor':
+                if self._outputViewport.info.text(0):
+                    self._outputViewport.info.setText(
+                        0, f'Deformation Scale Factor: {Viewport.deformationScaleFactor()}'
+                    )
+                    self._outputViewport.render()
             case _: pass
 
 #-----------------------------------------------------------------------------------------------------------------------

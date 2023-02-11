@@ -35,6 +35,11 @@ class Info:
         self._text.clear()
         self._actor.SetInput('')
 
+    def text(self, row: int) -> str | None:
+        '''Gets the text at the specified row/line.'''
+        if len(self._text) <= row: return None
+        return self._text[row]
+
     def setText(self, row: int, text: str) -> None:
         '''Sets the text at the specified row/line.'''
         while len(self._text) < row + 1: self._text.append('')
