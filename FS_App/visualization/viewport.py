@@ -2,7 +2,7 @@ import vtkmodules.vtkRenderingContextOpenGL2 # type: ignore (initialize VTK)
 from typing import Literal, Any, cast
 from collections.abc import Callable, Sequence
 from dataModel import Mesh, NodeSet, ElementSet, ConcentratedLoad, BoundaryCondition, ModelDatabase
-from visualization.decoration import Triad, Info, ScalarBar, PointLabel
+from visualization.decoration import Triad, Info, ScalarBar, PointLabel, Colormaps
 from visualization.rendering import (
     RenderObject, GridRenderObject, PointsRenderObject, CellsRenderObject, ArrowsRenderObject, GroupRenderObject
 )
@@ -41,6 +41,16 @@ class Viewport(QFrame):
     _deformationScaleFactor: float = 1.0
     _showMaxPointLabel: bool = False
     _showMinPointLabel: bool = False
+    _useCustomLimits: bool = False
+    _defaultMaxLimit: float = 1.0
+    _defaultMinLimit: float = 0.0
+    _customMaxLimit: float = 1.0
+    _customMinLimit: float = 0.0
+    _scalarBarNumberFormat: Literal['Scientific', 'Fixed'] = 'Scientific'
+    _scalarBarDecimalPlaces: int = 3
+    _colormap: Colormaps = Colormaps.Jet
+    _colormapIntervals: int = 12
+    _reverseColormap: bool = False
 
     @classmethod
     def registerCallback(cls, callback: Callable[[str, Any], None]) -> int:
@@ -323,6 +333,131 @@ class Viewport(QFrame):
         cls.notifyOptionChanged('ShowMinPointLabel', cls._showMinPointLabel)
 
     @classmethod
+    def useCustomLimits(cls) -> bool:
+        '''Gets the use custom limits flag.'''
+        return cls._useCustomLimits
+
+    @classmethod
+    def setUseCustomLimits(cls, value: bool) -> None:
+        '''Sets the use custom limits flag.'''
+        cls._useCustomLimits = value
+        for viewport in cls._viewports:
+            if viewport._gridRenderObject:
+                max = cls._customMaxLimit if cls._useCustomLimits else cls._defaultMaxLimit
+                min = cls._customMinLimit if cls._useCustomLimits else cls._defaultMinLimit
+                viewport._gridRenderObject.setNodalScalarFieldRange(min, max)
+            viewport.render()
+        if not cls._useCustomLimits:
+            Viewport.setCustomMaxLimit(cls._defaultMaxLimit)
+            Viewport.setCustomMinLimit(cls._defaultMinLimit)
+        cls.notifyOptionChanged('UseCustomLimits', cls._useCustomLimits)
+
+    @classmethod
+    def customMaxLimit(cls) -> float:
+        '''Gets the custom max limit.'''
+        return cls._customMaxLimit
+
+    @classmethod
+    def setCustomMaxLimit(cls, value: float) -> None:
+        '''Sets the custom max limit.'''
+        if value < cls._customMinLimit: raise ValueError('bad range')
+        cls._customMaxLimit = value
+        if cls._useCustomLimits:
+            for viewport in cls._viewports:
+                if viewport._gridRenderObject:
+                    viewport._gridRenderObject.setNodalScalarFieldRange(cls._customMinLimit, cls._customMaxLimit)
+                viewport.render()
+        cls.notifyOptionChanged('CustomMaxLimit', cls._customMaxLimit)
+
+    @classmethod
+    def customMinLimit(cls) -> float:
+        '''Gets the custom min limit.'''
+        return cls._customMinLimit
+
+    @classmethod
+    def setCustomMinLimit(cls, value: float) -> None:
+        '''Sets the custom min limit.'''
+        if value > cls._customMaxLimit: raise ValueError('bad range')
+        cls._customMinLimit = value
+        if cls._useCustomLimits:
+            for viewport in cls._viewports:
+                if viewport._gridRenderObject:
+                    viewport._gridRenderObject.setNodalScalarFieldRange(cls._customMinLimit, cls._customMaxLimit)
+                viewport.render()
+        cls.notifyOptionChanged('CustomMinLimit', cls._customMinLimit)
+
+    @classmethod
+    def scalarBarNumberFormat(cls) -> Literal['Scientific', 'Fixed']:
+        '''Gets the scalar bar number format.'''
+        return cls._scalarBarNumberFormat
+
+    @classmethod
+    def setScalarBarNumberFormat(cls, value: Literal['Scientific', 'Fixed']) -> None:
+        '''Gets the scalar bar number format.'''
+        cls._scalarBarNumberFormat = value
+        for viewport in cls._viewports:
+            viewport._scalarBar.setNumberFormat(cls._scalarBarNumberFormat)
+            viewport.render()
+        cls.notifyOptionChanged('ScalarBarNumberFormat', cls._scalarBarNumberFormat)
+
+    @classmethod
+    def scalarBarDecimalPlaces(cls) -> int:
+        '''Gets the scalar bar decimal places.'''
+        return cls._scalarBarDecimalPlaces
+
+    @classmethod
+    def setScalarBarDecimalPlaces(cls, value: int) -> None:
+        '''Gets the scalar bar decimal places.'''
+        cls._scalarBarDecimalPlaces = value
+        for viewport in cls._viewports:
+            viewport._scalarBar.setDecimalPlaces(cls._scalarBarDecimalPlaces)
+            viewport.render()
+        cls.notifyOptionChanged('ScalarBarDecimalPlaces', cls._scalarBarDecimalPlaces)
+
+    @classmethod
+    def colormap(cls) -> Colormaps:
+        '''Gets the current colormap.'''
+        return cls._colormap
+
+    @classmethod
+    def setColormap(cls, value: Colormaps | str) -> None:
+        '''Sets the current colormap.'''
+        if isinstance(value, str): value = Colormaps[value]
+        cls._colormap = value
+        for viewport in cls._viewports:
+            viewport._scalarBar.setColormap(cls._colormap, cls._colormapIntervals, cls._reverseColormap)
+            viewport.render()
+        cls.notifyOptionChanged('Colormap', cls._colormap)
+
+    @classmethod
+    def colormapIntervals(cls) -> int:
+        '''Gets the number of colormap colors.'''
+        return cls._colormapIntervals
+
+    @classmethod
+    def setColormapIntervals(cls, value: int) -> None:
+        '''Sets the number of colormap colors.'''
+        cls._colormapIntervals = value
+        for viewport in cls._viewports:
+            viewport._scalarBar.setColormap(cls._colormap, cls._colormapIntervals, cls._reverseColormap)
+            viewport.render()
+        cls.notifyOptionChanged('ColormapIntervals', cls._colormapIntervals)
+
+    @classmethod
+    def reverseColormap(cls) -> bool:
+        '''Gets the reverse colormap flag.'''
+        return cls._reverseColormap
+
+    @classmethod
+    def setReverseColormap(cls, value: bool) -> None:
+        '''Sets the reverse colormap flag.'''
+        cls._reverseColormap = value
+        for viewport in cls._viewports:
+            viewport._scalarBar.setColormap(cls._colormap, cls._colormapIntervals, cls._reverseColormap)
+            viewport.render()
+        cls.notifyOptionChanged('ReverseColormap', cls._reverseColormap)
+
+    @classmethod
     def setPickAction(
         cls,
         onPicked: Callable[[Sequence[int], bool], None] | None,
@@ -381,7 +516,12 @@ class Viewport(QFrame):
         # triad & info % scalar bar & max/min point labels
         self._triad: Triad = Triad(self._foreground, self._fontSize)
         self._info: Info = Info(self._foreground, self._fontSize)
-        self._scalarBar: ScalarBar = ScalarBar(self._foreground, self._fontSize)
+        self._scalarBar: ScalarBar = ScalarBar(
+            self._scalarBarDecimalPlaces,
+            self._scalarBarNumberFormat,
+            self._foreground,
+            self._fontSize
+        )
         self._maxPointLabel: PointLabel = PointLabel(self._foreground, self._fontSize)
         self._minPointLabel: PointLabel = PointLabel(self._foreground, self._fontSize)
         self._maxPointLabel.setText('Max')
@@ -607,14 +747,25 @@ class Viewport(QFrame):
             self._maxPointLabel.setVisible(False)
             self._minPointLabel.setVisible(False)
         else:
-            self._gridRenderObject.setNodalScalarField(nodalScalarField)
+            # update visibility of scalar bar and max/min labels
             self._scalarBar.setVisible(nodalScalarField is not None)
             self._maxPointLabel.setVisible(nodalScalarField is not None and self._showMaxPointLabel)
             self._minPointLabel.setVisible(nodalScalarField is not None and self._showMinPointLabel)
-            # update max/min labels position
+            # update max/min
             if nodalScalarField:
-                self._maxPointIndex = nodalScalarField.index(max(nodalScalarField))
-                self._minPointIndex = nodalScalarField.index(min(nodalScalarField))
+                Viewport._defaultMaxLimit = max(nodalScalarField)
+                Viewport._defaultMinLimit = min(nodalScalarField)
+                if not self._useCustomLimits:
+                    self.setCustomMaxLimit(self._defaultMaxLimit)
+                    self.setCustomMinLimit(self._defaultMinLimit)
+                self._maxPointIndex = nodalScalarField.index(self._defaultMaxLimit)
+                self._minPointIndex = nodalScalarField.index(self._defaultMinLimit)
                 self._maxPointLabel.setPosition(self._gridRenderObject.dataSet.GetPoint(self._maxPointIndex))
                 self._minPointLabel.setPosition(self._gridRenderObject.dataSet.GetPoint(self._minPointIndex))
+            # plot contour
+            self._gridRenderObject.setNodalScalarField(nodalScalarField)
+            if self._useCustomLimits:
+                self._gridRenderObject.setNodalScalarFieldRange(self._customMinLimit, self._customMaxLimit)
+            else:
+                self._gridRenderObject.setNodalScalarFieldRange(self._defaultMinLimit, self._defaultMaxLimit)
         if render: self.render()

@@ -155,7 +155,7 @@ class OptionsResultDialogShell(QDialog):
         # intervals box
         self._intervalsBox: QSpinBox = QSpinBox(self._scalarBarGroupBox)
         self._intervalsBox.setMinimum(2)
-        self._intervalsBox.setMaximum(64)
+        self._intervalsBox.setMaximum(32)
         self._intervalsBox.setSingleStep(1)
         self._scalarBarGroupBoxLayout.addWidget(self._intervalsBox, 3, 1)
 

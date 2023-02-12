@@ -142,7 +142,6 @@ class GridRenderObject(RenderObject):
             scalars.Modified()
             # update mapper
             self._mapper.ScalarVisibilityOn()
-            self._mapper.SetScalarRange(min(nodalScalarField), max(nodalScalarField))
             self._mapper.Modified()
         else:
             # update scalars
@@ -151,4 +150,10 @@ class GridRenderObject(RenderObject):
                 scalars.SetValue(i, float('nan'))
             # update mapper
             self._mapper.ScalarVisibilityOff()
+            self._mapper.Modified()
+
+    def setNodalScalarFieldRange(self, min: float, max: float) -> None:
+        '''Sets the nodal scalar field range.'''
+        if self._mapper.GetScalarVisibility():
+            self._mapper.SetScalarRange(min, max)
             self._mapper.Modified()

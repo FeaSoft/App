@@ -1,3 +1,4 @@
+from typing import Literal
 from visualization.decoration.colormaps import Colormaps
 from vtkmodules.vtkCommonCore import vtkLookupTable
 from vtkmodules.vtkRenderingAnnotation import vtkScalarBarActor
@@ -14,10 +15,19 @@ class ScalarBar:
         return self._lookupTable
 
     # attribute slots
-    __slots__ = ('_lookupTable', '_scalarBarActor')
+    __slots__ = ('_lookupTable', '_scalarBarActor', '_decimalPlaces', '_numberFormat')
 
-    def __init__(self, textColor: tuple[float, float, float], fontSize: int) -> None:
+    def __init__(
+        self,
+        decimalPlaces: int,
+        numberFormat: Literal['Scientific', 'Fixed'],
+        textColor: tuple[float, float, float],
+        fontSize: int
+    ) -> None:
         '''Scalar bar constructor.'''
+        # decimal places
+        self._decimalPlaces: int = decimalPlaces
+        self._numberFormat: Literal['Scientific', 'Fixed'] = numberFormat
         # lookup table
         self._lookupTable: vtkLookupTable = vtkLookupTable()
         # scalar bar actor
@@ -35,6 +45,8 @@ class ScalarBar:
         self.setTextColor(textColor)
         # initialize colormap
         self.setColormap(Colormaps.Jet)
+        # initialize labels
+        self.setNumberFormat(numberFormat)
 
     def initialize(self, renderer: vtkRenderer) -> None:
         '''Sets the renderer.'''
@@ -55,6 +67,20 @@ class ScalarBar:
     def setFontSize(self, size: int) -> None:
         '''Sets the font size.'''
         self._scalarBarActor.GetLabelTextProperty().SetFontSize(size) # type: ignore
+
+    def setNumberFormat(self, format: Literal['Scientific', 'Fixed']) -> None:
+        '''Sets the number format.'''
+        self._numberFormat = format
+        match self._numberFormat:
+            case 'Scientific': self._scalarBarActor.SetLabelFormat(f'%+0.{self._decimalPlaces}e')
+            case 'Fixed': self._scalarBarActor.SetLabelFormat(f'%+0.{self._decimalPlaces}f')
+
+    def setDecimalPlaces(self, decimalPlaces: int) -> None:
+        '''Sets the number format.'''
+        self._decimalPlaces = decimalPlaces
+        match self._numberFormat:
+            case 'Scientific': self._scalarBarActor.SetLabelFormat(f'%+0.{self._decimalPlaces}e')
+            case 'Fixed': self._scalarBarActor.SetLabelFormat(f'%+0.{self._decimalPlaces}f')
 
     def setColormap(self, colormap: Colormaps, numberOfColors: int = 12, reverse: bool = False) -> None:
         '''Sets the current colormap.'''
