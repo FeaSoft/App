@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "FS_Solver", "FS_Solver\FS_Solver.vfproj", "{AEABF113-81BF-4559-B11C-4EB98D3A988B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AEABF113-81BF-4559-B11C-4EB98D3A988B}.Debug|x64.ActiveCfg = Debug|x64
+		{AEABF113-81BF-4559-B11C-4EB98D3A988B}.Debug|x64.Build.0 = Debug|x64
+		{AEABF113-81BF-4559-B11C-4EB98D3A988B}.Release|x64.ActiveCfg = Release|x64
+		{AEABF113-81BF-4559-B11C-4EB98D3A988B}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {048AE505-F352-4C74-8ABA-DE251D098EF2}
+	EndGlobalSection
+EndGlobal

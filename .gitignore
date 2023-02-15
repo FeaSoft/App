@@ -1,0 +1,31 @@
+# ignore all files ...
+*.*
+
+# ... except these:
+
+# .gitignore file
+!.gitignore
+
+# .gitattributes file
+!.gitattributes
+
+# visual studio solution files
+!*.sln
+
+# visual studio fortran project files
+!*.vfproj
+
+# fortran source files
+!*.f90
+
+# python source files
+!*.py
+
+# scalable vector graphics files
+!*.svg
+
+# icon files
+!*.ico
+
+# qt style sheet files
+!*.qss

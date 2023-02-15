@@ -1,0 +1,19 @@
+! Description:
+! Initialize data model.
+module data_model
+    use m_node
+    use m_element
+    use m_surface
+    use m_mesh
+    use m_nset
+    use m_eset
+    use m_sset
+    use m_material
+    use m_section
+    use m_cload
+    use m_sload
+    use m_bload
+    use m_boundary
+    use m_mdb
+    use m_odb
+end module

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="Console Application" Version="11.0" ProjectIdGuid="{AEABF113-81BF-4559-B11C-4EB98D3A988B}">
+	<Platforms>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|x64">
+				<Tool Name="VFFortranCompilerTool" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Diagnostics="diagnosticsShowAll" DebugParameter="debugParameterAll" WarnInterfaces="true" RealKIND="realKIND8" LocalSavedScalarsZero="true" InitArrays="true" ExtendSinglePrecisionConstants="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug" UseMkl="mklParallel"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateDebugInformation="true" SubSystem="subSystemConsole"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|x64">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Optimization="optimizeFull" Parallelization="true" AutoParallelThreshold="50" VectorizationThreshold="50" HeapArrays="0" MatrixLibrary="mlYes" Diagnostics="diagnosticsShowAll" RealKIND="realKIND8" LocalSavedScalarsZero="true" InitArrays="true" ExtendSinglePrecisionConstants="true" UseMkl="mklParallel"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" SubSystem="subSystemConsole"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="data_model">
+		<File RelativePath=".\data_model\data_model.f90"/>
+		<File RelativePath=".\data_model\m_bload.f90"/>
+		<File RelativePath=".\data_model\m_boundary.f90"/>
+		<File RelativePath=".\data_model\m_cload.f90"/>
+		<File RelativePath=".\data_model\m_element.f90"/>
+		<File RelativePath=".\data_model\m_eset.f90"/>
+		<File RelativePath=".\data_model\m_material.f90"/>
+		<File RelativePath=".\data_model\m_mdb.f90"/>
+		<File RelativePath=".\data_model\m_mesh.f90"/>
+		<File RelativePath=".\data_model\m_node.f90"/>
+		<File RelativePath=".\data_model\m_nset.f90"/>
+		<File RelativePath=".\data_model\m_odb.f90"/>
+		<File RelativePath=".\data_model\m_section.f90"/>
+		<File RelativePath=".\data_model\m_sload.f90"/>
+		<File RelativePath=".\data_model\m_sset.f90"/>
+		<File RelativePath=".\data_model\m_surface.f90"/></Filter>
+		<Filter Name="execution_model">
+		<File RelativePath=".\execution_model\execution_model.f90"/>
+		<File RelativePath=".\execution_model\m_eproc.f90"/>
+		<File RelativePath=".\execution_model\m_gproc.f90"/>
+		<File RelativePath=".\execution_model\m_shapef.f90"/>
+		<File RelativePath=".\execution_model\m_sproc.f90"/></Filter>
+		<Filter Name="input_output">
+		<File RelativePath=".\input_output\input_output.f90"/>
+		<File RelativePath=".\input_output\m_reader.f90"/>
+		<File RelativePath=".\input_output\m_writer.f90"/></Filter>
+		<Filter Name="linear_algebra">
+		<File RelativePath=".\linear_algebra\linear_algebra.f90"/>
+		<File RelativePath=".\linear_algebra\m_linalg.f90"/>
+		<File RelativePath=".\linear_algebra\m_matrix.f90"/>
+		<File RelativePath=".\linear_algebra\m_sparse.f90"/>
+		<File RelativePath=".\linear_algebra\m_vector.f90"/></Filter>
+		<File RelativePath=".\fs_solver.f90"/></Files>
+	<Globals/></VisualStudioProject>
