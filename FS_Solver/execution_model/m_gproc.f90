@@ -234,6 +234,7 @@ module m_gproc
         ! additional variables
         integer,        allocatable :: i_elements(:) ! element indices
         type(t_vector), allocatable :: Ps(:)         ! element surface load vectors
+        type(t_vector)              :: T             ! temp vector
         type(t_sload)               :: sload         ! surface load
         type(t_sset)                :: sset          ! surface set
         type(t_vector)              :: F             ! surface load components
@@ -271,7 +272,8 @@ module m_gproc
                 A = element%compute_surface_area(mesh%nodes(element%i_nodes(surface%i_nodes)), section)
                 Ps(j) = e_get_Ps(surface, element, F, A)
             end do
-            call local_to_global_vector(n_adofs, sset%n_surfaces, mesh%elements(i_elements), Ps, Pa)
+            call local_to_global_vector(n_adofs, sset%n_surfaces, mesh%elements(i_elements), Ps, T)
+            Pa%at(:) = Pa%at(:) + T%at(:)
             if (allocated(Ps)) deallocate(Ps)
             if (allocated(i_elements)) deallocate(i_elements)
         end do
@@ -293,6 +295,7 @@ module m_gproc
         ! additional variables
         integer,        allocatable :: i_elements(:) ! element indices
         type(t_vector), allocatable :: Ps(:)         ! element body load vectors
+        type(t_vector)              :: T             ! temp vector
         type(t_bload)               :: bload         ! body load
         type(t_eset)                :: eset          ! body load element set
         type(t_vector)              :: F             ! body load components
@@ -319,7 +322,8 @@ module m_gproc
                 if (bload%t_bload == 'A') F%at(:) = F%at(:)*material%density
                 Ps(j) = e_get_Pb(element, section, mesh%nodes, F)
             end do
-            call local_to_global_vector(n_adofs, eset%n_elements, mesh%elements(i_elements), Ps, Pa)
+            call local_to_global_vector(n_adofs, eset%n_elements, mesh%elements(i_elements), Ps, T)
+            Pa%at(:) = Pa%at(:) + T%at(:)
             if (allocated(Ps)) deallocate(Ps)
             if (allocated(i_elements)) deallocate(i_elements)
         end do
