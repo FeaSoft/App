@@ -1,5 +1,5 @@
 from typing import Sequence
-from subprocess import Popen as Process
+from subprocess import Popen as Process, CREATE_NO_WINDOW
 from psutil import Process as ProcessInfo, cpu_count
 from io import TextIOWrapper
 
@@ -50,7 +50,13 @@ class Subprocess:
     ) -> None:
         '''Starts the specified process.'''
         if self._process and self._info: self.terminate()
-        self._process = Process(executable=exe, args=' '.join(args), stdout=stdout, stderr=stderr)
+        self._process = Process(
+            executable=exe,
+            args=' '.join(args),
+            stdout=stdout,
+            stderr=stderr,
+            creationflags=CREATE_NO_WINDOW
+        )
         self._info = ProcessInfo(self._process.pid)
 
     def terminate(self) -> None:
