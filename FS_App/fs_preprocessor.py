@@ -196,6 +196,39 @@ def checkBoundaryConditions(modelDatabase: ModelDatabase) -> None:
             warnings += 1
             log(f"Warning: boundary condition has no active degrees of freedom: '{boundaryCondition.name}'")
 
+def checkFrequencyAnalysis(modelDatabase: ModelDatabase, analysisType: str) -> None:
+    '''Performs basic checks on a frequency analysis.'''
+    global errors, warnings
+    if analysisType != 'frequency': return
+    # get element section indices
+    elementSectionIndices: list[int] = [0]*len(modelDatabase.mesh.elements)
+    for sectionIndex, section in enumerate(modelDatabase.sections.dataObjects()):
+        section = cast(Section, section)
+        elementSet = cast(ElementSet, modelDatabase.elementSets[section.elementSetName])
+        for elementIndex in elementSet.indices():
+            elementSectionIndices[elementIndex] = sectionIndex
+    # check
+    for i in elementSectionIndices:
+        section = cast(Section, modelDatabase.sections.dataObjects()[i])
+        material = cast(Material, modelDatabase.materials[section.materialName])
+        if material.density == 0.0:
+            errors += 1
+            log(f'Error: in a frequency analysis the mass density must be specified for all elements')
+            break
+    loadCount: int = (
+        len(modelDatabase.concentratedLoads) + len(modelDatabase.pressures) + len(modelDatabase.surfaceTractions) +
+        len(modelDatabase.bodyLoads)
+    )
+    if loadCount > 0:
+        warnings += 1
+        log(f'Warning: in a frequency analysis any type of loading is ignored')
+    for boundaryCondition in modelDatabase.boundaryConditions.dataObjects():
+        boundaryCondition = cast(BoundaryCondition, boundaryCondition)
+        if sum(abs(x) for x in boundaryCondition.components()) != 0.0:
+            warnings += 1
+            log(f'Warning: in a frequency analysis any prescribed displacement is assumed to be 0')
+            break
+
 def writeSolverJobInputFile(modelDatabase: ModelDatabase, solverJobInputFile: str) -> None:
     '''Writes the solver job input file.'''
     with open(solverJobInputFile, 'w') as file:
@@ -307,10 +340,10 @@ def writeSolverJobInputFile(modelDatabase: ModelDatabase, solverJobInputFile: st
 
 if __name__ == '__main__':
     # unpack arguments
-    modelDatabaseFile, solverJobInputFile, logFile = sys.argv[:3]
+    modelDatabaseFile, solverJobInputFile, logFile, analysisType = sys.argv[:4]
 
     # redirect standard output and error streams
-    sys.tracebacklimit = int(sys.argv[3])
+    sys.tracebacklimit = int(sys.argv[4])
     sys.stdout = open(logFile, 'w')
     sys.stderr = sys.stdout
 
@@ -338,6 +371,7 @@ if __name__ == '__main__':
     checkSurfaceTractions(modelDatabase)
     checkBodyLoads(modelDatabase)
     checkBoundaryConditions(modelDatabase)
+    checkFrequencyAnalysis(modelDatabase, analysisType)
     if warnings > 0: log(f'Model definition contains {warnings} warning(s)')
     if errors > 0: log(f'Model definition contains {errors} error(s)')
     if warnings == 0 and errors == 0: log('Basic checks found no warnings nor errors')

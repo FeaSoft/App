@@ -147,6 +147,12 @@ print("Output database opened: '{self._outputDatabaseFile}'")
                 f'"{self._modelDatabaseFile}"',
                 f'"{self._solverJobInputFile}"',
                 f'"{self._logFile}"',
+                (
+                    'static'    if self._staticButton.isChecked()    else
+                    'frequency' if self._frequencyButton.isChecked() else
+                    'buckle'    if self._buckleButton.isChecked()    else
+                    'undefined'
+                ),
                 str(sys.tracebacklimit)
             )
         )
