@@ -79,14 +79,19 @@ module m_sparse
         if (self%mode /= COO) error stop ERROR_COO_FORMAT_REQUIRED_FOR_SPARSE_MATRIX_OPERATION
         if (i < 1 .or. j < 1 .or. i > self%n_rows .or. j > self%n_cols) error stop ERROR_INDEX_OUT_OF_RANGE_DURING_SPARSE_MATRIX_OPERATION
         
-        ! allocate more storage if required
-        if (self%n_nzrs == self%size) call resize(self, self%size*2)
-        
-        ! append new element
-        self%row(self%n_nzrs + 1) = i
-        self%col(self%n_nzrs + 1) = j
-        self%val(self%n_nzrs + 1) = v
-        self%n_nzrs = self%n_nzrs + 1
+        ! check for v = 0.0
+        if (v /= 0.0) then
+            
+            ! allocate more storage if required
+            if (self%n_nzrs == self%size) call resize(self, self%size*2)
+            
+            ! append new element
+            self%row(self%n_nzrs + 1) = i
+            self%col(self%n_nzrs + 1) = j
+            self%val(self%n_nzrs + 1) = v
+            self%n_nzrs = self%n_nzrs + 1
+            
+        end if
     end subroutine
     
     ! Description:

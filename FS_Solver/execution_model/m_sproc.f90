@@ -288,6 +288,7 @@ module m_sproc
         type(t_matrix) :: X                  ! eigenvectors
         type(t_vector) :: phi                ! eigenvector
         type(t_matrix) :: displacement       ! displacements at the mesh nodes
+        real           :: norm               ! eigenvector infinity norm
         integer        :: k                  ! number of eigenpairs found
         integer        :: i                  ! loop counter
         integer        :: frame              ! current output frame
@@ -321,11 +322,18 @@ module m_sproc
         call g_get_S(mdb%n_adofs, mdb%n_idofs, mdb%mesh, mdb%sections, mdb%materials, Ua, Ub, Saa, Sab, Sba, Sbb)
         
         ! solve generalized sparse eigenproblem
-        call eigen('L', Kaa, Saa, k0, k, E, X)
+        call eigen('S', Saa, Kaa, k0, k, E, X)
         
-        ! normalize eigenvectors
+        ! general post-processing
         do i = 1, k
-            X%at(:, i) = X%at(:, i)/norm2(X%at(:, i))
+            ! get eigenvalue
+            E%at(i) = 1.0/E%at(i)
+            
+            ! normalize vector
+            phi = new_vector(mdb%n_adofs)
+            phi%at(:) = X%at(:, i)
+            norm = maxabs(phi)
+            X%at(:, i) = X%at(:, i)/norm
         end do
         
         ! create output database
@@ -344,16 +352,16 @@ module m_sproc
         ! loop frames
         do i = 1, k
             ! create output frame
-            write(frame_descr, '("Mode: ",I0,", Value: ",SP,E12.5,", Magnitude: ",E12.5)') i, E%at(k - i + 1), -E%at(k - i + 1)
+            write(frame_descr, '("Mode: ",I0,", Value: ",SP,E12.5,", Magnitude: ",E12.5)') i, E%at(i), -E%at(i)
             frame = odb%new_frame(frame_descr)
             
             ! history output
-            call odb%set_hout(frame, 1, +E%at(k - i + 1))
-            call odb%set_hout(frame, 2, -E%at(k - i + 1))
+            call odb%set_hout(frame, 1, +E%at(i))
+            call odb%set_hout(frame, 2, -E%at(i))
             
             ! nodal scalar field output
             phi = new_vector(mdb%n_adofs)
-            phi%at(:) = X%at(:, k - i + 1)
+            phi%at(:) = X%at(:, i)
             displacement = convert_vector(mdb%mesh%m_space, mdb%mesh%n_nodes, mdb%mesh%nodes, phi, new_vector(mdb%n_idofs))
             call odb%set_nsfout(frame, 1, displacement%at(:, 1))
             call odb%set_nsfout(frame, 2, displacement%at(:, 2))
