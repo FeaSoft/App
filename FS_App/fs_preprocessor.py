@@ -1,5 +1,5 @@
 # build command
-# pyinstaller fs_preprocessor.py --clean --noconfirm --onefile --noconsole --hidden-import vtkmodules.all
+# pyinstaller fs_preprocessor.py --clean --noconfirm --noconsole --hidden-import vtkmodules.all
 
 import sys
 from typing import cast

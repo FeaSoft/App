@@ -1,5 +1,5 @@
 # build command
-# pyinstaller fs_app.py --clean --noconfirm --onefile --noconsole --hidden-import numpy --hidden-import scipy --hidden-import vtkmodules.all
+# pyinstaller fs_app.py --clean --noconfirm --noconsole --hidden-import numpy --hidden-import scipy --hidden-import matplotlib --hidden-import vtkmodules.all
 
 if __name__ == '__main__':
     import sys
