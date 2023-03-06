@@ -25,7 +25,7 @@ class AbaqusReader:
     def getElementType(modelingSpace: ModelingSpaces | None, abaqusCommand: str) -> ElementTypes | None:
         '''Gets the corresponding finite element type given a modeling space and an Abaqus command.'''
         # get abaqus element type from abaqus command
-        abaqusElementType: str = abaqusCommand.replace('*element,type=', '').upper()
+        abaqusElementType: str = abaqusCommand.split('=')[1].split(',')[0].upper()
 
         # get finite element type based on modeling space and abaqus element type
         match modelingSpace:
